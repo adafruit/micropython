@@ -230,7 +230,14 @@ void spi_flash_init(void) {
             flash_size = 1 << 21; // 2 MiB
             sector_size = 1 << 12; // 4 KiB
             page_size = 256; // 256 bytes
-        } else {
+			
+        } 
+		 else if (response[1]==0x1F && response[2]==0x45 && response[3]==0x01){
+			 flash_size = 1 << 23; //8 MB
+			 sector_size = 1 << 16; //64 KiB
+			 page_size = 256; // 256 bytes
+		 }
+		else {
             // Unknown flash chip!
             flash_size = 0;
         }
