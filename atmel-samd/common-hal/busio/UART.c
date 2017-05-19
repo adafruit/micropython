@@ -78,6 +78,7 @@ static void _busio_uart_interrupt_handler(uint8_t instance)
         /* CTS status should not be considered as an error */
         if(error_code & SERCOM_USART_STATUS_CTS) {
             error_code &= ~SERCOM_USART_STATUS_CTS;
+		//	mp_printf(&mp_plat_print, "ERROR  %s ",error_code);
         }
         /* Check if an error has occurred during the receiving */
         if (error_code) {
@@ -96,8 +97,11 @@ static void _busio_uart_interrupt_handler(uint8_t instance)
         } else {
             /* Read current packet from DATA register,
              * increment buffer pointer and decrement buffer length */
-            uint16_t received_data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
-
+           // uint16_t received_data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
+		 uint16_t received_data = (usart_hw->DATA.reg);
+		
+		 
+		//	mp_printf(&mp_plat_print, "DEBUG  %s", received_data);
             common_hal_mcu_disable_interrupts();
             /* Read value will be at least 8-bits long */
             uint32_t buffer_end = (self->buffer_start + self->buffer_size) % self->buffer_length;

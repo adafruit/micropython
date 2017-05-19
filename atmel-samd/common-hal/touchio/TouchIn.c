@@ -87,3 +87,8 @@ bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
     uint16_t reading = get_raw_reading(self);
     return reading > self->threshold;
 }
+
+uint16_t common_hal_touchio_touchin_get_capacitance(touchio_touchin_obj_t *self) {
+	uint16_t reading = get_raw_reading(self);
+	return reading ;
+}
