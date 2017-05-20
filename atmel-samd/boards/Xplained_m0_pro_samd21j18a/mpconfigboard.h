@@ -1,10 +1,4 @@
-<<<<<<< HEAD
 
-=======
-// LEDs
-//#define MICROPY_HW_LED_MSC              PIN_PA17 // red
-// #define UART_REPL
->>>>>>> 5a7ed6b122b5a74d50d9590d9d4f071f3f2f321a
 #define USB_REPL
 
 #define MICROPY_HW_BOARD_NAME "Xplain Pro SAMD21"
@@ -25,10 +19,8 @@
 
 #include "spi_flash.h"
 
-<<<<<<< HEAD
+
 #define BOARD_FLASH_SIZE (0x00040000 - 0x010000)
 
 #include "flash_AT25DF081A.h"
-=======
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
->>>>>>> 5a7ed6b122b5a74d50d9590d9d4f071f3f2f321a
+
