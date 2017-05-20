@@ -123,6 +123,7 @@ const mp_obj_property_t touchio_touchin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+
 STATIC mp_obj_t touchio_touchin_obj_get_capacitance(mp_obj_t self_in) {
 	touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 	return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_capacitance(self));
@@ -139,16 +140,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_capacitance_obj, touchio_touchin_o
 const mp_obj_property_t touchio_touchin_capacitance_obj = {
 	.base.type = &mp_type_property,
 	.proxy = {(mp_obj_t)&touchio_touchin_get_capacitance_obj,
-			  (mp_obj_t)&mp_const_none_obj,
-			  (mp_obj_t)&mp_const_none_obj},
-};
+
+
 
 
 STATIC const mp_rom_map_elem_t touchio_touchin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&touchio_touchin___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&touchio_touchin_deinit_obj) },
+<<<<<<< HEAD
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_capacitance), MP_ROM_PTR(&touchio_touchin_capacitance_obj)},
+=======
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_rawmeas), MP_ROM_PTR(&touchio_touchin_rawmeas_obj)},
+>>>>>>> 5a7ed6b122b5a74d50d9590d9d4f071f3f2f321a
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&touchio_touchin_value_obj)},
 };
 
