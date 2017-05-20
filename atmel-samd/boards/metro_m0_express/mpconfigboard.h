@@ -2,7 +2,7 @@
 
 #define MICROPY_HW_BOARD_NAME "Adafruit Metro M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
-#define MICROPY_PY_URE (1)
+
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PA31
 
