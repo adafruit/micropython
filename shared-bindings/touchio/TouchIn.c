@@ -114,17 +114,46 @@ STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get_value);
 
+
+
 const mp_obj_property_t touchio_touchin_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&touchio_touchin_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
+			  (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
+
+
+STATIC mp_obj_t touchio_touchin_obj_get_capacitance(mp_obj_t self_in) {
+	touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+	return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_capacitance(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_capacitance_obj, touchio_touchin_obj_get_capacitance);
+
+//|   .. attribute:: capacitance
+//|
+//|     The raw capacitance measurement from the SAMD21 PTC controller using single-capacitance method.
+//|
+//|     :return: 16 bit integer where 0 is no capacitance and 2 ** 16 - 1  is max capacitance
+//|     :rtype: bool
+//|
+const mp_obj_property_t touchio_touchin_capacitance_obj = {
+	.base.type = &mp_type_property,
+	.proxy = {(mp_obj_t)&touchio_touchin_get_capacitance_obj,
+			  (mp_obj_t)&mp_const_none_obj,
+			  (mp_obj_t)&mp_const_none_obj},
+ };
+
+
+
+
 
 STATIC const mp_rom_map_elem_t touchio_touchin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&touchio_touchin___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&touchio_touchin_deinit_obj) },
+
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_capacitance), MP_ROM_PTR(&touchio_touchin_capacitance_obj)},
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&touchio_touchin_value_obj)},
 };

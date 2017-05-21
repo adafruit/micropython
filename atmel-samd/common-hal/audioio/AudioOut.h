@@ -30,6 +30,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "asf/sam0/drivers/tc/tc.h"
 
+#include "extmod/vfs_fat_file.h"
 #include "py/obj.h"
 
 typedef struct {
@@ -37,11 +38,24 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     uint32_t frequency;
     uint8_t* buffer;
-    // TODO(tannewt): Add a second buffer for double buffering from a file system.
-    // Length of buffer in bytes.
+
+    // File playback specific:
+    uint8_t* second_buffer;
+    DmacDescriptor* second_descriptor;
+    uint32_t file_length; // In bytes
+    uint16_t data_start; // Where the data values start
+    uint8_t bytes_per_sample;
+    bool signed_samples;
+    uint16_t last_loaded_block;
+    uint32_t bytes_remaining;
+
+    bool loop;
     uint32_t len;
+    pyb_file_obj_t* file;
 } audioio_audioout_obj_t;
 
 void audioout_reset(void);
+
+void audioout_background(void);
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H__

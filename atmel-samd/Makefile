@@ -73,6 +73,7 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	utils/preprocessor \
 	)
 INC += -Iasf/thirdparty/CMSIS/Include
+INC += -Iboards
 INC += -Iboards/$(BOARD)/
 INC += -Ifreetouch/
 INC += -I$(BUILD)
@@ -121,6 +122,8 @@ CFLAGS_CORTEX_M0 = \
 	-DEVENTS_INTERRUPT_HOOKS_MODE=false \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
+	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
+	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
 CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
@@ -179,9 +182,11 @@ SRC_ASF = $(addprefix asf/sam0/,\
 
 SRC_C = \
 	access_vfs.c \
-	autoreset.c \
+	autoreload.c \
+	background.c \
 	builtin_open.c \
 	fatfs_port.c \
+	flash_api.c \
 	main.c \
 	moduos.c \
 	mphalport.c \
@@ -274,7 +279,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 
-all: $(BUILD)/firmware.bin
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
@@ -284,6 +289,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
+
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
+	python2 ../tools/uf2/utils/uf2conv.py -c -o $@ $^
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

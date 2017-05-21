@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
 
-#include "mpconfigport.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
 
-extern volatile uint64_t ticks_ms;
+#include <stdbool.h>
 
-extern struct tc_module ms_timer;
+extern volatile bool reload_next_character;
 
-void tick_init(void);
+void autoreload_tick(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+void autoreload_start(void);
+void autoreload_stop(void);
+void autoreload_enable(void);
+void autoreload_disable(void);
+bool autoreload_is_enabled(void);
+
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__

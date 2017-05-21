@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
 
-#include "mpconfigport.h"
+#include "autoreload.h"
 
-extern volatile uint64_t ticks_ms;
+#include "asf/sam0/drivers/tc/tc_interrupt.h"
+#include "lib/utils/interrupt_char.h"
+#include "py/mphal.h"
 
-extern struct tc_module ms_timer;
+volatile uint32_t autoreload_delay_ms = 0;
+bool autoreload_enabled = false;
+volatile bool reload_next_character = false;
 
-void tick_init(void);
+inline void autoreload_tick() {
+    if (autoreload_delay_ms == 0) {
+        return;
+    }
+    if (autoreload_delay_ms == 1 && autoreload_enabled && !reload_next_character) {
+        mp_keyboard_interrupt();
+        reload_next_character = true;
+    }
+    autoreload_delay_ms--;
+}
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+void autoreload_enable() {
+    autoreload_enabled = true;
+    reload_next_character = false;
+}
+
+void autoreload_disable() {
+    autoreload_enabled = false;
+}
+
+inline bool autoreload_is_enabled() {
+    return autoreload_enabled;
+}
+
+void autoreload_start() {
+    autoreload_delay_ms = CIRCUITPY_AUTORELOAD_DELAY_MS;
+}
+
+void autoreload_stop() {
+    autoreload_delay_ms = 0;
+    reload_next_character = false;
+}

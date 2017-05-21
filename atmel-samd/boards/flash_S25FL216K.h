@@ -23,15 +23,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
 
-#include "mpconfigport.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
 
-extern volatile uint64_t ticks_ms;
+// Settings for the Cypress (was Spansion) S25FL216K 2MiB SPI flash.
+// Datasheet: http://www.cypress.com/file/197346/download
 
-extern struct tc_module ms_timer;
+// The total flash size in bytes.
+#define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
 
-void tick_init(void);
+// The size of the smallest erase unit thats erased with command 0x20.
+#define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+// The size of a page that is programmed with page program command 0x02.
+#define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
+
+// These are the first three response bytes to the JEDEC ID command 0x9f that is
+// used to confirm we're talking to the flash we expect.
+#define SPI_FLASH_JEDEC_MANUFACTURER 0x01
+#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
+#define SPI_FLASH_JEDEC_CAPACITY     0x15
+
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__

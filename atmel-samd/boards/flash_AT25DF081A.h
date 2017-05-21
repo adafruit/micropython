@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__
 
-#include <stdbool.h>
+// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
+// Xplained board.
+// Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
 
-extern volatile bool reset_next_character;
+// The total flash size in bytes.
+#define SPI_FLASH_TOTAL_SIZE  (1 << 20) // 2 MiB
 
-void autoreset_tick(void);
+// The size of the smallest erase unit thats erased with command 0x20.
+#define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
 
-void autoreset_start(void);
-void autoreset_stop(void);
-void autoreset_enable(void);
-void autoreset_disable(void);
-bool autoreset_is_enabled(void);
+// The size of a page that is programmed with page program command 0x02.
+#define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__
+// These are the first three response bytes to the JEDEC ID command 0x9f that is
+// used to confirm we're talking to the flash we expect. The data sheet calls
+// them something else so we just match it byte for byte.
+#define SPI_FLASH_JEDEC_MANUFACTURER 0x1F
+#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x45
+#define SPI_FLASH_JEDEC_CAPACITY     0x01
+
+#define SPI_FLASH_SECTOR_PROTECTION
+
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__

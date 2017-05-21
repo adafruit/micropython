@@ -23,15 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
 
-#include "mpconfigport.h"
+#include "flash_api.h"
 
-extern volatile uint64_t ticks_ms;
+#include "py/mpstate.h"
 
-extern struct tc_module ms_timer;
+#define VFS_INDEX 0
 
-void tick_init(void);
+void flash_set_usb_writeable(bool usb_writeable) {
+    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        return;
+    }
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
+    if (vfs == NULL) {
+        return;
+    }
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+    if (usb_writeable) {
+        vfs->flags |= FSUSER_USB_WRITEABLE;
+    } else {
+        vfs->flags &= ~FSUSER_USB_WRITEABLE;
+    }
+}

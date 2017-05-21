@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "autoreset.h"
+#include "autoreload.h"
 #include "compiler.h"
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
@@ -131,9 +131,6 @@ int receive_usb(void) {
         return 0;
     }
 
-    // Disable autoreset if someone is using the repl.
-    autoreset_disable();
-
     // Copy from head.
     cpu_irq_disable();
     int data = usb_rx_buf[usb_rx_buf_head];
@@ -157,7 +154,7 @@ int mp_hal_stdin_rx_chr(void) {
             MICROPY_VM_HOOK_LOOP
         #endif
         #ifdef USB_REPL
-        if (reset_next_character) {
+        if (reload_next_character) {
             return CHAR_CTRL_D;
         }
         if (usb_rx_count > 0) {
@@ -191,6 +188,13 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
     #endif
 
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
+
     #ifdef USB_REPL
     // Always make sure there is enough room in the usb buffer for the outgoing
     // string. If there isn't we risk getting caught in a loop within the usb
@@ -219,23 +223,18 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
-    // If mass storage is enabled measure the time ourselves and run any mass
-    // storage transactions in the meantime.
-    if (mp_msc_enabled) {
-        uint64_t start_tick = ticks_ms;
-        uint64_t duration = 0;
-        while (duration < delay) {
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-            // Check to see if we've been CTRL-Ced by autoreset or the user.
-            if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
-                break;
-            }
-            duration = (ticks_ms - start_tick);
+    uint64_t start_tick = ticks_ms;
+    uint64_t duration = 0;
+    while (duration < delay) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            break;
         }
-    } else {
-        delay_ms(delay);
+        duration = (ticks_ms - start_tick);
+        // TODO(tannewt): Go to sleep for a little while while we wait.
     }
 }
 

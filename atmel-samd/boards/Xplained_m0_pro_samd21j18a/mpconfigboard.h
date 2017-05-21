@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 // LEDs
 //#define MICROPY_HW_LED_MSC              PIN_PA17 // red
 // #define UART_REPL
+=======
+
+>>>>>>> 5748f71541fdd201511d5c13815bde1eed2bccdc
 #define USB_REPL
 
 #define MICROPY_HW_BOARD_NAME "Xplain Pro SAMD21"
@@ -8,7 +12,11 @@
 
 #define AUTORESET_DELAY_MS 500
 
+<<<<<<< HEAD
 #define MICROPY_PORT_A (PORT_PA24 | PORT_PA25 | PORT_PA13)
+=======
+#define MICROPY_PORT_A (PORT_PA24 | PORT_PA25 | PORT_PA13 | PORT_PA30 | PORT_PA31)
+>>>>>>> 5748f71541fdd201511d5c13815bde1eed2bccdc
 #define MICROPY_PORT_B (PORT_PB22 | PORT_PB16 | PORT_PB23)
 #define SPI_FLASH_SERCOM      SERCOM5
 #define SPI_FLASH_MUX_SETTING SPI_SIGNAL_MUX_SETTING_E
@@ -21,4 +29,12 @@
 
 #include "spi_flash.h"
 
+<<<<<<< HEAD
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
+=======
+
+#define BOARD_FLASH_SIZE (0x00040000 - 0x010000)
+
+#include "flash_AT25DF081A.h"
+
+>>>>>>> 5748f71541fdd201511d5c13815bde1eed2bccdc

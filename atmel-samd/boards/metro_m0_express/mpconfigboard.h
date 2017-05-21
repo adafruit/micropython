@@ -2,7 +2,7 @@
 
 #define MICROPY_HW_BOARD_NAME "Adafruit Metro M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
-
+#define MICROPY_PY_URE (1)
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PA31
 
@@ -23,8 +23,8 @@
 #define MICROPY_PORT_A        (PORT_PA13 |PORT_PA24 | PORT_PA25 | PORT_PA27 | PORT_PA30 | PORT_PA31)
 #define MICROPY_PORT_B        (PORT_PB03 | PORT_PB22 | PORT_PB23)
 
-#define AUTORESET_DELAY_MS 500
-
 #include "spi_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000)
+
+#include "flash_S25FL216K.h"

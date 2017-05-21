@@ -29,6 +29,8 @@
 
 #include "py/obj.h"
 
+#include "lib/fatfs/ff.h"
+
 #define USB_RX_BUF_SIZE 128
 
 // Global millisecond tick count (driven by SysTick interrupt).
@@ -40,6 +42,8 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
 // Number of bytes in receive buffer
 volatile uint8_t usb_rx_count;
 volatile bool mp_cdc_enabled;
+
+FIL* boot_output_file;
 
 int receive_usb(void);
 

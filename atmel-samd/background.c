@@ -23,15 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+#include "background.h"
 
-#include "mpconfigport.h"
+#include "asf/common/services/usb/class/msc/device/udi_msc.h"
+#include "common-hal/audioio/AudioOut.h"
 
-extern volatile uint64_t ticks_ms;
-
-extern struct tc_module ms_timer;
-
-void tick_init(void);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+void run_background_tasks(void) {
+    audioout_background();
+    udi_msc_process_trans();
+}

@@ -30,10 +30,12 @@
 #define MICROPY_PORT_A        (PORT_PA16 | PORT_PA20 | PORT_PA21 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (PORT_PB22)
 
-#define AUTORESET_DELAY_MS 500
+#define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
 #include "spi_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000)
+
+#include "flash_S25FL216K.h"
 
 #define CALIBRATE_CRYSTALLESS 1
