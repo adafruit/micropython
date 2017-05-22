@@ -178,7 +178,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     busio_uart_obj_t *self = self_in;
     byte *buf = buf_in;
-
+	
     // make sure we want at least 1 char
     if (size == 0) {
         return 0;

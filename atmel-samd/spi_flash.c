@@ -231,11 +231,14 @@ void spi_flash_init(void) {
         flash_enable();
         spi_transceive_buffer_wait(&spi_flash_instance, jedec_id_request, response, 4);
         flash_disable();
+
+
         if (response[1] == SPI_FLASH_JEDEC_MANUFACTURER &&
             response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
             response[3] == SPI_FLASH_JEDEC_CAPACITY) {
             spi_flash_is_initialised = true;
         } else {
+
             // Unknown flash chip!
             spi_flash_is_initialised = false;
             return;
