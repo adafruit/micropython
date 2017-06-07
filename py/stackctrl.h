@@ -45,4 +45,12 @@ void mp_stack_check(void);
 
 #endif
 
+#if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+
+const char MP_MAX_STACK_USE_SENTINEL_BYTE;
+void mp_stack_set_bottom(void* stack_bottom);
+void mp_stack_fill_with_sentinel(void);
+
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_STACKCTRL_H__

@@ -203,6 +203,10 @@ typedef struct _mp_state_thread_t {
     // Note: this entry is used to locate the end of the root pointer section.
     char *stack_top;
 
+    #if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+    char* stack_bottom;
+    #endif
+
     #if MICROPY_STACK_CHECK
     size_t stack_limit;
     #endif

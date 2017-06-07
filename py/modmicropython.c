@@ -106,6 +106,28 @@ STATIC mp_obj_t mp_micropython_stack_use(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_stack_usage());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_use_obj, mp_micropython_stack_use);
+
+#endif 
+
+#if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+// Return the size of the whole stack. Same as in mem_info(), but returns a value
+// instead of just printing it.
+STATIC mp_obj_t mp_micropython_stack_size(void) {
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(stack_limit));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_size_obj, mp_micropython_stack_size);
+
+// Return max stack excursion.
+STATIC mp_obj_t mp_micropython_max_stack_use(void) {
+    // Start at stack limit and move up. Untouched stack was filled with a sentinel value.
+    // Stop at first non-sentinel byte.
+    char* p = MP_STATE_THREAD(stack_bottom);
+    while (*p++ == MP_MAX_STACK_USE_SENTINEL_BYTE) { }
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(stack_top) - p);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_max_stack_use_obj, mp_micropython_max_stack_use);
 #endif
 
 #endif // MICROPY_PY_MICROPYTHON_MEM_INFO
@@ -142,6 +164,10 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_qstr_info), MP_ROM_PTR(&mp_micropython_qstr_info_obj) },
     #if MICROPY_STACK_CHECK
     { MP_ROM_QSTR(MP_QSTR_stack_use), MP_ROM_PTR(&mp_micropython_stack_use_obj) },
+    #endif
+    #if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+    { MP_ROM_QSTR(MP_QSTR_stack_size), MP_ROM_PTR(&mp_micropython_stack_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_stack_use), MP_ROM_PTR(&mp_micropython_max_stack_use_obj) },
     #endif
 #endif
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)

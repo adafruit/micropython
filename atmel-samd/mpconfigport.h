@@ -99,6 +99,9 @@
 
 #define MICROPY_STACK_CHECK         (1)
 
+// For checking max stack excursion.
+#define MICROPY_PY_MICROPYTHON_MAX_STACK_USE  (1)
+
 // This port is intended to be 32-bit, but unfortunately, int32_t for
 // different targets may be defined in different ways - either as int
 // or as long. This requires different printf formatting specifiers

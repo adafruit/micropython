@@ -570,6 +570,12 @@ int main(void) {
     mp_stack_ctrl_init();
     mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
 
+#if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+    // _ezero (same as _ebss) is an int, so start 4 bytes above it.
+    mp_stack_set_bottom(&_ezero + 1);
+    mp_stack_fill_with_sentinel();
+#endif
+
     // Initialise the local flash filesystem after the gc in case we need to
     // grab memory from it. Create it if needed, mount in on /flash, and set it
     // as current dir.
