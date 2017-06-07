@@ -774,6 +774,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #endif
 
+// Whether to provide maximum stack excursion checking functions in micropython module
+#ifndef MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+#define MICROPY_PY_MICROPYTHON_MAX_STACK_USE (0)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
