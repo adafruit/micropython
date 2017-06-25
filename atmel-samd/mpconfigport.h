@@ -100,7 +100,7 @@
 #define MICROPY_STACK_CHECK         (1)
 
 // For checking max stack excursion.
-#define MICROPY_PY_MICROPYTHON_MAX_STACK_USE  (1)
+#define MICROPY_PY_UMEM_MAX_STACK_USE  (1)
 
 // This port is intended to be 32-bit, but unfortunately, int32_t for
 // different targets may be defined in different ways - either as int
@@ -136,7 +136,7 @@ extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
-extern const struct _mp_obj_module_t uheap_module;
+extern const struct _mp_obj_module_t umem_module;
 extern const struct _mp_obj_module_t samd_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
@@ -178,7 +178,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     EXTRA_BUILTIN_MODULES
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }
+    { MP_OBJ_NEW_QSTR(MP_QSTR_umem),(mp_obj_t)&umem_module }
 
 #ifndef MICROPY_PIN_DEFS_PORT_H
 #define MICROPY_PIN_DEFS_PORT_H "pins.h"

@@ -274,7 +274,7 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
-	uheap/__init__.c \
+	umem/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

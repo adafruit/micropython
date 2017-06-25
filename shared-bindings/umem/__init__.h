@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries, Dan Halbert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_UMEM___INIT___H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_UMEM___INIT___H__
 
 #include "py/obj.h"
-#include "py/runtime.h"
 
-#include "shared-bindings/uheap/__init__.h"
+extern uint32_t shared_module_umem_info(mp_obj_t obj);
+extern uint32_t shared_module_umem_max_stack_use(void);
+extern uint32_t shared_module_umem_stack_size(void);
 
-//| :mod:`uheap` --- Heap size analysis
-//| ================================================================
-//|
-//| .. module:: uheap
-//|   :synopsis: Heap size analysis
-//|
-
-//| .. method:: info(object)
-//|
-//|   Prints memory debugging info for the given object and returns the
-//|   estimated size.
-//|
-STATIC mp_obj_t uheap_info(mp_obj_t obj) {
-    uint32_t size = shared_module_uheap_info(obj);
-
-    return MP_OBJ_NEW_SMALL_INT(size);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(uheap_info_obj, uheap_info);
-
-STATIC const mp_rom_map_elem_t uheap_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uheap) },
-    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&uheap_info_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(uheap_module_globals, uheap_module_globals_table);
-
-const mp_obj_module_t uheap_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&uheap_module_globals,
-};
+#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_UMEM___INIT___H__

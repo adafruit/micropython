@@ -67,7 +67,7 @@ void mp_stack_check(void) {
 
 #endif // MICROPY_STACK_CHECK
 
-#if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+#if MICROPY_PY_UMEM_MAX_STACK_USE
 
 // End of bss section. Stack cannot go further than this.
 const char MP_MAX_STACK_USE_SENTINEL_BYTE = 0xEE;
@@ -90,4 +90,4 @@ MP_NOINLINE void mp_stack_fill_with_sentinel(void) {
     }
 }
 
-#endif // MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+#endif // MICROPY_PY_UMEM_MAX_STACK_USE

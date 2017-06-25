@@ -45,7 +45,7 @@ void mp_stack_check(void);
 
 #endif
 
-#if MICROPY_PY_MICROPYTHON_MAX_STACK_USE
+#if MICROPY_PY_UMEM_MAX_STACK_USE
 
 const char MP_MAX_STACK_USE_SENTINEL_BYTE;
 void mp_stack_set_bottom(void* stack_bottom);

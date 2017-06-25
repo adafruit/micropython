@@ -13,7 +13,7 @@ Support Matrix
 ---------------
 
 ===============  ==========  =========  ===========  =======  =======  ===========  =================  ================  =========  ========  =========  =======  =========
-Port             `analogio`  `audioio`  `bitbangio`  `board`  `busio`  `digitalio`  `microcontroller`  `neopixel_write`  `pulseio`  `time`    `touchio`  `uheap`  `usb_hid`
+Port             `analogio`  `audioio`  `bitbangio`  `board`  `busio`  `digitalio`  `microcontroller`  `neopixel_write`  `pulseio`  `time`    `touchio`  `umem`   `usb_hid`
 ===============  ==========  =========  ===========  =======  =======  ===========  =================  ================  =========  ========  =========  =======  =========
 SAMD21           **Yes**     No         No           **Yes**  **Yes**  **Yes**      **Yes**            **Yes**           No         **Yes**   **Yes**    Debug    **Yes**
 SAMD21 Express   **Yes**     **Yes**    **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            **Yes**           **Yes**    **Yes**   **Yes**    Debug    **Yes**
