@@ -1,7 +1,11 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    print("SKIP")
+    raise SystemExit
 
 print(binascii.a2b_base64(b''))
 print(binascii.a2b_base64(b'Zg=='))
@@ -14,6 +18,7 @@ print(binascii.a2b_base64(b'Zm9vYmFy'))
 print(binascii.a2b_base64(b'AAECAwQFBgc='))
 print(binascii.a2b_base64(b'CAkKCwwNDg8='))
 print(binascii.a2b_base64(b'f4D/'))
+print(binascii.a2b_base64(b'f4D+')) # convert '+'
 print(binascii.a2b_base64(b'MTIzNEFCQ0RhYmNk'))
 
 try:

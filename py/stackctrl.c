@@ -31,6 +31,8 @@
 #include "py/stackctrl.h"
 
 void mp_stack_ctrl_init(void) {
+    // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
+    __asm volatile ("");
     volatile int stack_dummy;
     MP_STATE_THREAD(stack_top) = (char*)&stack_dummy;
 }
@@ -41,6 +43,8 @@ void mp_stack_set_top(void *top) {
 
 mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
+    // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
+    __asm volatile ("");
     volatile int stack_dummy;
     return MP_STATE_THREAD(stack_top) - (char*)&stack_dummy;
 }
@@ -52,8 +56,7 @@ void mp_stack_set_limit(mp_uint_t limit) {
 }
 
 void mp_exc_recursion_depth(void) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
-        MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
+    mp_raise_RuntimeError("maximum recursion depth exceeded");
 }
 
 void mp_stack_check(void) {

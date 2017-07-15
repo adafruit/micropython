@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
 #define __MICROPY_INCLUDED_PY_RUNTIME0_H__
 
+#include "mpconfig.h"
+
 // These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_VARARGS      (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
@@ -107,6 +109,7 @@ typedef enum {
     MP_F_LOAD_BUILD_CLASS,
     MP_F_LOAD_ATTR,
     MP_F_LOAD_METHOD,
+    MP_F_LOAD_SUPER_METHOD,
     MP_F_STORE_NAME,
     MP_F_STORE_GLOBAL,
     MP_F_STORE_ATTR,
@@ -127,8 +130,8 @@ typedef enum {
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
     MP_F_CALL_METHOD_N_KW_VAR,
-    MP_F_GETITER,
-    MP_F_ITERNEXT,
+    MP_F_NATIVE_GETITER,
+    MP_F_NATIVE_ITERNEXT,
     MP_F_NLR_PUSH,
     MP_F_NLR_POP,
     MP_F_NATIVE_RAISE,

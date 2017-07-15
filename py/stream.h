@@ -42,24 +42,29 @@
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 
+// These poll ioctl values are compatible with Linux
+#define MP_STREAM_POLL_RD  (0x0001)
+#define MP_STREAM_POLL_WR  (0x0004)
+#define MP_STREAM_POLL_ERR (0x0008)
+#define MP_STREAM_POLL_HUP (0x0010)
+
 // Argument structure for MP_STREAM_SEEK
 struct mp_stream_seek_t {
     mp_off_t offset;
     int whence;
 };
 
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_read1_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readlines_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_write1_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_flush_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
 // these are for mp_get_stream_raise and can be or'd together
 #define MP_STREAM_OP_READ (1)

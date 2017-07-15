@@ -126,8 +126,7 @@ STATIC ffi_type *char2ffi_type(char c)
 STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
 {
     if (MP_OBJ_IS_STR(o_in)) {
-        mp_uint_t len;
-        const char *s = mp_obj_str_get_data(o_in, &len);
+        const char *s = mp_obj_str_get_str(o_in);
         ffi_type *t = char2ffi_type(*s);
         if (t != NULL) {
             return t;
@@ -153,7 +152,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': {
             union { ffi_arg ffi; float flt; } val_union = { .ffi = val };
-            return mp_obj_new_float(val_union.flt);
+            return mp_obj_new_float((mp_float_t) val_union.flt);
         }
         case 'd': {
             double *p = (double*)&val;
@@ -194,7 +193,8 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     o->rettype = *rettype;
     o->argtypes = argtypes;
 
-    mp_obj_t iterable = mp_getiter(argtypes_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(argtypes_in, &iter_buf);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -251,7 +251,8 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     o->rettype = *rettype;
 
-    mp_obj_t iterable = mp_getiter(paramtypes_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(paramtypes_in, &iter_buf);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {

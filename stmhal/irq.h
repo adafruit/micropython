@@ -70,10 +70,10 @@ static inline void restore_irq_pri(uint32_t basepri) {
 
 #endif
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_irq_stats_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_wfi_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_disable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_enable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 
 // IRQ priority definitions.
 //
@@ -133,10 +133,10 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_irq_stats_obj);
 #define IRQ_SUBPRI_CAN                      0
 
 // Interrupt priority for non-special timers.
-#define IRQ_PRI_TIMX            14
+#define IRQ_PRI_TIMX            13
 #define IRQ_SUBPRI_TIMX                     0
 
-#define IRQ_PRI_EXTINT          15
+#define IRQ_PRI_EXTINT          14
 #define IRQ_SUBPRI_EXTINT                   0
 
 // PENDSV should be at the lowst priority so that other interrupts complete

@@ -27,12 +27,13 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "uart.h"
+#include "espuart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
 #include "py/obj.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
 
@@ -130,11 +131,7 @@ void mp_hal_delay_ms(uint32_t delay) {
 
 void ets_event_poll(void) {
     ets_loop_iter();
-    if (MP_STATE_VM(mp_pending_exception) != NULL) {
-        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(obj);
-    }
+    mp_handle_pending();
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {

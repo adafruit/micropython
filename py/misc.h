@@ -34,6 +34,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "mpconfig.h"
+
 typedef unsigned char byte;
 typedef unsigned int uint;
 
@@ -46,7 +48,11 @@ typedef unsigned int uint;
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 
-/** memomry allocation ******************************************/
+// Classical double-indirection stringification of preprocessor macro's value
+#define _MP_STRINGIFY(x) #x
+#define MP_STRINGIFY(x) _MP_STRINGIFY(x)
+
+/** memory allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
@@ -151,8 +157,7 @@ void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf);
 struct _mp_print_t;
 void vstr_init_print(vstr_t *vstr, size_t alloc, struct _mp_print_t *print);
 void vstr_clear(vstr_t *vstr);
-vstr_t *vstr_new(void);
-vstr_t *vstr_new_size(size_t alloc);
+vstr_t *vstr_new(size_t alloc);
 void vstr_free(vstr_t *vstr);
 static inline void vstr_reset(vstr_t *vstr) { vstr->len = 0; }
 static inline char *vstr_str(vstr_t *vstr) { return vstr->buf; }
@@ -194,7 +199,7 @@ int DEBUG_printf(const char *fmt, ...);
 extern mp_uint_t mp_verbose_flag;
 
 // This is useful for unicode handling. Some CPU archs has
-// special instructions for efficient implentation of this
+// special instructions for efficient implementation of this
 // function (e.g. CLZ on ARM).
 // NOTE: this function is unused at the moment
 #ifndef count_lead_ones

@@ -1,3 +1,13 @@
+# Select the board to build for: if not given on the command line,
+# then default to PYBV10.
+BOARD ?= feather_huzzah
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build
+
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -5,30 +15,26 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
+MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
+
+FROZEN_DIR = scripts
+FROZEN_MPY_DIR = modules
 
 # include py core make definitions
 include ../py/py.mk
 
-MPY_CROSS = ../mpy-cross/mpy-cross
-MPY_TOOL = ../tools/mpy-tool.py
-MAKE_FROZEN = ../tools/make-frozen.py
-
-FROZEN_DIR = scripts
-FROZEN_MPY_DIR = modules
+FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
-FLASH_SIZE ?= 8m
+FLASH_SIZE ?= detect
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
 INC += -I.
 INC += -I..
 INC += -I../stmhal
-INC += -I../lib/mp-readline
-INC += -I../lib/netutils
-INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -42,10 +48,11 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
-LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
+LDSCRIPT = esp8266.ld
+LDFLAGS = -nostdlib -T $(LDSCRIPT) -Map=$(@:.elf=.map) --cref
 LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -66,39 +73,81 @@ SRC_C = \
 	main.c \
 	help.c \
 	esp_mphal.c \
+	esp_init_data.c \
 	gccollect.c \
 	lexerstr32.c \
-	uart.c \
+	espuart.c \
 	esppwm.c \
 	esponewire.c \
 	espneopixel.c \
 	espapa102.c \
 	intr.c \
 	modpyb.c \
-	modpybpin.c \
-	modpybpwm.c \
-	modpybrtc.c \
-	modpybadc.c \
-	modpybuart.c \
-	modmachinewdt.c \
-	modpybspi.c \
-	modpybhspi.c \
+	modmachine.c \
+	machine_pin.c \
+	machine_pwm.c \
+	machine_rtc.c \
+	machine_adc.c \
+	machine_uart.c \
+	machine_wdt.c \
+	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
-	modutime.c \
-	moduos.c \
-	modmachine.c \
 	modonewire.c \
 	ets_alt_task.c \
-	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
 	hspi.c \
+	boards/$(BOARD)/pins.c \
 	$(SRC_MOD)
+
+SRC_COMMON_HAL = \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	analogio/__init__.c \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+	pulseio/PWMOut.c \
+	busio/__init__.c \
+	busio/SPI.c \
+	busio/UART.c \
+	neopixel_write/__init__.c \
+	os/__init__.c \
+	storage/__init__.c \
+	time/__init__.c \
+	board/__init__.c
+
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+SRC_BINDINGS_ENUMS = \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+SRC_SHARED_MODULE = \
+	bitbangio/__init__.c \
+	bitbangio/I2C.c \
+	bitbangio/OneWire.c \
+	bitbangio/SPI.c \
+	busio/I2C.c \
+	busio/OneWire.c \
+	os/__init__.c \
+	random/__init__.c \
+	storage/__init__.c \
+
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
-	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -109,7 +158,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
@@ -128,12 +177,17 @@ LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/buffer_helper.c \
+	utils/context_manager_helpers.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
 	utils/interrupt_char.c \
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
 	)
+
+ifeq ($(MICROPY_FATFS), 1)
+LIB_SRC_C += \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c
+endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	dht/dht.c \
@@ -142,26 +196,24 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
-OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(FWBIN)
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -176,36 +228,36 @@ $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
-# to build .mpy files from .py files
-$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
-
-# to build frozen_mpy.c from all .mpy files
-$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
-
 .PHONY: deploy
 
 deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
-	#$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $(BUILD)/firmware.elf-0x00000.bin 0x9000 $(BUILD)/firmware.elf-0x0[1-f]000.bin
+
+erase:
+	$(ECHO) "Erase flash"
+	$(Q)esptool.py --port $(PORT) --baud $(BAUD) erase_flash
 
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-$(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
+$(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x0[1-f]000.bin $@
+	$(Q)python2 $(shell which esptool.py) elf2image $^
+	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
+
 
 $(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "LINK $@"
+	$(STEPECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
+
+512k:
+	$(MAKE) LDSCRIPT=esp8266_512k.ld CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_512k.h>"' MICROPY_FATFS=0 MICROPY_PY_BTREE=0
+
+ota:
+	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
+	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 #MAKE_PINS = boards/make-pins.py
 #BOARD_PINS = boards/$(BOARD)/pins.csv
@@ -239,7 +291,11 @@ axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a:
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
 	cp ../lib/axtls/_stage/libaxtls.a $@
+
+clean-modules:
+	git clean -f -d modules
+	rm -f build/frozen*.c

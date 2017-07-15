@@ -4,12 +4,11 @@ try:
     import uerrno
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 #f = open("_test.db", "w+b")
 f = uio.BytesIO()
-db = btree.open(f)
+db = btree.open(f, pagesize=512)
 
 db[b"foo3"] = b"bar3"
 db[b"foo1"] = b"bar1"
@@ -85,5 +84,6 @@ try:
 except TypeError:
     print("TypeError")
 
+db.flush()
 db.close()
 f.close()

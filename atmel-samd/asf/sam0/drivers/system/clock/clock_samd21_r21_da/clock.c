@@ -203,7 +203,8 @@ uint32_t system_clock_source_get_hz(
 		_system_dfll_wait_for_sync();
 
 		/* Check if operating in closed loop mode */
-		if (_system_clock_inst.dfll.control & SYSCTRL_DFLLCTRL_MODE) {
+		if ((_system_clock_inst.dfll.control & SYSCTRL_DFLLCTRL_MODE) &&
+			!( _system_clock_inst.dfll.control & SYSCTRL_DFLLCTRL_USBCRM )) {
 			return system_gclk_chan_get_hz(SYSCTRL_GCLK_ID_DFLL48) *
 					(_system_clock_inst.dfll.mul & 0xffff);
 		}
@@ -771,7 +772,9 @@ static void _switch_peripheral_gclk(void)
  * the OSC8M default enable can be disabled after system_clock_init. Make sure the
  * clock switch successfully before disabling OSC8M.
  */
-void system_clock_init(void)
+// Added dfll_fine_calibration as a parameter so that the user program can save
+// and restore it.
+void system_clock_init(uint16_t dfll_fine_calibration)
 {
 	/* Various bits in the INTFLAG register can be set to one at startup.
 	   This will ensure that these bits are cleared */
@@ -826,7 +829,7 @@ void system_clock_init(void)
 	/* OSCK32K */
 #if CONF_CLOCK_OSC32K_ENABLE == true
 	SYSCTRL->OSC32K.bit.CALIB =
-			((*(uint32_t *)SYSCTRL_FUSES_OSC32K_ADDR >> 
+			((*(uint32_t *)SYSCTRL_FUSES_OSC32K_ADDR >>
 			SYSCTRL_FUSES_OSC32K_Pos) & 0x7Ful);
 
 	struct system_clock_source_osc32k_config osc32k_conf;
@@ -851,7 +854,7 @@ void system_clock_init(void)
 	dfll_conf.loop_mode      = CONF_CLOCK_DFLL_LOOP_MODE;
 	dfll_conf.on_demand      = false;
 
-	/* Using DFLL48M COARSE CAL value from NVM Software Calibration Area Mapping 
+	/* Using DFLL48M COARSE CAL value from NVM Software Calibration Area Mapping
 	   in DFLL.COARSE helps to output a frequency close to 48 MHz.*/
 #define NVM_DFLL_COARSE_POS    58 /* DFLL48M Coarse calibration value bit position.*/
 #define NVM_DFLL_COARSE_SIZE   6  /* DFLL48M Coarse calibration value bit size.*/
@@ -902,8 +905,8 @@ void system_clock_init(void)
 	dfll_conf.fine_max_step   = CONF_CLOCK_DFLL_MAX_FINE_STEP_SIZE;
 
 	if (CONF_CLOCK_DFLL_LOOP_MODE == SYSTEM_CLOCK_DFLL_LOOP_MODE_USB_RECOVERY) {
-		dfll_conf.fine_max_step   = 10; 
-		dfll_conf.fine_value   = 0x1ff;
+		dfll_conf.fine_max_step   = 10;
+		dfll_conf.fine_value   = dfll_fine_calibration;
 		dfll_conf.quick_lock = SYSTEM_CLOCK_DFLL_QUICK_LOCK_ENABLE;
 		dfll_conf.stable_tracking = SYSTEM_CLOCK_DFLL_STABLE_TRACKING_TRACK_AFTER_LOCK;
 		dfll_conf.wakeup_lock = SYSTEM_CLOCK_DFLL_WAKEUP_LOCK_KEEP;

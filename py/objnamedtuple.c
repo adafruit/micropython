@@ -28,32 +28,23 @@
 #include <string.h>
 
 #include "py/nlr.h"
+#include "py/objnamedtuple.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 
 #if MICROPY_PY_COLLECTIONS
 
-typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_type_t base;
-    mp_uint_t n_fields;
-    qstr fields[];
-} mp_obj_namedtuple_type_t;
-
-typedef struct _mp_obj_namedtuple_t {
-    mp_obj_tuple_t tuple;
-} mp_obj_namedtuple_t;
-
-STATIC mp_uint_t namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
-    for (mp_uint_t i = 0; i < type->n_fields; i++) {
+STATIC size_t namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
+    for (size_t i = 0; i < type->n_fields; i++) {
         if (type->fields[i] == name) {
             return i;
         }
     }
-    return -1;
+    return (size_t)-1;
 }
 
-STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_namedtuple_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "%q", o->tuple.base.type->name);
@@ -61,36 +52,36 @@ STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }
 
-STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
-        int id = namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
-        if (id == -1) {
+        size_t id = namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
+        if (id == (size_t)-1) {
             return;
         }
         dest[0] = self->tuple.items[id];
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
+        mp_raise_AttributeError("can't set attribute");
     }
 }
 
-STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
     size_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_TypeError_varg(
                 "function takes %d positional arguments but %d were given",
-                num_fields, n_args + n_kw));
+                num_fields, n_args + n_kw);
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_TypeError_varg(
                 "%q() takes %d positional arguments but %d were given",
-                type->base.name, num_fields, n_args + n_kw));
+                type->base.name, num_fields, n_args + n_kw);
         }
     }
 
@@ -102,27 +93,27 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         arg_objects = alloca(alloc_size);
         memset(arg_objects, 0, alloc_size);
 
-        for (mp_uint_t i = 0; i < n_args; i++) {
+        for (size_t i = 0; i < n_args; i++) {
             arg_objects[i] = args[i];
         }
 
-        for (mp_uint_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
+        for (size_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
             qstr kw = mp_obj_str_get_qstr(args[i]);
-            int id = namedtuple_find_field(type, kw);
-            if (id == -1) {
+            size_t id = namedtuple_find_field(type, kw);
+            if (id == (size_t)-1) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     mp_arg_error_terse_mismatch();
                 } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "unexpected keyword argument '%q'", kw));
+                    mp_raise_TypeError_varg(
+                        "unexpected keyword argument '%q'", kw);
                 }
             }
             if (arg_objects[id] != MP_OBJ_NULL) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     mp_arg_error_terse_mismatch();
                 } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "function got multiple values for argument '%q'", kw));
+                    mp_raise_TypeError_varg(
+                        "function got multiple values for argument '%q'", kw);
                 }
             }
             arg_objects[id] = args[i + 1];
@@ -134,9 +125,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-STATIC const mp_rom_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_tuple)}};
-
-STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj_t *fields) {
+STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, qstr, n_fields);
     memset(&o->base, 0, sizeof(o->base));
     o->base.base.type = &mp_type_type;
@@ -148,9 +137,9 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj
     o->base.attr = namedtuple_attr;
     o->base.subscr = mp_obj_tuple_subscr;
     o->base.getiter = mp_obj_tuple_getiter;
-    o->base.bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&namedtuple_base_tuple;
+    o->base.parent = &mp_type_tuple;
     o->n_fields = n_fields;
-    for (mp_uint_t i = 0; i < n_fields; i++) {
+    for (size_t i = 0; i < n_fields; i++) {
         o->fields[i] = mp_obj_str_get_qstr(fields[i]);
     }
     return MP_OBJ_FROM_PTR(o);
@@ -158,7 +147,7 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj
 
 STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     qstr name = mp_obj_str_get_qstr(name_in);
-    mp_uint_t n_fields;
+    size_t n_fields;
     mp_obj_t *fields;
     #if MICROPY_CPYTHON_COMPAT
     if (MP_OBJ_IS_STR(fields_in)) {

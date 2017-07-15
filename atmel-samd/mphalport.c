@@ -1,13 +1,18 @@
 #include <string.h>
 
+#include "autoreload.h"
 #include "compiler.h"
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
 #include "asf/common2/services/delay/delay.h"
 #include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
+#include "lib/mp-readline/readline.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
+#include "py/smallint.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "mpconfigboard.h"
 #include "mphalport.h"
@@ -26,41 +31,50 @@ static volatile uint8_t usb_rx_buf_head;
 static volatile uint8_t usb_rx_buf_tail;
 
 // Number of bytes in receive buffer
-static volatile uint8_t usb_rx_count;
+volatile uint8_t usb_rx_count;
 
-static volatile bool mp_cdc_enabled = false;
-
-void mp_keyboard_interrupt(void);
-int interrupt_char;
+volatile bool mp_cdc_enabled = false;
 
 extern struct usart_module usart_instance;
 
-
-static volatile bool mp_msc_enabled = false;
-bool mp_msc_enable()
-{
-	mp_msc_enabled = true;
-	return true;
+// Read by main to know when USB is connected.
+volatile bool mp_msc_enabled = false;
+bool mp_msc_enable() {
+    mp_msc_enabled = true;
+    return true;
 }
 
-void mp_msc_disable()
-{
-	mp_msc_enabled = false;
+void mp_msc_disable() {
+    mp_msc_enabled = false;
 }
 
-bool mp_cdc_enable(uint8_t port)
-{
-	mp_cdc_enabled = true;
-	return true;
+bool mp_cdc_enable(uint8_t port) {
+    mp_cdc_enabled = false;
+    return true;
 }
 
-void mp_cdc_disable(uint8_t port)
-{
-	mp_cdc_enabled = false;
+void mp_cdc_disable(uint8_t port) {
+    mp_cdc_enabled = false;
 }
 
-void usb_rx_notify(void)
-{
+volatile bool reset_on_disconnect = false;
+
+void usb_dtr_notify(uint8_t port, bool set) {
+    mp_cdc_enabled = set;
+    if (!set && reset_on_disconnect) {
+        reset_to_bootloader();
+    }
+}
+
+void usb_rts_notify(uint8_t port, bool set) {
+    return;
+}
+
+void usb_coding_notify(uint8_t port, usb_cdc_line_coding_t* coding) {
+    reset_on_disconnect = coding->dwDTERate == 1200;
+}
+
+void usb_rx_notify(void) {
     irqflags_t flags;
     if (mp_cdc_enabled) {
         while (udi_cdc_is_rx_ready()) {
@@ -95,7 +109,7 @@ void usb_rx_notify(void)
             // character!
             c = udi_cdc_getc();
 
-            if (c == interrupt_char) {
+            if (c == mp_interrupt_char) {
                 // We consumed a character rather than adding it to the rx
                 // buffer so undo the modifications we made to count and the
                 // tail.
@@ -116,7 +130,7 @@ void usb_rx_notify(void)
     }
 }
 
-int receive_usb() {
+int receive_usb(void) {
     if (usb_rx_count == 0) {
         return 0;
     }
@@ -140,12 +154,14 @@ int receive_usb() {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        // Process any mass storage transfers.
-        if (mp_msc_enabled) {
-            udi_msc_process_trans();
-        }
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
         #ifdef USB_REPL
-        if (mp_cdc_enabled && usb_rx_count > 0) {
+        if (reload_next_character) {
+            return CHAR_CTRL_D;
+        }
+        if (usb_rx_count > 0) {
             #ifdef MICROPY_HW_LED_RX
             port_pin_toggle_output_level(MICROPY_HW_LED_RX);
             #endif
@@ -176,51 +192,58 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
     #endif
 
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
+
     #ifdef USB_REPL
-    if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
-        udi_cdc_write_buf(str, len);
+    // Always make sure there is enough room in the usb buffer for the outgoing
+    // string. If there isn't we risk getting caught in a loop within the usb
+    // code as it tries to send all the characters it can't buffer.
+    uint32_t start = 0;
+    uint64_t start_tick = common_hal_time_monotonic();
+    uint64_t duration = 0;
+    if (mp_cdc_enabled) {
+        while (start < len && duration < 10) {
+            uint8_t buffer_space = udi_cdc_get_free_tx_buffer();
+            uint8_t transmit = min(len - start, buffer_space);
+            if (transmit > 0) {
+                if (udi_cdc_write_buf(str + start, transmit) > 0) {
+                    // It didn't transmit successfully so give up.
+                    break;
+                }
+            }
+            start += transmit;
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
+            duration = (common_hal_time_monotonic() - start_tick);
+        }
     }
     #endif
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    extern int interrupt_char;
-    interrupt_char = c;
-}
-
 void mp_hal_delay_ms(mp_uint_t delay) {
-    // Process any mass storage transfers.
-    // TODO(tannewt): Actually account for how long the processing takes and
-    // subtract it from the delay.
-    if (mp_msc_enabled) {
-        udi_msc_process_trans();
+    uint64_t start_tick = ticks_ms;
+    uint64_t duration = 0;
+    while (duration < delay) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            break;
+        }
+        duration = (ticks_ms - start_tick);
+        // TODO(tannewt): Go to sleep for a little while while we wait.
     }
-    delay_ms(delay);
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    // Process any mass storage transfers.
-    // TODO(tannewt): Actually account for how long the processing takes and
-    // subtract it from the delay.
-    if (mp_msc_enabled) {
-        udi_msc_process_trans();
-    }
     delay_us(delay);
-}
-
-// Global millisecond tick count (driven by SysTick interrupt handler).
-volatile uint32_t systick_ticks_ms = 0;
-
-void SysTick_Handler(void) {
-    // SysTick interrupt handler called when the SysTick timer reaches zero
-    // (every millisecond).
-    systick_ticks_ms += 1;
-    // Keep the counter within the range of 31 bit uint values since that's the
-    // max value for micropython 'small' ints.
-    systick_ticks_ms = systick_ticks_ms > (0xFFFFFFFF >> 1) ? 0 : systick_ticks_ms;
 }
 
 // Interrupt flags that will be saved and restored during disable/Enable
@@ -228,17 +251,13 @@ void SysTick_Handler(void) {
 static irqflags_t irq_flags;
 
 void mp_hal_disable_all_interrupts(void) {
-  // Disable all interrupt sources for timing critical sections.
-  // Disable ASF-based interrupts.
-  irq_flags = cpu_irq_save();
-  // Disable SysTick interrupt.
-  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+    // Disable all interrupt sources for timing critical sections.
+    // Disable ASF-based interrupts.
+    irq_flags = cpu_irq_save();
 }
 
 void mp_hal_enable_all_interrupts(void) {
-  // Enable all interrupt sources after timing critical sections.
-  // Restore SysTick interrupt.
-  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
-  // Restore ASF-based interrupts.
-  cpu_irq_restore(irq_flags);
+    // Enable all interrupt sources after timing critical sections.
+    // Restore ASF-based interrupts.
+    cpu_irq_restore(irq_flags);
 }

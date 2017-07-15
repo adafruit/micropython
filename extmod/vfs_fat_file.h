@@ -24,9 +24,27 @@
  * THE SOFTWARE.
  */
 
-extern const byte fresult_to_errno_table[20];
+#ifndef __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
+#define __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
 
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);
+#include "py/mpconfig.h"
 
-mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type);
+#if MICROPY_VFS && MICROPY_VFS_FAT
+
+#include "lib/oofatfs/ff.h"
+#include "py/obj.h"
+
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+
+extern const mp_obj_type_t mp_type_fileio;
+extern const mp_obj_type_t mp_type_textio;
+
+typedef struct _pyb_file_obj_t {
+    mp_obj_base_t base;
+    FIL fp;
+} pyb_file_obj_t;
+
+#endif  // MICROPY_VFS && MICROPY_VFS_FAT
+
+#endif  // __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__

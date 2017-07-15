@@ -72,7 +72,7 @@ print(uart1.readline() == b'1234567890')
 print(uart1.any() == 0)
 
 uart0.write(b'1234567890')
-print(uart1.readall() == b'1234567890')
+print(uart1.read() == b'1234567890')
 
 # tx only mode
 uart0 = UART(0, 1000000, pins=('GP12', None))
@@ -95,7 +95,7 @@ print(uart1.read() == None)
 print(uart1.write(b'123') == 3)
 print(uart0.read() == b'123')
 
-# no pin assignemnt
+# no pin assignment
 uart0 = UART(0, 1000000, pins=(None, None))
 print(uart0.write(b'123456789') == 9)
 print(uart1.read() == None)

@@ -1,4 +1,8 @@
-import array
+try:
+    import array
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 a = array.array('B', [1, 2, 3])
 print(a, len(a))
@@ -20,6 +24,10 @@ print(array.array('i'))
 # bool operator acting on arrays
 print(bool(array.array('i')))
 print(bool(array.array('i', [1])))
+
+# containment, with incorrect type
+print('12' in array.array('B', b'12'))
+print([] in array.array('B', b'12'))
 
 # bad typecode
 try:

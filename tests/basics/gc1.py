@@ -4,8 +4,7 @@ try:
     import gc
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(gc.isenabled())
 gc.disable()
@@ -20,3 +19,11 @@ if hasattr(gc, 'mem_free'):
     # just test they execute and return an int
     assert type(gc.mem_free()) is int
     assert type(gc.mem_alloc()) is int
+
+if hasattr(gc, 'threshold'):
+    # uPy has this extra function
+    # check execution and returns
+    assert(gc.threshold(1) is None)
+    assert(gc.threshold() == 0)
+    assert(gc.threshold(-1) is None)
+    assert(gc.threshold() == -1)

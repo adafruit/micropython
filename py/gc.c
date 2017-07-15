@@ -102,6 +102,17 @@
 #define GC_EXIT()
 #endif
 
+#ifdef LOG_HEAP_ACTIVITY
+volatile uint32_t change_me;
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+void __attribute__ ((noinline)) gc_log_change(uint32_t start_block, uint32_t length) {
+    change_me += start_block;
+    change_me += length; // Break on this line.
+}
+#pragma GCC pop_options
+#endif
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
@@ -258,18 +269,20 @@ STATIC void gc_sweep(void) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
-                    #if MICROPY_PY_THREAD
-                    // TODO need to think about reentrancy with finaliser code
-                    assert(!"finaliser with threading not implemented");
-                    #endif
                     mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
                     if (obj->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
                         mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
                         if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
+                            // load_method returned a method, execute it in a protected environment
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_lock();
+                            #endif
+                            mp_call_function_1_protected(dest[0], dest[1]);
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_unlock();
+                            #endif
                         }
                     }
                     // clear finaliser flag
@@ -278,6 +291,10 @@ STATIC void gc_sweep(void) {
 #endif
                 free_tail = 1;
                 DEBUG_printf("gc_sweep(%x)\n", PTR_FROM_BLOCK(block));
+
+                #ifdef LOG_HEAP_ACTIVITY
+                gc_log_change(block, 0);
+                #endif
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
@@ -460,6 +477,10 @@ found:
         MP_STATE_MEM(gc_last_free_atb_index) = (i + 1) / BLOCKS_PER_ATB;
     }
 
+    #ifdef LOG_HEAP_ACTIVITY
+    gc_log_change(start_block, end_block - start_block + 1);
+    #endif
+
     // mark first block as used head
     ATB_FREE_TO_HEAD(start_block);
 
@@ -546,6 +567,9 @@ void gc_free(void *ptr) {
             }
 
             // free head and all of its tail blocks
+            #ifdef LOG_HEAP_ACTIVITY
+            gc_log_change(block, 0);
+            #endif
             do {
                 ATB_ANY_TO_FREE(block);
                 block += 1;
@@ -705,6 +729,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         gc_dump_alloc_table();
         #endif
 
+        #ifdef LOG_HEAP_ACTIVITY
+        gc_log_change(block, new_blocks);
+        #endif
+
         return ptr_in;
     }
 
@@ -728,6 +756,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
+        #endif
+
+        #ifdef LOG_HEAP_ACTIVITY
+        gc_log_change(block, new_blocks);
         #endif
 
         return ptr_in;
@@ -833,7 +865,10 @@ void gc_dump_alloc_table(void) {
             */
             /* this prints the uPy object type of the head block */
             case AT_HEAD: {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
                 void **ptr = (void**)(MP_STATE_MEM(gc_pool_start) + bl * BYTES_PER_BLOCK);
+#pragma GCC diagnostic pop
                 if (*ptr == &mp_type_tuple) { c = 'T'; }
                 else if (*ptr == &mp_type_list) { c = 'L'; }
                 else if (*ptr == &mp_type_dict) { c = 'D'; }

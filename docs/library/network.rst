@@ -5,22 +5,29 @@
 .. module:: network
    :synopsis: network configuration
 
-This module provides network drivers and routing configuration.  Network
-drivers for specific hardware are available within this module and are
-used to configure a hardware network interface.  Configured interfaces
-are then available for use via the :mod:`socket` module. To use this module
-the network build of firmware must be installed.
+This module provides network drivers and routing configuration. To use this
+module, a MicroPython variant/build with network capabilities must be installed.
+Network drivers for specific hardware are available within this module and are
+used to configure hardware network interface(s). Network services provided
+by configured interfaces are then available for use via the :mod:`socket`
+module.
 
 For example::
 
-    # configure a specific network interface
+    # connect/ show IP config a specific network interface
     # see below for examples of specific drivers
     import network
+    import utime
     nic = network.Driver(...)
+    if not nic.isconnected():
+        nic.connect()
+        print("Waiting for connection...")
+        while not nic.isconnected():
+            utime.sleep(1)
     print(nic.ifconfig())
 
-    # now use socket as usual
-    import socket
+    # now use usocket as usual
+    import usocket as socket
     addr = socket.getaddrinfo('micropython.org', 80)[0][-1]
     s = socket.socket()
     s.connect(addr)
@@ -28,58 +35,109 @@ For example::
     data = s.recv(1000)
     s.close()
 
-.. only:: port_wipy
+Common network adapter interface
+================================
 
-    .. _network.Server:
+This section describes an (implied) abstract base class for all network
+interface classes implemented by different ports of MicroPython for
+different hardware. This means that MicroPython does not actually
+provide `AbstractNIC` class, but any actual NIC class, as described
+in the following sections, implements methods as described here.
 
-    class Server
-    ============
+.. class:: AbstractNIC(id=None, ...)
 
-    The ``Server`` class controls the behaviour and the configuration of the FTP and telnet
-    services running on the WiPy. Any changes performed using this class' methods will
-    affect both.
+Instantiate a network interface object. Parameters are network interface
+dependent. If there are more than one interface of the same type, the first
+parameter should be `id`.
 
-    Example::
+    .. method:: active([is_active])
 
-        import network
-        server = network.Server()
-        server.deinit() # disable the server
-        # enable the server again with new settings
-        server.init(login=('user', 'password'), timeout=600)
+        Activate ("up") or deactivate ("down") the network interface, if
+        a boolean argument is passed. Otherwise, query current state if
+        no argument is provided. Most other methods require an active
+        interface (behavior of calling them on inactive interface is
+        undefined).
 
-    Constructors
-    ------------
+    .. method:: connect([service_id, key=None, \*, ...])
 
-    .. class:: network.Server(id, ...)
+       Connect the interface to a network. This method is optional, and
+       available only for interfaces which are not "always connected".
+       If no parameters are given, connect to the default (or the only)
+       service. If a single parameter is given, it is the primary identifier
+       of a service to connect to. It may be accompanied by a key
+       (password) required to access said service. There can be further
+       arbitrary keyword-only parameters, depending on the networking medium
+       type and/or particular device. Parameters can be used to: a)
+       specify alternative service identifer types; b) provide additional
+       connection parameters. For various medium types, there are different
+       sets of predefined/recommended parameters, among them:
 
-       Create a server instance, see ``init`` for parameters of initialization.
+       * WiFi: `bssid` keyword to connect by BSSID (MAC address) instead
+         of access point name
 
-    Methods
-    -------
+    .. method:: disconnect()
 
-    .. method:: server.init(\*, login=('micro', 'python'), timeout=300)
+       Disconnect from network.
 
-       Init (and effectively start the server). Optionally a new ``user``, ``password``
-       and ``timeout`` (in seconds) can be passed.
+    .. method:: isconnected()
 
-    .. method:: server.deinit()
+       Returns ``True`` if connected to network, otherwise returns ``False``.
 
-       Stop the server
+    .. method:: scan(\*, ...)
 
-    .. method:: server.timeout([timeout_in_seconds])
+       Scan for the available network services/connections. Returns a
+       list of tuples with discovered service parameters. For various
+       network media, there are different variants of predefined/
+       recommended tuple formats, among them:
 
-       Get or set the server timeout.
+       * WiFi: (ssid, bssid, channel, RSSI, authmode, hidden). There
+         may be further fields, specific to a particular device.
 
-    .. method:: server.isrunning()
+       The function may accept additional keyword arguments to filter scan
+       results (e.g. scan for a particular service, on a particular channel,
+       for services of a particular set, etc.), and to affect scan
+       duration and other parameters. Where possible, parameter names
+       should match those in connect().
 
-       Returns ``True`` if the server is running, ``False`` otherwise.
+    .. method:: status()
+
+       Return detailed status of the interface, values are dependent
+       on the network medium/technology.
+
+    .. method:: ifconfig([(ip, subnet, gateway, dns)])
+
+       Get/set IP-level network interface parameters: IP address, subnet mask,
+       gateway and DNS server. When called with no arguments, this method returns
+       a 4-tuple with the above information. To set the above values, pass a
+       4-tuple with the required information.  For example::
+
+        nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+
+    .. method:: config('param')
+                config(param=value, ...)
+
+       Get or set general network interface parameters. These methods allow to work
+       with additional parameters beyond standard IP configuration (as dealt with by
+       ``ifconfig()``). These include network-specific and hardware-specific
+       parameters and status values. For setting parameters, the keyword argument
+       syntax should be used, and multiple parameters can be set at once. For
+       querying, a parameter name should be quoted as a string, and only one
+       parameter can be queried at a time::
+
+        # Set WiFi access point name (formally known as ESSID) and WiFi channel
+        ap.config(essid='My AP', channel=11)
+        # Query params one by one
+        print(ap.config('essid'))
+        print(ap.config('channel'))
+        # Extended status information also available this way
+        print(sta.config('rssi'))
 
 .. only:: port_pyboard
 
     class CC3K
     ==========
     
-    This class provides a driver for CC3000 wifi modules.  Example usage::
+    This class provides a driver for CC3000 WiFi modules.  Example usage::
     
         import network
         nic = network.CC3K(pyb.SPI(2), pyb.Pin.board.Y5, pyb.Pin.board.Y4, pyb.Pin.board.Y3)
@@ -128,16 +186,16 @@ For example::
     
     .. method:: cc3k.connect(ssid, key=None, \*, security=WPA2, bssid=None)
     
-       Connect to a wifi access point using the given SSID, and other security
+       Connect to a WiFi access point using the given SSID, and other security
        parameters.
     
     .. method:: cc3k.disconnect()
     
-       Disconnect from the wifi access point.
+       Disconnect from the WiFi access point.
     
     .. method:: cc3k.isconnected()
     
-       Returns True if connected to a wifi access point and has a valid IP address,
+       Returns True if connected to a WiFi access point and has a valid IP address,
        False otherwise.
     
     .. method:: cc3k.ifconfig()
@@ -323,7 +381,7 @@ For example::
 
     .. method:: wlan.isconnected()
 
-        In case of STA mode, returns ``True`` if connected to a wifi access
+        In case of STA mode, returns ``True`` if connected to a WiFi access
         point and has a valid IP address.  In AP mode returns ``True`` when a
         station is connected. Returns ``False`` otherwise.
 
@@ -348,7 +406,7 @@ For example::
 
         # Set WiFi access point name (formally known as ESSID) and WiFi channel
         ap.config(essid='My AP', channel=11)
-        # Queey params one by one
+        # Query params one by one
         print(ap.config('essid'))
         print(ap.config('channel'))
 
@@ -433,7 +491,7 @@ For example::
 
     .. method:: wlan.connect(ssid, \*, auth=None, bssid=None, timeout=None)
 
-       Connect to a wifi access point using the given SSID, and other security
+       Connect to a WiFi access point using the given SSID, and other security
        parameters.
 
           - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
@@ -451,16 +509,16 @@ For example::
 
     .. method:: wlan.disconnect()
 
-       Disconnect from the wifi access point.
+       Disconnect from the WiFi access point.
 
     .. method:: wlan.isconnected()
 
-       In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
+       In case of STA mode, returns ``True`` if connected to a WiFi access point and has a valid IP address.
        In AP mode returns ``True`` when a station is connected, ``False`` otherwise.
 
     .. method:: wlan.ifconfig(if_id=0, config=['dhcp' or configtuple])
 
-       With no parameters given eturns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
+       With no parameters given returns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
 
        if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
        are negotiated with the AP.
@@ -498,10 +556,10 @@ For example::
         Create a callback to be triggered when a WLAN event occurs during ``machine.SLEEP``
         mode. Events are triggered by socket activity or by WLAN connection/disconnection.
 
-            - ``handler`` is the function that gets called when the irq is triggered.
+            - ``handler`` is the function that gets called when the IRQ is triggered.
             - ``wake`` must be ``machine.SLEEP``.
 
-        Returns an irq object.
+        Returns an IRQ object.
 
     Constants
     ---------

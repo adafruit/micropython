@@ -31,19 +31,31 @@ typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,
 } pyexec_mode_kind_t;
 
+typedef struct {
+    int return_code;
+    const mp_obj_type_t * exception_type;
+    int exception_line;
+} pyexec_result_t;
+
 extern pyexec_mode_kind_t pyexec_mode_kind;
+
+// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
+// the pyexec functions if a SystemExit exception is raised by the running code.
+// It will reset to 0 at the start of each execution (eg each REPL entry).
+extern int pyexec_system_exit;
 
 #define PYEXEC_FORCED_EXIT (0x100)
 #define PYEXEC_SWITCH_MODE (0x200)
+#define PYEXEC_EXCEPTION   (0x400)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
+int pyexec_file(const char *filename, pyexec_result_t *result);
 int pyexec_frozen_module(const char *name);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
 
 #endif // __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__

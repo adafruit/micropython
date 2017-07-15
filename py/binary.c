@@ -33,6 +33,7 @@
 #include "py/binary.h"
 #include "py/smallint.h"
 #include "py/objint.h"
+#include "py/runtime.h"
 
 // Helpers to work with binary-encoded data
 
@@ -100,6 +101,11 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
             }
         }
     }
+
+    if (size == 0) {
+        mp_raise_ValueError("bad typecode");
+    }
+
     if (palign != NULL) {
         *palign = align;
     }
@@ -138,7 +144,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
         #endif
 #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
-            return mp_obj_new_float(((float*)p)[index]);
+            return mp_obj_new_float((mp_float_t)((float*)p)[index]);
         case 'd':
             return mp_obj_new_float(((double*)p)[index]);
 #endif
@@ -204,7 +210,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
         union { uint32_t i; float f; } fpu = {val};
-        return mp_obj_new_float(fpu.f);
+        return mp_obj_new_float((mp_float_t) fpu.f);
     } else if (val_type == 'd') {
         union { uint64_t i; double f; } fpu = {val};
         return mp_obj_new_float(fpu.f);
@@ -294,9 +300,10 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             #endif
             {
                 val = mp_obj_get_int(val_in);
-                // sign extend if needed
-                if (BYTES_PER_WORD < 8 && size > sizeof(val) && is_signed(val_type) && (mp_int_t)val < 0) {
-                    memset(p + sizeof(val), 0xff, size - sizeof(val));
+                // zero/sign extend if needed
+                if (BYTES_PER_WORD < 8 && size > sizeof(val)) {
+                    int c = (is_signed(val_type) && (mp_int_t)val < 0) ? 0xff : 0x00;
+                    memset(p + sizeof(val), c, size - sizeof(val));
                 }
             }
     }
@@ -320,9 +327,10 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
             break;
         default:
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if ((typecode | 0x20) == 'q' && MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+            if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+                size_t size = mp_binary_get_size('@', typecode, NULL);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
-                    sizeof(long long), (byte*)&((long long*)p)[index]);
+                    size, (uint8_t*)p + index * size);
                 return;
             }
             #endif

@@ -5,7 +5,7 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x010000 /* Leave 64k for the flash file system. */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 - 0x010000 /* Leave 256b for config and 64k for the flash file system. */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 
@@ -61,6 +61,14 @@ SECTIONS
         . = ALIGN(4);
         _ezero = .;         /* define a global symbol at bss end; used by startup code */
         _ebss = .;
+    } >RAM
+
+    /* this just checks there is enough RAM for a minimal stack */
+    .stack :
+    {
+        . = ALIGN(4);
+        . = . + 0x800; /* Reserve a minimum of 2K for the stack. */
+        . = ALIGN(4);
     } >RAM
 
     .ARM.attributes 0 : { *(.ARM.attributes) }

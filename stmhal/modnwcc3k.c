@@ -30,18 +30,19 @@
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
 
+#include "py/ioctl.h"
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "netutils.h"
+#include "py/mphal.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
-#include "pybioctl.h"
 
 #include "hci.h"
 #include "socket.h"
@@ -121,7 +122,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
         if (retry == 0 || CC3000_EXPORT(errno) != -95) {
             return CC3000_EXPORT(errno);
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     if (ip == 0) {
@@ -354,7 +355,7 @@ STATIC int cc3k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t ti
 
 STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
         int fd = socket->u_state;
@@ -366,19 +367,19 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
         FD_ZERO(&xfds);
 
         // set fds if needed
-        if (flags & MP_IOCTL_POLL_RD) {
+        if (flags & MP_STREAM_POLL_RD) {
             FD_SET(fd, &rfds);
 
             // A socked that just closed is available for reading.  A call to
             // recv() returns 0 which is consistent with BSD.
             if (cc3k_get_fd_closed_state(fd)) {
-                ret |= MP_IOCTL_POLL_RD;
+                ret |= MP_STREAM_POLL_RD;
             }
         }
-        if (flags & MP_IOCTL_POLL_WR) {
+        if (flags & MP_STREAM_POLL_WR) {
             FD_SET(fd, &wfds);
         }
-        if (flags & MP_IOCTL_POLL_HUP) {
+        if (flags & MP_STREAM_POLL_HUP) {
             FD_SET(fd, &xfds);
         }
 
@@ -396,13 +397,13 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
 
         // check return of select
         if (FD_ISSET(fd, &rfds)) {
-            ret |= MP_IOCTL_POLL_RD;
+            ret |= MP_STREAM_POLL_RD;
         }
         if (FD_ISSET(fd, &wfds)) {
-            ret |= MP_IOCTL_POLL_WR;
+            ret |= MP_STREAM_POLL_WR;
         }
         if (FD_ISSET(fd, &xfds)) {
-            ret |= MP_IOCTL_POLL_HUP;
+            ret |= MP_STREAM_POLL_HUP;
         }
     } else {
         *_errno = MP_EINVAL;
@@ -428,7 +429,7 @@ STATIC const cc3k_obj_t cc3k_obj = {{(mp_obj_type_t*)&mod_network_nic_type_cc3k}
 //        [SPI on Y position; Y6=B13=SCK, Y7=B14=MISO, Y8=B15=MOSI]
 //
 //      STM32F4DISC: init(pyb.SPI(2), pyb.Pin.cpu.A15, pyb.Pin.cpu.B10, pyb.Pin.cpu.B11)
-STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 4, 4, false);
 
@@ -477,11 +478,11 @@ STATIC mp_obj_t cc3k_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get ssid
-    mp_uint_t ssid_len;
+    size_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
 
     // get key and sec
-    mp_uint_t key_len = 0;
+    size_t key_len = 0;
     const char *key = NULL;
     mp_uint_t sec = WLAN_SEC_UNSEC;
     if (args[1].u_obj != mp_const_none) {
@@ -562,18 +563,18 @@ STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_patch_program_obj, cc3k_patch_program);
 
-STATIC const mp_map_elem_t cc3k_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&cc3k_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&cc3k_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&cc3k_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&cc3k_ifconfig_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_patch_version), (mp_obj_t)&cc3k_patch_version_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_patch_program), (mp_obj_t)&cc3k_patch_program_obj },
+STATIC const mp_rom_map_elem_t cc3k_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&cc3k_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&cc3k_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&cc3k_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&cc3k_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_patch_version), MP_ROM_PTR(&cc3k_patch_version_obj) },
+    { MP_ROM_QSTR(MP_QSTR_patch_program), MP_ROM_PTR(&cc3k_patch_program_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(WLAN_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(WLAN_SEC_WPA) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(WLAN_SEC_WPA2) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_locals_dict, cc3k_locals_dict_table);
@@ -583,7 +584,7 @@ const mod_network_nic_type_t mod_network_nic_type_cc3k = {
         { &mp_type_type },
         .name = MP_QSTR_CC3K,
         .make_new = cc3k_make_new,
-        .locals_dict = (mp_obj_t)&cc3k_locals_dict,
+        .locals_dict = (mp_obj_dict_t*)&cc3k_locals_dict,
     },
     .gethostbyname = cc3k_gethostbyname,
     .socket = cc3k_socket_socket,

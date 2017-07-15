@@ -51,7 +51,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
-// before error condition occured. If *errcode == 0, returns total bytes written (which will
+// before error condition occurred. If *errcode == 0, returns total bytes written (which will
 // be equal to input size).
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, byte flags) {
     byte *buf = buf_;
@@ -101,7 +101,7 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
         || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
         // CPython: io.UnsupportedOperation, OSError subclass
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "stream operation not supported"));
+        mp_raise_msg(&mp_type_OSError, "stream operation not supported");
     }
     return stream_p;
 }
@@ -142,7 +142,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
         while (more_bytes > 0) {
             char *p = vstr_add_len(&vstr, more_bytes);
             if (p == NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
+                mp_raise_msg(&mp_type_MemoryError, "out of memory");
             }
             int error;
             mp_uint_t out_sz = mp_stream_read_exactly(args[0], p, more_bytes, &error);
@@ -361,7 +361,6 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr.len = total_size;
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
@@ -382,7 +381,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
     while (max_size == -1 || max_size-- != 0) {
         char *p = vstr_add_len(&vstr, 1);
         if (p == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
+            mp_raise_msg(&mp_type_MemoryError, "out of memory");
         }
 
         int error;
@@ -391,7 +390,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
             if (mp_is_nonblocking_error(error)) {
                 if (vstr.len == 1) {
                     // We just incremented it, but otherwise we read nothing
-                    // and immediately got EAGAIN. This is case is not well
+                    // and immediately got EAGAIN. This case is not well
                     // specified in
                     // https://docs.python.org/3/library/io.html#io.IOBase.readline
                     // unlike similar case for read(). But we follow the latter's

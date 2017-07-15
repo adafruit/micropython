@@ -41,6 +41,7 @@ struct _nlr_buf_t {
     nlr_buf_t *prev;
     void *ret_val; // always a concrete object (an exception instance)
 #if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
+#define MICROPY_NLR_SETJMP (0)
 #if defined(__i386__)
     void *regs[6];
 #elif defined(__x86_64__)
@@ -82,10 +83,10 @@ NORETURN void nlr_jump(void *val);
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
 // should bail out with a fatal error.
-void nlr_jump_fail(void *val);
+NORETURN void nlr_jump_fail(void *val);
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
-#ifndef DEBUG
+#ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
 #include "mpstate.h"

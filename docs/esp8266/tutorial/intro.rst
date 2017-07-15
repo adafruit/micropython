@@ -20,9 +20,12 @@ characteristic of a board is how much flash it has, how the GPIO pins are
 connected to the outside world, and whether it includes a built-in USB-serial
 convertor to make the UART available to your PC.
 
-The minimum requirement for flash size is 512k.  A board with this amount of
-flash will not have room for a filesystem, but otherwise is fully functional.
-If your board has 1Mbyte or more of flash then it will support a filesystem.
+The minimum requirement for flash size is 1Mbyte. There is also a special
+build for boards with 512KB, but it is highly limited comparing to the
+normal build: there is no support for filesystem, and thus features which
+depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+be more interesting for users who build from source and fine-tune parameters
+for their particular application.
 
 Names of pins will be given in this tutorial using the chip names (eg GPIO0)
 and it should be straightforward to find which pin this corresponds to on your
@@ -35,11 +38,30 @@ If your board has a USB connector on it then most likely it is powered through
 this when connected to your PC.  Otherwise you will need to power it directly.
 Please refer to the documentation for your board for further details.
 
+Getting the firmware
+--------------------
+
+The first thing you need to do is download the most recent MicroPython firmware 
+.bin file to load onto your ESP8266 device. You can download it from the  
+`MicroPython downloads page <http://micropython.org/download#esp8266>`_.
+From here, you have 3 main choices
+
+* Stable firmware builds for 1024kb modules and above.
+* Daily firmware builds for 1024kb modules and above.
+* Daily firmware builds for 512kb modules.
+
+The best bet is nearly always to go for the Stable firmware builds.
+An exception to this though is if you have an ESP8266 module with only 512kb
+of onboard storage. You can easily tell by trying to load a Stable firmware 
+build and if you get the error below, then you may have to use the Daily 
+firmware builds for 512kb modules.
+    WARNING: Unlikely to work as data goes beyond end of flash.
+
 Deploying the firmware
 ----------------------
 
-The very first thing you need to do is put the MicroPython firmware (compiled
-code) on your ESP8266 device.  There are two main steps to do this: first you
+Once you have the MicroPython firmware (compiled code), you need to load it onto 
+your ESP8266 device.  There are two main steps to do this: first you
 need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
 particular board and you will need to refer to its documentation for details.
@@ -53,15 +75,17 @@ For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
-this tool here: `<https://github.com/themadinventor/esptool/>`__, or install it
+this tool here: `<https://github.com/espressif/esptool/>`__, or install it
 using pip::
 
     pip install esptool
 
-It requires Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in
-the command above.  Any other
-flashing program should work, so feel free to try them out, or refer to the
-documentation for your board to see its recommendations.
+Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
+An older version (at least 1.2.1 is needed) works fine but will require Python
+2.7.
+
+Any other flashing program should work, so feel free to try them out or refer
+to the documentation for your board to see its recommendations.
 
 Using esptool.py you can erase the flash with the command::
 
@@ -69,7 +93,7 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -80,7 +104,7 @@ For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to use the following command to deploy
 the firmware (note the ``-fm dio`` option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -138,6 +162,10 @@ after it, here are troubleshooting recommendations:
 * If lower baud rate didn't help, you may want to try older version of
   esptool.py, which had a different programming algorithm::
     pip install esptool==1.0.1
+  This version doesn't support ``--flash_size=detect`` option, so you will
+  need to specify FlashROM size explicitly (in megabits). It also requires
+  Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in the
+  command above.
 
 * The ``--flash_size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.
@@ -158,7 +186,7 @@ after it, here are troubleshooting recommendations:
   application in the ESP8266 community.
 
 * If you still experience problems with even flashing the firmware, please
-  refer to esptool.py project page, https://github.com/themadinventor/esptool
+  refer to esptool.py project page, https://github.com/espressif/esptool
   for additional documentation and bug tracker where you can report problems.
 
 * If you are able to flash firmware, but ``--verify`` option or

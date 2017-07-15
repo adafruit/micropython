@@ -338,7 +338,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
             return mp_obj_new_int_from_ll(((int64_t*)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
         case FLOAT32:
-            return mp_obj_new_float(((float*)p)[index]);
+            return mp_obj_new_float((mp_float_t)((float*)p)[index]);
         case FLOAT64:
             return mp_obj_new_float(((double*)p)[index]);
         #endif
@@ -360,7 +360,7 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
         return;
     }
     #endif
-    mp_int_t v = mp_obj_get_int(val);
+    mp_int_t v = mp_obj_get_int_truncated(val);
     switch (val_type) {
         case UINT8:
             ((uint8_t*)p)[index] = (uint8_t)v; return;

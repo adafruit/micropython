@@ -39,6 +39,9 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 typedef struct _mp_obj_complex_t {
     mp_obj_base_t base;
     mp_float_t real;
@@ -50,7 +53,11 @@ STATIC void complex_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_
     mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+    const int precision = 6;
+    #else
     const int precision = 7;
+    #endif
 #else
     char buf[32];
     const int precision = 16;
@@ -80,7 +87,7 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
         case 1:
             if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
-                mp_uint_t l;
+                size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, true, true, NULL);
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
@@ -117,6 +124,7 @@ STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->real != 0 || o->imag != 0);
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(o->real) ^ mp_float_hash(o->imag));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
         default: return MP_OBJ_NULL; // op not supported
@@ -191,13 +199,13 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
         }
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't do truncated division of a complex number"));
+            mp_raise_TypeError("can't do truncated division of a complex number");
 
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
             if (rhs_imag == 0) {
                 if (rhs_real == 0) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "complex division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "complex division by zero");
                 }
                 lhs_real /= rhs_real;
                 lhs_imag /= rhs_real;
@@ -222,11 +230,11 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
             //        = exp(x3)*(cos(y3) + i*sin(y3))
             mp_float_t abs1 = MICROPY_FLOAT_C_FUN(sqrt)(lhs_real*lhs_real + lhs_imag*lhs_imag);
             if (abs1 == 0) {
-                if (rhs_imag == 0) {
-                    lhs_real = 1;
+                if (rhs_imag == 0 && rhs_real >= 0) {
+                    lhs_real = (rhs_real == 0);
                     rhs_real = 0;
                 } else {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power");
                 }
             } else {
                 mp_float_t ln1 = MICROPY_FLOAT_C_FUN(log)(abs1);
@@ -247,5 +255,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
 }
+
+#pragma GCC diagnostic pop
 
 #endif

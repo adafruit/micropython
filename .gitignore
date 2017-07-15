@@ -10,7 +10,7 @@
 *.dis
 *.exe
 
-# Packages 
+# Packages
 ############
 
 # Logs and Databases
@@ -24,6 +24,7 @@
 # Build directory
 ######################
 build/
+bin/
 
 # Test failure outputs
 ######################
@@ -39,3 +40,11 @@ __pycache__/
 ######################
 GNUmakefile
 user.props
+
+# Sphinx output
+###############
+_build
+
+# Generated rst files
+######################
+genrst/

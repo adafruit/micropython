@@ -36,7 +36,7 @@
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -120,7 +120,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     // so it must handle bytes.
     if (type == &mp_type_bytes) {
         // Taken from objstr.c:str_index_to_ptr()
-        mp_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
+        size_t index_val = mp_get_index(type, self_len, index, is_slice);
         return self_data + index_val;
     }
 
@@ -131,7 +131,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+        mp_raise_TypeError_varg("string indices must be integers, not %s", mp_obj_get_type_str(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0)
@@ -142,7 +142,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+                mp_raise_IndexError("string index out of range");
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -161,7 +161,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+                mp_raise_IndexError("string index out of range");
             }
             // Then check completion
             if (i-- == 0) {
@@ -188,7 +188,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_t ostart, ostop, ostep;
             mp_obj_slice_get(index, &ostart, &ostop, &ostep);
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-                mp_not_implemented("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
             }
 
             const byte *pstart, *pstop;
@@ -284,7 +284,7 @@ typedef struct _mp_obj_str_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t str;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_str_it_t;
 
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
@@ -301,8 +301,9 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
-    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_str_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_str_it_t *o = (mp_obj_str_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = str_it_iternext;
     o->str = str;

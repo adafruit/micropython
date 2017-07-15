@@ -11,3 +11,9 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
+[submodule "freetouch2"]
+	path = atmel-samd/freetouch
+	url = https://github.com/adafruit/Adafruit_FreeTouch.git
+[submodule "tools/uf2"]
+	path = tools/uf2
+	url = https://github.com/Microsoft/uf2.git
