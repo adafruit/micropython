@@ -9,7 +9,7 @@ As a MicroPython derivative, this implements Python 3.x on microcontrollers such
 as the SAMD21 and ESP8266.
 
 ## Project Status
-This project is in beta. Most APIs should be stable going forward.
+This project is in beta. Most APIs should be stable going forward. This is a test edit.
 
 ### Supported boards
 
