@@ -279,6 +279,7 @@ SRC_SHARED_MODULE = \
 	random/__init__.c \
 	storage/__init__.c \
 	uheap/__init__.c \
+	ustack/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
