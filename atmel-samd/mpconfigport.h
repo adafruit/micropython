@@ -106,7 +106,7 @@
 #define MICROPY_STACK_CHECK         (1)
 
 // Track stack usage on a debug build. Expose results via ustack module.
-#ifdef DEBUG
+#ifdef MICROPY_DEBUG_MODULES
 #define MICROPY_MAX_STACK_USAGE       (1)
 #endif
 
