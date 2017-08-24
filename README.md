@@ -35,7 +35,7 @@ which includes experimental hardware support.
 
 ## Documentation
 
-Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython) and [MicroPython category](https://learn.adafruit.com/category/micropython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
+Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython) and [MicroPython category](https://learn.adafruit.com/category/micropython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io).
 
 ## Contributing
 See [CONTRIBUTING.md](https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md)
