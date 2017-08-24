@@ -250,6 +250,7 @@ SRC_COMMON_HAL = \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
+	microcontroller/core.c \
 	microcontroller/Pin.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
