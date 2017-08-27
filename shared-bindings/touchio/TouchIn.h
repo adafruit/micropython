@@ -36,4 +36,7 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self);
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self);
 
+uint16_t common_hal_touchio_touchin_get_capacitance(touchio_touchin_obj_t *self);
+
+
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H__
