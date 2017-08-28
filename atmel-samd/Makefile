@@ -253,6 +253,8 @@ SRC_COMMON_HAL = \
 	microcontroller/core.c \
 	microcontroller/Pin.c \
 	neopixel_write/__init__.c \
+	nvm/__init__.c \
+	nvm/ByteArray.c \
 	os/__init__.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
