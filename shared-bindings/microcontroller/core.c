@@ -60,10 +60,10 @@ STATIC mp_obj_t mcu_core_obj_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 //| .. attribute:: frequency
 //|
-//|   Return the CPU operating frequency as a float, in Hz.
+//|   Return the CPU operating frequency as an int, in Hz.
 //|
 STATIC mp_obj_t mcu_core_obj_get_frequency(mp_obj_t self) {
-    return mp_obj_new_float(common_hal_mcu_core_get_frequency());
+    return mp_obj_new_int_from_uint(common_hal_mcu_core_get_frequency());
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_core_get_frequency_obj, mcu_core_obj_get_frequency);

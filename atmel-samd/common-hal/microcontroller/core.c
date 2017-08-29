@@ -205,6 +205,6 @@ float common_hal_mcu_core_get_temperature(void) {
 }
 
 
-float common_hal_mcu_core_get_frequency(void) {
-    return (float) system_cpu_clock_get_hz();
+uint32_t common_hal_mcu_core_get_frequency(void) {
+    return system_cpu_clock_get_hz();
 }
