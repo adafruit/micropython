@@ -31,6 +31,7 @@
 
 extern const mp_obj_base_t mcu_core_obj;
 
+float common_hal_mcu_core_get_frequency(void);
 float common_hal_mcu_core_get_temperature(void);
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___CORE___H__
