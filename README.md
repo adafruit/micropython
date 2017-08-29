@@ -1,26 +1,34 @@
+**[Project Status](#project-status)** |
+**[Supported Boards](#supported-boards)** |
+**[Download](#download)** |
+**[Documentation](#documentation)** |
+**[Contributing](#contributing)** |
+**[Differences from Micropython](#differences-from-micropython)** |
+**[Project Structure](#project-structure)**
+
 # Adafruit CircuitPython
 
 [![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython) [![Doc Status](https://readthedocs.org/projects/circuitpython/badge/?version=latest)](http://circuitpython.readthedocs.io/) [![Gitter](https://badges.gitter.im/adafruit/circuitpython.svg)](https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Discord](https://img.shields.io/discord/327254708534116352.svg)](https://discord.gg/nBQh6qu)
 
-This is an open source derivative of [MicroPython](http://www.micropython.org)
+**Adafruit CircuitPython** is an open source derivative of [MicroPython](http://www.micropython.org)
 for use on educational development boards designed and sold by [Adafruit](https://www.adafruit.com).
 
-As a MicroPython derivative, this implements Python 3.x on microcontrollers such
-as the SAMD21 and ESP8266.
+As a MicroPython derivative, CircuitPython implements Python 3.x on
+microcontrollers such as the SAMD21 and ESP8266.
 
 ## Project Status
 This project is in beta. Most APIs should be stable going forward.
 
-### Supported boards
+## Supported Boards
 
-#### Designed for CircuitPython
+### Designed for CircuitPython
 * [Adafruit CircuitPlayground Express](https://www.adafruit.com/product/3333)
 * [Adafruit Feather M0 Express](https://www.adafruit.com/product/3403)
 * [Adafruit Metro M0 Express](https://www.adafruit.com/product/3505)
 * [Adafruit Gemma M0](https://www.adafruit.com/product/3501)
 
-#### Other
+### Other
 * [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821)
 * [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772)
 * [Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995) (uses M0 Basic binaries)
@@ -35,12 +43,15 @@ which includes experimental hardware support.
 
 ## Documentation
 
-Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython) and [MicroPython category](https://learn.adafruit.com/category/micropython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
+Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/)
+under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython)
+and [MicroPython category](https://learn.adafruit.com/category/micropython).
+An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
 
 ## Contributing
 See [CONTRIBUTING.md](https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md)
-for full guidelines but please be aware that by contributing to this project you
-are agreeing to the
+for full guidelines but please be aware that by contributing to this
+project you are agreeing to the
 [Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md).
 Contributors who follow the
 [Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md)
@@ -76,24 +87,32 @@ project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuit
 Here is an overview of the top-level directories.
 
 ### Core
-The core code of MicroPython is shared amongst ports including CircuitPython:
+The core code of MicroPython is shared amongst ports including
+CircuitPython:
+
 - `docs` High level user documentation in Sphinx reStructuredText format.
 - `drivers` External device drivers written in Python.
 - `examples` A few example Python scripts.
 - `extmod` Shared C code used in multiple ports' modules.
-- `lib` Shared core C code including externally developed libraries such as FATFS.
+- `lib` Shared core C code including externally developed libraries such
+  as FATFS.
 - `logo` The MicroPython logo.
-- `mpy-cross` A cross compiler that converts Python files to byte code prior to being run in MicroPython. Useful for reducing library size.
+- `mpy-cross` A cross compiler that converts Python files to byte code
+  prior to being run in MicroPython. Useful for reducing library size.
 - `py` Core Python implementation, including compiler, runtime, and
   core library.
-- `shared-bindings` Shared definition of Python modules, their docs and backing C APIs. Ports must implement the C API to support the corresponding module.
-- `shared-module` Shared implementation of Python modules that may be based on `common-hal`.
+- `shared-bindings` Shared definition of Python modules, their docs and
+  backing C APIs. Ports must implement the C API to support the
+  corresponding module.
+- `shared-module` Shared implementation of Python modules that may be
+  based on `common-hal`.
 - `tests` Test framework and test scripts.
 - `tools` Various tools, including the pyboard.py module.
 
 ### Ports
-Ports include the code unique to a microcontroller line and also variations
-based on the board.
+Ports include the code unique to a microcontroller line and also
+variations based on the board.
+
 - `atmel-samd` Support for SAMD21 based boards such as [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero), [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772),  and
 [Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995).
 - `bare-arm` A bare minimum version of MicroPython for ARM MCUs.
@@ -109,4 +128,18 @@ based on the board.
 - `windows` Support for [Windows](https://www.microsoft.com/en-us/windows/).
 - `zephyr` Support for [Zephyr](https://www.zephyrproject.org/), a real-time operating system by the Linux Foundation.
 
-CircuitPython only maintains the `atmel-samd` and `esp8266` ports. The rest are here to maintain compatibility with the [MicroPython](https://github.com/micropython/micropython) parent project.
+CircuitPython only maintains the `atmel-samd` and `esp8266` ports. The
+rest are here to maintain compatibility with the
+[MicroPython](https://github.com/micropython/micropython) parent project.
+
+[Adafruit CircuitPlayground Express](https://www.adafruit.com/product/3333)
+[Adafruit Feather M0 Express](https://www.adafruit.com/product/3403)
+* [Adafruit Metro M0 Express](https://www.adafruit.com/product/3505)
+* [Adafruit Gemma M0](https://www.adafruit.com/product/3501)
+
+### Other
+* [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821)
+* [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772)
+* [Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995) (uses M0 Basic binaries)
+* [Adafruit Feather M0 Adalogger](https://www.adafruit.com/product/2796) (MicroSD card not supported yet.)
+* [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero)
