@@ -12,9 +12,6 @@ limited. For example, a microcontroller without analog features will not have
 Support Matrix
 ---------------
 
-
-
-
 =================  =======  ==============  =======
 Module / Port      SAMD21   SAMD21 Express  ESP8266
 =================  =======  ==============  =======
@@ -24,7 +21,7 @@ Module / Port      SAMD21   SAMD21 Express  ESP8266
 `board`            **Yes**  **Yes**         **Yes**
 `busio`            **Yes**  **Yes**         **Yes**
 `core`             **Yes**  **Yes**         **Partial**
-                                            (not temperature)
+                                            (.temperature not available)
 `digitalio`        **Yes**  **Yes**         **Yes**
 `microcontroller`  **Yes**  **Yes**         **Yes**  
 `multiterminal`    No       No              **Yes**
@@ -38,6 +35,7 @@ Module / Port      SAMD21   SAMD21 Express  ESP8266
 `touchio`          **Yes**  **Yes**         No
 `uheap`            Debug    Debug           Debug
 `usb_hid`          **Yes**  **Yes**         No
+=================  =======  ==============  =======
 
 Modules
 ---------

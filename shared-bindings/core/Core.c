@@ -35,7 +35,7 @@
 
 //| .. currentmodule:: core
 //|
-//| :class:Core` --- Microcontroller core information and control
+//| :class:`Core` --- Microcontroller core information and control
 //| --------------------------------------------------------
 //|
 //| Get basic info about the code (chip) itself and control it.
@@ -50,6 +50,10 @@
 //|    print(microcontroller.core.temperature)
 //|
 
+//| .. class:: Core()
+//|
+//| You cannot currently create an instance of `Core`. Use `microcontroller.core` to access
+//| the sole instance available.
 
 STATIC mp_obj_t core_core_make_new(const mp_obj_type_t *type,
          size_t n_args, size_t n_kw, const mp_obj_t *args) {
