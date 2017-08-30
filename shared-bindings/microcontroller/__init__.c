@@ -38,7 +38,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`microcontroller` --- Pin references and core functionality
+//| :mod:`microcontroller` --- Pin references and cpu functionality
 //| ================================================================
 //|
 //| .. module:: microcontroller
@@ -56,10 +56,10 @@
 //|     Pin
 //|
 
-//| .. attribute:: core
+//| .. attribute:: cpu
 //|
-//|   Core chip information and control, such as temperature and clock frequency.
-//|   This object is the sole instance of `core.Core`.
+//|   CPU information and control, such as temperature and clock frequency.
+//|   This object is the sole instance of `processor.Processor`.
 //|
 
 //| .. method:: delay_us(delay)
@@ -119,7 +119,7 @@ const mp_obj_module_t mcu_pin_module = {
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_core),  MP_ROM_PTR(&common_hal_core_core_obj) },
+    { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_processor_cpu_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0

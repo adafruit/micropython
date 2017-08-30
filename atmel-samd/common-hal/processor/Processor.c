@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common-hal/core/Core.h"
+#include "common-hal/processor/Processor.h"
 
 // Don't reorder these includes because they are dependencies of adc_feature.h.
 // They should really be included by adc_feature.h.
@@ -197,7 +197,7 @@ STATIC float calculate_temperature(uint16_t raw_code, nvm_calibration_data_t *ca
 
 // External interface.
 //
-float common_hal_core_core_get_temperature(void) {
+float common_hal_processor_cpu_get_temperature(void) {
     struct adc_module adc_instance_struct;
 
     system_voltage_reference_enable(SYSTEM_VOLTAGE_REFERENCE_TEMPSENSE);
@@ -230,6 +230,6 @@ float common_hal_core_core_get_temperature(void) {
 }
 
 
-uint32_t common_hal_core_core_get_frequency(void) {
+uint32_t common_hal_processor_cpu_get_frequency(void) {
     return system_cpu_clock_get_hz();
 }

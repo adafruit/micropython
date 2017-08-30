@@ -164,7 +164,7 @@ extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t core_module;
+extern const struct _mp_obj_module_t processor_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
@@ -182,7 +182,7 @@ extern const struct _mp_obj_module_t multiterminal_module;
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_core), (mp_obj_t)&core_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_processor), (mp_obj_t)&processor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \

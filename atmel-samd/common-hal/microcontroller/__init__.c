@@ -30,7 +30,7 @@
 #include "samd21_pins.h"
 
 #include "shared-bindings/nvm/ByteArray.h"
-#include "shared-bindings/core/Core.h"
+#include "shared-bindings/processor/Processor.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -51,11 +51,11 @@ void common_hal_mcu_enable_interrupts(void) {
     cpu_irq_restore(irq_flags);
 }
 
-// The singleton core.Core object.
+// The singleton processor.Processor object, bound to microcontroller.cpu
 // It currently only has properties, and no state.
-core_core_obj_t common_hal_core_core_obj = {
+processor_cpu_obj_t common_hal_processor_cpu_obj = {
     .base = {
-        .type = &core_core_type,
+        .type = &processor_cpu_type,
     },
 };
 

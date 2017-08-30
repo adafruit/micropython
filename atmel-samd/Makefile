@@ -246,8 +246,6 @@ SRC_COMMON_HAL = \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
-	core/__init__.c \
-	core/Core.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
@@ -256,6 +254,8 @@ SRC_COMMON_HAL = \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	os/__init__.c \
+	processor/__init__.c \
+	processor/Processor.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \

@@ -28,7 +28,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "shared-bindings/core/Core.h"
+#include "shared-bindings/processor/Processor.h"
 
 #include "eagle_soc.h"
 #include "ets_alt_task.h"
@@ -54,11 +54,11 @@ void common_hal_mcu_enable_interrupts() {
     enable_irq(saved_interrupt_state & ~(1 << ETS_LOOP_ITER_BIT));
 }
 
-// The singleton core.Core object.
+// The singleton processor.Processor object, returned by microcontroller.cpu
 // It currently only has properties, and no state.
-core_core_obj_t common_hal_core_core_obj = {
+processor_cpu_obj_t common_hal_processor_cpu_obj = {
     .base = {
-        .type = &core_core_type,
+        .type = &processor_cpu_type,
     },
 };
 

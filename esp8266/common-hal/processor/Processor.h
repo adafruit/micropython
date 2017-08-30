@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_CORE_CORE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_CORE_CORE_H
+#ifndef MICROPY_INCLUDED_ESP8266_COMMON_HAL_PROCESSOR_CPU_H
+#define MICROPY_INCLUDED_ESP8266_COMMON_HAL_PROCESSOR_CPU_H
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
     // Stores no state currently.
-} core_core_obj_t;
+} processor_cpu_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_CORE_CORE_H
+#endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_PROCESSOR_CPU_H
