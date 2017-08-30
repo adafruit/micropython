@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___CORE___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___CORE___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CORE_CORE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_CORE_CORE_H
 
 #include "py/obj.h"
 
-extern const mp_obj_base_t mcu_core_obj;
+#include "common-hal/core/Core.h"
 
-uint32_t common_hal_mcu_core_get_frequency(void);
-float common_hal_mcu_core_get_temperature(void);
+const mp_obj_type_t core_core_type;
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___CORE___H__
+uint32_t common_hal_core_core_get_frequency(void);
+float common_hal_core_core_get_temperature(void);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_CORE_CORE_H

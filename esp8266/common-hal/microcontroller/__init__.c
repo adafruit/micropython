@@ -28,6 +28,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "shared-bindings/core/Core.h"
+
 #include "eagle_soc.h"
 #include "ets_alt_task.h"
 #include "etshal.h"
@@ -51,6 +53,14 @@ void common_hal_mcu_enable_interrupts() {
     ets_loop_iter_disable = (saved_interrupt_state >> ETS_LOOP_ITER_BIT) & 1;
     enable_irq(saved_interrupt_state & ~(1 << ETS_LOOP_ITER_BIT));
 }
+
+// The singleton core.Core object.
+// It currently only has properties, and no state.
+core_core_obj_t common_hal_core_core_obj = {
+    .base = {
+        .type = &core_core_type,
+    },
+};
 
 // This macro is used to simplify pin definition in boards/<board>/pins.c
 #define PIN(p_name, p_gpio_number, p_gpio_function, p_peripheral) \

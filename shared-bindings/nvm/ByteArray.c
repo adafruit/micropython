@@ -46,11 +46,11 @@
 
 //| .. class:: ByteArray()
 //|
-//|   Not currently dynamically supported. Access one through `microcontroller.nvm`.
+//|   Not currently dynamically supported. Access the sole instance through `microcontroller.nvm`.
 //|
 STATIC mp_obj_t nvm_bytearray_make_new(const mp_obj_type_t *type,
         mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    return mp_const_none;
+    mp_raise_TypeError("cannot be created: use instance in microcontroller.nvm");
 }
 
 //|   .. method:: __len__()

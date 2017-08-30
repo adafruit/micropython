@@ -246,10 +246,11 @@ SRC_COMMON_HAL = \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
+	core/__init__.c \
+	core/Core.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
-	microcontroller/core.c \
 	microcontroller/Pin.c \
 	neopixel_write/__init__.c \
 	nvm/__init__.c \
