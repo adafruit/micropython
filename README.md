@@ -17,7 +17,7 @@
 [MicroPython](http://www.micropython.org) for use on educational
 development boards designed and sold by [Adafruit](https://www.adafruit.com).
 
-CircuitPython, a MicroPython derivative, implements Python 3.x on
+**CircuitPython**, a MicroPython derivative, implements Python 3.x on
 microcontrollers such as the SAMD21 and ESP8266.
 
 ## Status
@@ -100,17 +100,15 @@ CircuitPython:
 ### API
 
 * Unified hardware APIs:
-
-[`audioio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html),
-[`analogio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html),
-[`busio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html),
-[`digitalio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html),
-[`pulseio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html),
-[`touchio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html),
-[`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html),
-[`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html),
-[`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
-
+  [`audioio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html),
+  [`analogio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html),
+  [`busio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html),
+  [`digitalio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html),
+  [`pulseio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html),
+  [`touchio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html),
+  [`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html),
+  [`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html),
+  [`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
 * No `machine` API on Atmel SAMD21 port.
 
 ### Modules
@@ -196,6 +194,8 @@ variations based on the board.
 CircuitPython only maintains the `atmel-samd` and `esp8266` ports. The
 rest are here to maintain compatibility with the
 [MicroPython][] parent project.
+
+**[⬆ back to top](#adafruit-circuitpython)**
 
 [Adafruit CircuitPlayground Express]: https://www.adafruit.com/product/3333
 [Adafruit Feather M0 Express]: https://www.adafruit.com/product/3403
