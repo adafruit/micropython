@@ -61,7 +61,7 @@ core_core_obj_t common_hal_core_core_obj = {
 
 // NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-// The singleton nvm.ByteAray object.
+// The singleton nvm.ByteArray object.
 nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
