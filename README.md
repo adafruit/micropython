@@ -76,20 +76,23 @@ CircuitPython:
   in Adafruit product names.)
 * supports only Atmel SAMD21 and ESP8266 ports.
 * tracks MicroPython's releases (not master).
-* The order that files are run and the state thats shared between them.
-  The goal is to clarify the role of each file and make them independent
-  from each other.
+
+### Behavior
+
+* The order that files are run and the state that is shared between them.
+  CircuitPython's goal is to clarify the role of each file and make each
+  file independent from each other.
   * `boot.py` (or `settings.py`) runs only once on start up before
-      USB is initialized. This lays the ground work for configuring USB
-      at startup rather than it being fixed. Since serial is not
-      available, output is written to `boot_out.txt`.
+    USB is initialized. This lays the ground work for configuring USB
+    at startup rather than it being fixed. Since serial is not
+    available, output is written to `boot_out.txt`.
   * `code.py` (or `main.py`) is run after every reload until it
-      finishes or is interrupted. After its done the vm and hardware is
-      reinitialized. **This means you cannot read state from `code.py`
-      in the REPL anymore.** This was changed to reduce confusion about
-      pins and memory being in use.
+    finishes or is interrupted. After it is done running, the vm and hardware is
+    reinitialized. **This means you cannot read state from `code.py`
+    in the REPL anymore.** CircuitPython's goal for this change includes
+    reduce confusion about pins and memory being used.
   * After `code.py` the REPL can be entered by pressing any key. It no
-      longer shares state with `code.py` so its a fresh vm.
+    longer shares state with `code.py` so it is a fresh vm.
   * Autoreload state will be maintained across reload.
 * Adds a safe mode that does not run user code after a hard crash or
   brown out. The hope is that this will make it easier to fix code that
