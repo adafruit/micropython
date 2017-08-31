@@ -143,7 +143,6 @@ extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t processor_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
@@ -197,7 +196,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_processor), (mp_obj_t)&processor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \

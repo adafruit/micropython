@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/processor/Processor.h"
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
 
-#include <math.h>
+#include "py/obj.h"
 
-#include "esp_mphal.h"
+typedef struct {
+    mp_obj_base_t base;
+    // Stores no state currently.
+} mcu_processor_obj_t;
 
-
-float common_hal_processor_cpu_get_temperature(void) {
-    return NAN;
-}
-
-uint32_t common_hal_processor_cpu_get_frequency(void) {
-    return mp_hal_get_cpu_freq();
-}
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

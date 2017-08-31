@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,16 @@
  * THE SOFTWARE.
  */
 
-// No core module functions.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H
+
+#include "py/obj.h"
+
+#include "common-hal/microcontroller/Processor.h"
+
+const mp_obj_type_t mcu_processor_type;
+
+uint32_t common_hal_mcu_processor_get_frequency(void);
+float common_hal_mcu_processor_get_temperature(void);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H

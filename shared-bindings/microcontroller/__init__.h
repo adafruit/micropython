@@ -31,7 +31,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 
-#include "common-hal/processor/Processor.h"
+#include "common-hal/microcontroller/Processor.h"
 
 extern void common_hal_mcu_delay_us(uint32_t);
 
@@ -40,7 +40,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 
 extern const mp_obj_dict_t mcu_pin_globals;
 
-extern const processor_cpu_obj_t common_hal_processor_cpu_obj;
+extern const mcu_processor_obj_t common_hal_mcu_processor_obj;
 
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0

@@ -250,12 +250,11 @@ SRC_COMMON_HAL = \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
+	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	os/__init__.c \
-	processor/__init__.c \
-	processor/Processor.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
