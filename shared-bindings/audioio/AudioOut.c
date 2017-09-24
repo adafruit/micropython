@@ -67,10 +67,10 @@
 //|     for i in range(length):
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     sample = audioio.AudioOut(board.SPEAKER, sine_wave)
-//|     sample.play(loop=True)
-//|     time.sleep(1)
-//|     sample.stop()
+//|     with audioio.AudioOut(board.SPEAKER, sine_wave) as sample:
+//|         sample.play(loop=True)
+//|         time.sleep(1)
+//|         sample.stop()
 //|
 //|   Playing a wave file from flash::
 //|
@@ -84,13 +84,13 @@
 //|
 //|     f = open("cplay-5.1-16bit-16khz.wav", "rb")
 //
-//|     a = audioio.AudioOut(board.A0, f)
+//|     with audioio.AudioOut(board.A0, f) as a:
 //|
-//|     print("playing")
-//|     a.play()
-//|     while a.playing:
-//|       pass
-//|     print("stopped")
+//|         print("playing")
+//|         a.play()
+//|         while a.playing:
+//|             pass
+//|         print("stopped")
 //|
 STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, true);
