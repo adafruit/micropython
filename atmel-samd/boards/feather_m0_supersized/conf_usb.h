@@ -17,11 +17,11 @@
 
 //! USB Device string definitions (Optional)
 #ifndef USB_DEVICE_MANUFACTURE_NAME
-#  define USB_DEVICE_MANUFACTURE_NAME "Adafruit Industries"
+#  define USB_DEVICE_MANUFACTURE_NAME "Dave Astels"
 #endif
 
 #ifndef USB_DEVICE_PRODUCT_NAME
-#  define USB_DEVICE_PRODUCT_NAME "Feather M0 Express"
+#  define USB_DEVICE_PRODUCT_NAME "Hacked Feather M0 Express with 8Mbyte SPI flash"
 #endif
 
 #define  USB_DEVICE_GET_SERIAL_NAME_POINTER  serial_number

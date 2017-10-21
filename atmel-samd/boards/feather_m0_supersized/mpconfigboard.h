@@ -2,7 +2,7 @@
 
 #define USB_REPL
 
-#define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Supersized"
+#define MICROPY_HW_BOARD_NAME "Hacked Feather M0 Express with 8Mbyte SPI flash"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA06)
