@@ -43,15 +43,13 @@ before_script:
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
+# Install pycodestyle & autopep8 python package for PEP8 coding style.
+install:
+  # Install code sniffer.
   - pip install pycodestyle
   - pip install --upgrade pycodestyle
-  - pip install autopep8
-# Install pycodestyle & autopep8 python package for PEP8 coding style.
-#install:
-#  - pip install pycodestyle
-#  - pip install --upgrade pycodestyle
-#  - pip install autopep8
-  
+  - source ~/.bash_profile
+  - source ~/.bashrc
 script:
   # Build mpy-cross first because other builds depend on it.
   - make -C mpy-cross
