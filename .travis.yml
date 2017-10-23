@@ -44,7 +44,7 @@ before_script:
   - arm-none-eabi-gcc --version
   - python3 --version
 # Install pycodestyle & autopep8 python package for PEP8 coding style.
-install:
+before_install:
   # Install code sniffer.
   - pip install pycodestyle
   - pip install --upgrade pycodestyle
