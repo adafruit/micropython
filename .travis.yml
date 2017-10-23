@@ -46,6 +46,7 @@ before_script:
 # Install pycodestyle & autopep8 python package for PEP8 coding style.
 install:
   - pip install pycodestyle
+  - pip install 'requests[security]'
   - pip install --upgrade pycodestyle
   - pip install autopep8
   
