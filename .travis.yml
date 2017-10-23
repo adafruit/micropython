@@ -43,7 +43,12 @@ before_script:
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
-
+# Install pycodestyle & autopep8 python package for PEP8 coding style.
+install:
+  - pip install pycodestyle
+  - pip install --upgrade pycodestyle
+  - pip install autopep8
+  
 script:
   # Build mpy-cross first because other builds depend on it.
   - make -C mpy-cross
@@ -57,7 +62,9 @@ script:
   - make -C unix
   - make -C bare-arm
   - make -C qemu-arm test
-
+  # Run pycodestyle & autopep8 to verify pep8  
+  - pycodestyle *.py
+  - autopep8 *.py
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
