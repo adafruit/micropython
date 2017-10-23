@@ -1,6 +1,12 @@
 sudo: required
 dist: trusty
-language: c
+language:
+  - c
+  - python
+  
+python:
+  - 3.5
+
 compiler:
   - gcc
 cache:
@@ -44,7 +50,7 @@ before_script:
   - arm-none-eabi-gcc --version
   - python3 --version
 # Install pycodestyle & autopep8 python package for PEP8 coding style.
-before_install:
+install:
   # Install code sniffer.
   - pip install pycodestyle
   - pip install --upgrade pycodestyle
