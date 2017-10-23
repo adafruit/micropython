@@ -64,7 +64,8 @@ script:
   - make -C qemu-arm test
   # Run pycodestyle & autopep8 to verify pep8  
   - pycodestyle *.py
-  - autopep8 *.py
+  - autopep8 *.py --global-config .pep8 --diff | tee check_autopep8
+  - test ! -s check_autopep8
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
