@@ -189,4 +189,5 @@ Port Specific modules
 ---------------------
 
 .. toctree::
-    bindings/samd/__init__
+
+   bindings/samd/__init__.c

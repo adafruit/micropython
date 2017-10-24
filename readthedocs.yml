@@ -1,0 +1,6 @@
+name: circuitpython
+type: sphinx
+requirements_file: docs_circuitpython/source/requirements-doc.txt
+python:
+  version: 3
+  setup_py_install: false
