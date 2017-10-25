@@ -1,6 +1,10 @@
 sudo: required
 dist: trusty
 language: c
+  
+python:
+  - 3.5
+
 compiler:
   - gcc
 cache:
@@ -43,7 +47,13 @@ before_script:
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
-
+# Install pycodestyle & autopep8 python package for PEP8 coding style.
+install:
+  # Install code sniffer.
+  - pip3 install pycodestyle
+  - pip3 install --upgrade pycodestyle
+  - source ~/.bash_profile
+  - source ~/.bashrc
 script:
   # Build mpy-cross first because other builds depend on it.
   - make -C mpy-cross
@@ -57,7 +67,10 @@ script:
   - make -C unix
   - make -C bare-arm
   - make -C qemu-arm test
-
+  # Run pycodestyle & autopep8 to verify pep8  
+  - pycodestyle *.py
+  - autopep8 *.py --global-config .pep8 --diff | tee check_autopep8
+  - test ! -s check_autopep8
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
