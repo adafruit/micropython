@@ -1,8 +1,6 @@
 sudo: required
 dist: trusty
-language:
-  - c
-  - python
+language: c
   
 python:
   - 3.5
@@ -52,8 +50,8 @@ before_script:
 # Install pycodestyle & autopep8 python package for PEP8 coding style.
 install:
   # Install code sniffer.
-  - pip install pycodestyle
-  - pip install --upgrade pycodestyle
+  - pip3 install pycodestyle
+  - pip3 install --upgrade pycodestyle
   - source ~/.bash_profile
   - source ~/.bashrc
 script:
