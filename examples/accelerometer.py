@@ -5,7 +5,7 @@ import math
 import neopixel
 import time
 
-WAY_OFF = 6.5
+TILTED = 6.5
 SLIGHTLY_TILTED = 3.5
 
 BRIGHTNESS = 2
@@ -19,7 +19,7 @@ def accelerometer():
 
 def balance_color(x, y, z):
     if (z < 0): return(RED)
-    if (x > WAY_OFF) or (y > WAY_OFF): return ((BRIGHTNESS, 0, 0))
+    if (x > TILTED) or (y > TILTED): return ((BRIGHTNESS, 0, 0))
     if (x > SLIGHTLY_TILTED) or (y > SLIGHTLY_TILTED): return((BRIGHTNESS, BRIGHTNESS, 0))
     return((0, BRIGHTNESS, 0))
 
