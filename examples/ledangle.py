@@ -1,25 +1,23 @@
-import pyb
+import adafruit_lis3dh
+import board
+import busio
+import neopixel
+import time
 
-def led_angle(seconds_to_run_for):
-    # make LED objects
-    l1 = pyb.LED(1)
-    l2 = pyb.LED(2)
-    accel = pyb.Accel()
+i2c = busio.I2C(board.ACCELEROMETER_SCL, board.ACCELEROMETER_SDA)
+accelerometer = adafruit_lis3dh.LIS3DH_I2C(i2c, address=25)
+neo_pixels = neopixel.NeoPixel(board.NEOPIXEL, 10, auto_write=False)
 
-    for i in range(20 * seconds_to_run_for):
-        # get x-axis
-        x = accel.x()
+while True:
+    x, y, z = accelerometer.acceleration
 
-        # turn on LEDs depending on angle
-        if x < -10:
-            l1.on()
-            l2.off()
-        elif x > 10:
-            l1.off()
-            l2.on()
-        else:
-            l1.off()
-            l2.off()
+    if (x > 0):
+        neo_pixels[2] = (2, 2, 2)
+        neo_pixels[7] = (0, 0, 0)
+    else:
+        neo_pixels[2] = (0, 0, 0)
+        neo_pixels[7] = (2, 2, 2)
 
-        # delay so that loop runs at at 1/50ms = 20Hz
-        pyb.delay(50)
+    neo_pixels.show()
+
+    time.sleep(0.25)
