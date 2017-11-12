@@ -32,7 +32,7 @@ folder and run the following commands:
 you can install pip via 'sudo easy_install pip'
 
 ```
-$ cd tools/nrfutil-0.5.2
+$ cd boards/feather52/tools/nrfutil-0.5.2
 $ sudo pip install -r requirements.txt
 $ sudo python setup.py install
 ```
