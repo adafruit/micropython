@@ -19,7 +19,25 @@ $ ./drivers/bluetooth/download_ble_stack.sh
 
 # Building and flashing firmware images
 
-## Building CircuitPython
+## Installing `nrfutil`
+
+The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
+that can be used to flash firmware images over a simple serial connection,
+using the on-board USB serial converter.
+
+If you haven't installed this command-line tool yet, go to the `ports/nrf`
+folder and run the following commands:
+
+> If you get a 'sudo: pip: command not found' error running 'sudo pip install',
+you can install pip via 'sudo easy_install pip'
+
+```
+$ cd boards/feather52/tools/nrfutil-0.5.2
+$ sudo pip install -r requirements.txt
+$ sudo python setup.py install
+```
+
+## Building CircuitPython binaries
 
 #### REPL over UART (default settings)
 
@@ -49,15 +67,7 @@ to enable BLE support in the build process:
 $ make BOARD=feather52 V=1 SD=s132
 ```
 
-## Flashing with `nrfutil`
-
-The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
-that can be used to flash firmware images over a simple serial connection,
-using the on-board USB serial converter.
-
-These commands assume that you have already installed `nrfutil`, as described
-in the [learning guide](https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/arduino-bsp-setup)
-for the Arduino variant of the board.
+## Flashing binaries with `nrfutil`
 
 ### 1. **Update bootloader** to single-bank version
 
