@@ -1,0 +1,4 @@
+
+      [console_scripts]
+      nrfutil = nordicsemi.__main__:cli
+    

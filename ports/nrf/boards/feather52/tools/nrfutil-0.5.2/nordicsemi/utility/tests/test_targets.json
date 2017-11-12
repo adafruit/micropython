@@ -1,0 +1,17 @@
+{
+	"targets":
+	[{
+		"id": 1,
+		"drive": "d:\\",
+		"serial_port": "COM7",
+		"pca": "PCA10028",
+        "segger_sn": "123123123123"
+	},
+	{
+		"id": 2,
+		"drive": "e:\\",
+		"serial_port": "COM8",
+		"pca": "PCA10028",
+        "segger_sn": "321321321312"
+	}]
+}

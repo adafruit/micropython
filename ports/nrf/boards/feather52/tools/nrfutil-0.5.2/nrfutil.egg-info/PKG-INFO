@@ -1,0 +1,11 @@
+Metadata-Version: 1.1
+Name: nrfutil
+Version: 0.5.2
+Summary: Nordic Semiconductor nrfutil utility and Python library
+Home-page: https://github.com/NordicSemiconductor/pc-nrfutil
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: Nordic Semicondictor proprietary license
+Description: A Python package that includes the nrfutil utility and the nordicsemi library
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2.7
