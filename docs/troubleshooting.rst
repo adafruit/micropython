@@ -16,7 +16,7 @@ before being reset by the button or being disconnected from USB. This can also
 happen on Linux and Mac OSX but its less likely.
 
 .. caution:: To erase and re-create ``CIRCUITPY`` (for example, to correct a corrupted filesystem),
-    follow one of the proecedures below. It's important to note that **any files stored on the**
+    follow one of the procedures below. It's important to note that **any files stored on the**
     ``CIRCUITPY`` **drive will be erased**.
 
 **For boards with** ``CIRCUITPY`` **stored on a separate SPI flash chip,
