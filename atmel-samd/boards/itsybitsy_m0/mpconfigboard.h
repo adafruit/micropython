@@ -1,7 +1,7 @@
 #define USB_REPL
 
-#define MICROPY_HW_BOARD_NAME "Adafruit Trinket M0"
-#define MICROPY_HW_MCU_NAME "samd21e18"
+#define MICROPY_HW_BOARD_NAME "Adafruit ItsyBitsy M0"
+#define MICROPY_HW_MCU_NAME "samd21g18"
 
 // Rev B - Black
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
