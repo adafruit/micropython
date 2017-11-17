@@ -45,11 +45,13 @@
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
-//|   restrictions on the recording parameters.
+//|   restrictions on the recording parameters. The overall frequency is determined
+//|   by `frequency`x`oversample`, and the total must be 1MHz or higher, so `freqency`
+//|   must be a minimum of 16000.
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
-//|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for real value. Must be minimum of 16000
+//|   :param int frequency: Target frequency in Hz of the resulting samples. Check `frequency` for real value
 //|   :param int bit_depth: Final number of bits per sample. Must be divisible by 8
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
