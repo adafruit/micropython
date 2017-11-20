@@ -45,9 +45,9 @@
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
-//|   restrictions on the recording parameters. The overall frequency is determined
-//|   by `frequency`x`oversample`, and the total must be 1MHz or higher, so `freqency`
-//|   must be a minimum of 16000.
+//|   restrictions on the recording parameters. The overall frequency is
+//|   determined by `frequency`x`oversample`, and the total must be 1MHz or
+//|   higher, so `frequency` must be a minimum of 16000.
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
