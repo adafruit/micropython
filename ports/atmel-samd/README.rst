@@ -119,11 +119,8 @@ Install required compiler packages:
 
 .. code-block:: shell
 
-    sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
-    sudo dpkg --add-architecture i386
-    sudo apt-get update -qq || true
-    sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system gcc-mingw-w64
-    sudo apt-get install -y --force-yes gcc-arm-embedded
+    sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+    sudo apt-get install gcc-arm-embedded
 
 Building
 --------
