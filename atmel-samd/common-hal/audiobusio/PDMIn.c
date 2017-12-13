@@ -240,33 +240,16 @@ void stop_dma(audiobusio_pdmin_obj_t* self) {
     dma_abort_job(&audio_dma);
 }
 
-/* // a windowed sinc filter for 16 kHz, 64 samples. */
-/* // truncated integer values */
-/* static const uint16_t sinc_filter[OVERSAMPLING] = { */
-/*     0, 1, 6, 16, 29, 49, 75, 108, */
-/*     149, 200, 261, 334, 418, 514, 622, 742, */
-/*     872, 1012, 1161, 1315, 1472, 1631, 1787, 1938, */
-/*     2081, 2212, 2329, 2429, 2509, 2568, 2604, 2616, */
-/*     2604, 2568, 2509, 2429, 2329, 2212, 2081, 1938, */
-/*     1787, 1631, 1472, 1315, 1161, 1012, 872, 742, */
-/*     622, 514, 418, 334, 261, 200, 149, 108, */
-/*     75, 49, 29, 16, 6, 1, 0, 0 */
-/* }; */
-
-/* // a windowed sinc filter for 16 kHz, 64 samples. */
-/* // rounded integer values */
-/* static const uint16_t sinc_filter[OVERSAMPLING] = { */
-/*     0, 2, 7, 16, 30, 49, 75, 108, */
-/*     150, 201, 262, 334, 418, 514, 622, 742, */
-/*     873, 1013, 1161, 1315, 1473, 1631, 1788, 1939, */
-/*     2082, 2213, 2330, 2430, 2510, 2568, 2604, 2616, */
-/*     2604, 2568, 2510, 2430, 2330, 2213, 2082, 1939, */
-/*     1788, 1631, 1473, 1315, 1161, 1013, 873, 742, */
-/*     622, 514, 418, 334, 262, 201, 150, 108, */
-/*     75, 49, 30, 16, 7, 2, 0, 0 */
-/* }; */
-
 // a windowed sinc filter for 44 khz, 64 samples
+//
+// This filter is good enough to use for lower sample rates as
+// well. It does not increase the noise enough to be a problem.
+//
+// In the long run we could use a fast filter like this to do the
+// decimation and initial filtering in real time, filtering to a
+// higher sample rate than specified.  Then after the audio is
+// recorded, a more expensive filter non-real-time filter could be
+// used to down-sample and low-pass.
 uint16_t sinc_filter [OVERSAMPLING] = {
     0, 2, 9, 21, 39, 63, 94, 132,
     179, 236, 302, 379, 467, 565, 674, 792,
@@ -361,7 +344,6 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         buffers_processed++;
 
         // See if we need to transfer less than a full buffer for the remaining needed samples.
-        // uint32_t remaining_samples_needed = output_buffer_length - values_output;
         remaining_samples_needed = output_buffer_length - values_output;
         if (remaining_samples_needed > 0 && remaining_samples_needed < samples_per_buffer) {
             descriptor->BTCNT.reg = remaining_samples_needed;
