@@ -28,6 +28,7 @@
 
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
+#include "py/mphal.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -41,7 +42,7 @@
 //|
 //| PDMIn can be used to record an input audio signal on a given set of pins.
 //|
-//| .. class:: PDMIn(clock_pin, data_pin, \*, frequency=8000, bit_depth=8, mono=True, oversample=64)
+//| .. class:: PDMIn(clock_pin, data_pin, \*, frequency=16000, bit_depth=8, mono=True, oversample=64, microphone_startup_msecs=110)
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
@@ -49,11 +50,16 @@
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
-//|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for real value.
+//|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for actual value.
+//|   Minimum frequency is about 16000 Hz.
 //|   :param int bit_depth: Final number of bits per sample. Must be divisible by 8
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
+//|   :param int microphone_startup_msecs: milliseconds to wait after starting microphone clock
+//|    to allow microphone to turn on. Most require only 10ms; some require 100ms. Longer is safer.
+//|    Must be in range 0-1000.
 //|
+
 //|   Record 8-bit unsigned samples to buffer::
 //|
 //|     import audiobusio
@@ -79,14 +85,15 @@
 //|         mic.record(b, len(b))
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    enum { ARG_frequency, ARG_bit_depth, ARG_mono, ARG_oversample };
+    enum { ARG_frequency, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_microphone_startup_msecs };
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_frequency,  MP_ARG_INT, {.u_int = 8000} },
+        { MP_QSTR_frequency,  MP_ARG_INT, {.u_int = 16000} },
         { MP_QSTR_bit_depth,  MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_mono,       MP_ARG_BOOL,{.u_bool = true} },
         { MP_QSTR_oversample, MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_microphone_startup_msecs, MP_ARG_INT, {.u_int = 110} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -116,8 +123,16 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
     bool mono = args[ARG_mono].u_bool;
 
+    int32_t microphone_startup_msecs = args[ARG_microphone_startup_msecs].u_int;
+    if (microphone_startup_msecs < 0 || microphone_startup_msecs > 1000) {
+        mp_raise_ValueError("Microphone startup msecs must be in range 0-1000");
+    }
+
     common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, frequency,
-        bit_depth, mono, oversample);
+                                          bit_depth, mono, oversample);
+
+    // Wait for the microphone to start up. Some start in 10 msecs; some take as much as 100 msecs.
+    mp_hal_delay_ms(microphone_startup_msecs);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -160,6 +175,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 //|     audio at the given rate. For internal flash, writing all 1s to the file
 //|     before recording is recommended to speed up writes.
 //|
+//|    :return: The number of samples recorded. If this is less than `destination_length`,
+//|    some samples were missed due to processing time.
+//|
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
@@ -181,12 +199,10 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
         } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE && bit_depth == 8) {
             mp_raise_ValueError("destination buffer must be a bytearray or array of type 'B' for bit_depth = 8");
         }
-        length *= bit_depth / 8;
+        // length is the buffer length in slots, not bytes.
         uint32_t length_written =
             common_hal_audiobusio_pdmin_record_to_buffer(self, bufinfo.buf, length);
-        if (length_written != length) {
-            mp_printf(&mp_plat_print, "length mismatch %d %d\n", length_written, length);
-        }
+        return MP_OBJ_NEW_SMALL_INT(length_written);
     }
     return mp_const_none;
 }

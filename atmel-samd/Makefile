@@ -146,6 +146,10 @@ endif
 CFLAGS += -Os -DNDEBUG -flto $(GCC_INLINE_LIMIT)
 endif
 
+# Do extra optimization for speed on a few files.
+# e.g.:
+#$(BUILD)/xxx/Something.o: CFLAGS += $(CSUPEROPT)
+
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
