@@ -416,6 +416,12 @@ live in ``shared-module``. If it is port specific then it should live in ``commo
 within the port's folder. In either case, the file and folder structure should
 mimic the structure in ``shared-bindings``.
 
+To test your native modules or core enhancements, follow these Adafruit Learning Guides
+for building local firmware to flash onto your device(s):
+
+`SAMD21 - Build Firmware https://learn.adafruit.com/micropython-for-samd21/build-firmware`
+`ESP8266 - Build Firmware https://learn.adafruit.com/building-and-running-micropython-on-the-esp8266/overview`
+
 MicroPython compatibility
 --------------------------------------------------------------------------------
 
