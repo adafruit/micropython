@@ -72,7 +72,7 @@
 //|
 //|   Dedicated delay method used for very short delays. **Do not** do long delays
 //|   because this stops all other functions from completing. Think of this as an empty
-//|   `while` loop that runs for the specified `(delay)` time. If you have other
+//|   ``while`` loop that runs for the specified ``(delay)`` time. If you have other
 //|   code or peripherals (e.g audio recording) that require specific timing or
 //|   processing while you are waiting, explore a different avenue such as using 
 //|   `time.sleep()`.
