@@ -74,7 +74,10 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 #else
     "b      nlr_push_tail       \n" // do the rest in C
 #endif
-    );
+    :                               // output operands
+    : "r" (nlr)                     // input operands
+    : "r1", "r2", "r3"        // clobbers
+                    );
 
     return 0; // needed to silence compiler warning
 }
