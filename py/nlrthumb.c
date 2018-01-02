@@ -76,7 +76,10 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 #endif
     :                               // output operands
     : "r" (nlr)                     // input operands
-    : "r1", "r2", "r3"        // clobbers
+    // Do not use r1, r2, r3 as temporary saving registers.
+    // gcc 7.2.1 started doing this, and r3 got clobbered in nlr_push_tail.
+    // See https://github.com/adafruit/circuitpython/issues/500 for details.
+    : "r1", "r2", "r3"              // clobbers
                     );
 
     return 0; // needed to silence compiler warning
