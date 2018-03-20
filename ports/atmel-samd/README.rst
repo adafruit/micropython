@@ -127,9 +127,8 @@ utilities.  On Ubuntu, these can be installed as follows:
 On Arch Linux the compiler is available for via the package
 ``arm-none-eabi-gcc``.
 
-For other systems, the `GNU Arm Embedded Toolchain
-<https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads>` may be
-available in binary form.
+For other systems, the `GNU Arm Embedded Toolchain <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads>`_
+may be available in binary form.
 
 The latest available package from team-gcc-arm-embedded is used to produce the
 binaries shipped by AdaFruit.  Other compiler versions, particularly older
@@ -141,6 +140,17 @@ The compiler can be changed using the ``CROSS_COMPILE`` variable when invoking
 
 Building
 --------
+
+Before building the firmware for a given board the MicroPython cross-compiler
+must be built; it will be used to pre-compile some of the built-in scripts to
+bytecode.  The cross-compiler is built and run on the host machine, using:
+
+.. code-block:: shell
+
+    make -C mpy-cross
+
+This command should be executed from the root directory of this repository.
+All other commands below should be executed from the ports/atmel-samd/ directory.
 
 To build for the Arduino Zero:
 
