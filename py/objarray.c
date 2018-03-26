@@ -121,6 +121,9 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
         // we round-down the len to make it a multiple of sz (CPython raises error)
+        if(typecode == 'O') {
+            mp_raise_ValueError("cannot construct array(O) from bytearray");
+        }
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
@@ -161,7 +164,11 @@ STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 
     // get typecode
     const char *typecode = mp_obj_str_get_str(args[0]);
-
+    
+    if(*typecode == 'S') {
+        // a typecode accepted by mp_binary_get_size but not OK for array
+        mp_raise_ValueError("bad typecode");
+    }
     if (n_args == 1) {
         // 1 arg: make an empty array
         return MP_OBJ_FROM_PTR(array_new(*typecode, 0));
@@ -281,6 +288,10 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
             mp_get_buffer_raise(rhs_in, &rhs_bufinfo, MP_BUFFER_READ);
 
+            if(lhs_bufinfo.typecode == 'O' && rhs_bufinfo.typecode != 'O') {
+                return MP_OBJ_NULL; // op not supported
+            }
+
             size_t sz = mp_binary_get_size('@', lhs_bufinfo.typecode, NULL);
 
             // convert byte count to element count (in case rhs is not multiple of sz)
@@ -372,6 +383,10 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     mp_buffer_info_t arg_bufinfo;
     mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
 
+    if(self->typecode == 'O' && arg_bufinfo.typecode != 'O') {
+        mp_raise_ValueError("cannot extend array(O) with non-object type");
+    }
+
     size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
     // convert byte count to element count
@@ -420,7 +435,8 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 if (MP_OBJ_IS_OBJ(value) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(value))->type->subscr == array_subscr) {
                     // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
-                    if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
+                    if ((o->typecode & TYPECODE_MASK)
+                        != (src_slice->typecode & TYPECODE_MASK)) {
                     compat_error:
                         mp_raise_ValueError("lhs and rhs should be compatible");
                     }
