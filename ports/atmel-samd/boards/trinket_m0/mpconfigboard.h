@@ -1,6 +1,11 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Trinket M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
+// Reverse priority order of sercoms on PA08 and PA09, so that I2C and UART
+// can be created in either order. Otherwise I2C will use SERCOM0 instead of SERCOM2,
+// blocking SERCOM0 for use for the UART pins, which can only use SERCOM0.
+#define REVERSE_SERCOM_ORDER_PA08_PA09 (true)
+
 // Rev B - Black
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
