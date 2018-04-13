@@ -81,11 +81,11 @@ CFLAGS += -fstack-usage
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
+CFLAGS += -flto -Wno-error=lto-type-mismatch
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
-LDFLAGS += -Wl,--gc-sections
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
