@@ -66,6 +66,9 @@ void tick_delay(uint32_t us) {
         start_ms = ticks_ms;
         us_between_ticks = 1000;
     }
+    if (us_between_ticks == us) {
+        return;
+    }
     while (SysTick->VAL > ((us_between_ticks - us) * ticks_per_us)) {}
 }
 
