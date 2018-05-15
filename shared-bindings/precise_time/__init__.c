@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/precise_time/__init__.h"
 
-//| :mod: `precise_time` --- integer time and timing related functions
+//| :mod:`precise_time` --- integer time and timing related functions
 //| =======================================================================
 //|
 //| .. module:: precise_time
