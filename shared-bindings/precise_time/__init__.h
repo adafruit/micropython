@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-extern uint63_t common_hal_time_monotonic(void)
-extern void common_hal_time_delay_ms(uint32_t)
+extern uint63_t common_hal_time_monotonic(void);
+extern void common_hal_time_delay_ms(uint32_t);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_PRECISE_TIME__INIT__H
