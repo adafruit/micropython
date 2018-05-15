@@ -30,11 +30,11 @@
 #include "shared-bindings/precise_time/__init__.h"
 
 //| :mod: `precise_time` --- integer time and timing related functions
-//| ====================================================================
+//| =======================================================================
 //|
 //| .. module:: precise_time
-//|    :synopsis: integer time related functions
-//|    :platform: SAMD21
+//|   :synopsis: integer time related functions
+//|   :platform: SAMD21
 //|
 //| The `precise_time` module. See the `time` module instead for an API that is
 //| also available in CPython.
