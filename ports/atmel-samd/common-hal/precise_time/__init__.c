@@ -24,12 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PRECISE_TIME__INIT__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PRECISE_TIME__INIT__H
+#include "py/mphal.h"
 
-#include <stdint.h>
+#include "shared-bindings/precise_time/__init__.h"
 
-extern uint64_t common_hal_precise_time_monotonic(void);
-extern void common_hal_precise_time_delay_ms(uint32_t);
+#include "tick.h"
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_PRECISE_TIME__INIT__H
+inline uint64_t common_hal_precise_time_monotonic() {
+    return ticks_ms;
+}
+
+void common_hal_precise_time_delay_ms(uint32_t delay) {
+    mp_hal_delay_ms(delay);
+}

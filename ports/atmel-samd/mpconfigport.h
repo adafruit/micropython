@@ -165,6 +165,7 @@ extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t os_module;
+extern const struct _mp_obj_module_t precise_time_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t rtc_module;
 extern const struct _mp_obj_module_t samd_module;
@@ -243,6 +244,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_precise_time), (mp_obj_t)&precise_time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
     EXTRA_BUILTIN_MODULES
 

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
+#include "py/obj.h"
 #include "shared-bindings/precise_time/__init__.h"
 
 //| :mod: `precise_time` --- integer time and timing related functions
@@ -47,9 +50,9 @@
 //|   :rtype: int
 //|
 STATIC mp_obj_t precise_time_monotonic(void) {
-    return common_hal_time_monotonic();
+    return mp_obj_new_int_from_uint(common_hal_precise_time_monotonic());
 }
-MP_DEFINE_CONST_FUN_OBJ_0(precise_time_monotonic_obj, precise_time_monotonic)
+MP_DEFINE_CONST_FUN_OBJ_0(precise_time_monotonic_obj, precise_time_monotonic);
 
 STATIC const mp_rom_map_elem_t precise_time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR__name__), MP_ROM_QSTR(MP_QSTR_precise_time) },
@@ -61,5 +64,5 @@ STATIC MP_DEFINE_CONST_DICT(precise_time_module_globals, precise_time_module_glo
 
 const mp_obj_module_t precise_time_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&time_module_globals,
+    .globals = (mp_obj_dict_t*)&precise_time_module_globals,
 };

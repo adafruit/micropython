@@ -298,6 +298,7 @@ SRC_COMMON_HAL = \
 	analogio/AnalogOut.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
+	precise_time/__init__.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
