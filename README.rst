@@ -154,7 +154,7 @@ Modules
    Therefore, code from CircuitPython is runnable on CPython but not
    necessarily the reverse.
 -  tick count is available as
-   `time.monotonic() <https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic>`__
+   `time.monotonic() <https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic>`__ (returns a float) or `precise_time.monotonic() <https://circuitpython.readthedocs.io/en/latest/shared-bindings/precise_time/__init__.html#precise_time.monotonic>`__ (returns an int).
 
 atmel-samd21 features
 ~~~~~~~~~~~~~~~~~~~~~
