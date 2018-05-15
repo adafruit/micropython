@@ -33,14 +33,15 @@
 //|    :synopsis: integer time related functions
 //|    :platform: SAMD21
 //|
-//| The `precise_time` module 
+//| The `precise_time` module. See the `time` module instead for an API that is
+//| also available in CPython.
 //|
 //| .. method:: monotonic()
 //|
 //|   Returns an always increasing value of time with an unknown reference
 //|   point. Only use it to compare against other values from `monotonic`.
-//|   Unlike time.monotonic, which is a float, the precision of this does not
-//|   degrade over time.
+//|   Unlike time.monotonic, which is a float, precise_time.monotonic returns an
+//|   int so precision will not degrade over time.
 //|
 //|   :return: the current monotonic time
 //|   :rtype: int
