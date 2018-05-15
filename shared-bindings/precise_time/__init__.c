@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "py/obj.h"
+#include "py/runtime.h"
 #include "shared-bindings/precise_time/__init__.h"
 
 //| :mod: `precise_time` --- integer time and timing related functions
@@ -54,10 +55,27 @@ STATIC mp_obj_t precise_time_monotonic(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(precise_time_monotonic_obj, precise_time_monotonic);
 
+//| .. method:: sleep(milliseconds)
+//|
+//|   Sleep for a given number of milliseconds.
+//|
+//|   :param int seconds: the time to sleep in milliseconds
+//|
+STATIC mp_obj_t precise_time_sleep(mp_obj_t milliseconds_o) {
+    int milliseconds = mp_obj_get_int(milliseconds_o);
+    if (milliseconds < 0) {
+        mp_raise_ValueError("sleep length must be non-negative");
+    }
+    common_hal_precise_time_delay_ms(milliseconds);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(precise_time_sleep_obj, precise_time_sleep);
+
 STATIC const mp_rom_map_elem_t precise_time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR__name__), MP_ROM_QSTR(MP_QSTR_precise_time) },
 
-    { MP_ROM_QSTR(MP_QSTR_monotonic), MP_ROM_PTR(&precise_time_monotonic_obj) }
+    { MP_ROM_QSTR(MP_QSTR_monotonic), MP_ROM_PTR(&precise_time_monotonic_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&precise_time_sleep_obj) }
 };
 
 STATIC MP_DEFINE_CONST_DICT(precise_time_module_globals, precise_time_module_globals_table);
