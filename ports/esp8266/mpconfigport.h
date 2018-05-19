@@ -173,6 +173,7 @@ extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t bitbangio_module;
 extern const struct _mp_obj_module_t time_module;
+extern const struct _mp_obj_module_t precise_time_module;
 extern const struct _mp_obj_module_t multiterminal_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 
@@ -196,6 +197,7 @@ extern const struct _mp_obj_module_t neopixel_write_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_precise_time), (mp_obj_t)&precise_time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_multiterminal), (mp_obj_t)&multiterminal_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
 

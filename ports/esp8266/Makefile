@@ -118,6 +118,7 @@ SRC_COMMON_HAL = \
 	multiterminal/__init__.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
+	precise_time/__init__.c \
 	storage/__init__.c \
 	time/__init__.c \
 	board/__init__.c
