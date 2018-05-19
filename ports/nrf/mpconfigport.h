@@ -221,6 +221,7 @@ extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t os_module;
+extern const struct _mp_obj_module_t precise_time;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
 extern const struct _mp_obj_module_t struct_module;
@@ -271,8 +272,9 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_microcontroller ), (mp_obj_t)&microcontroller_module }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_bitbangio       ), (mp_obj_t)&bitbangio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_precise_time    ), (mp_obj_t)&precise_time_module    }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
-    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
+    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_struct          ), (mp_obj_t)&struct_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \

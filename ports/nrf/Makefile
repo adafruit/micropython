@@ -196,6 +196,7 @@ SRC_COMMON_HAL += \
 	microcontroller/Processor.c \
 	os/__init__.c \
 	time/__init__.c \
+	precise_time/__init__.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
