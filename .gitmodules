@@ -13,7 +13,7 @@
 	url = https://github.com/pfalcon/berkeley-db-1.xx
 [submodule "lib/uzlib"]
 	path = lib/uzlib
-	url = https://github.com/pfalcon/uzlib
+	url = https://github.com/jepler/uzlib
 [submodule "tools/uf2"]
 	path = tools/uf2
 	url = https://github.com/Microsoft/uf2.git

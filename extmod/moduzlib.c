@@ -109,6 +109,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     }
 
     o->decomp.dest = buf;
+    o->decomp.edest = (unsigned char*)buf + size;
     o->decomp.destSize = size;
     int st = uzlib_uncompress_chksum(&o->decomp);
     if (st == TINF_DONE) {
@@ -153,10 +154,12 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_uint_t dest_buf_size = (bufinfo.len + 15) & ~15;
     byte *dest_buf = m_new(byte, dest_buf_size);
 
-    decomp->dest = dest_buf;
+    decomp->dest = decomp->destStart = dest_buf;
+    decomp->edest = dest_buf + dest_buf_size;
     decomp->destSize = dest_buf_size;
     DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
     decomp->source = bufinfo.buf;
+    decomp->esource = (unsigned char*)bufinfo.buf + bufinfo.len;
 
     int st;
     bool is_zlib = true;
@@ -183,7 +186,9 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
         size_t offset = decomp->dest - dest_buf;
         dest_buf = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
         dest_buf_size += 256;
+        decomp->destStart = dest_buf;
         decomp->dest = dest_buf + offset;
+        decomp->edest = dest_buf + offset + 256;
         decomp->destSize = 256;
     }
 

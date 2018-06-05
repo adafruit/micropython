@@ -31,3 +31,11 @@ try:
     print(inp.read())
 except OSError as e:
     print(repr(e))
+
+# Broken DEFLATE bitstream
+buf = io.BytesIO(b'\8cbH\xcd\xc9\xc9\x07\x00')
+inp = zlib.DecompIO(buf, -8)
+try:
+    inp.read()
+except OSError as e:
+    print("OSError")
