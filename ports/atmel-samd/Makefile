@@ -333,6 +333,7 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	pulseio/FrequencyIn.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c \
 	audioio/__init__.c \
