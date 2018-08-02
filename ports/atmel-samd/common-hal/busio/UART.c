@@ -132,7 +132,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (rx && receiver_buffer_size > 0) {
         self->buffer_length = receiver_buffer_size;
-        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, false);
+        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
         if (self->buffer == NULL) {
             common_hal_busio_uart_deinit(self);
             mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
