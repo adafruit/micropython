@@ -266,6 +266,11 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
 
+## Create uf2 file
+uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
+	
 #####################
 # Flash with debugger
 #####################
@@ -327,9 +332,6 @@ __check_defined = \
     $(if $(value $1),, \
     $(error Undefined make flag: $1$(if $2, ($2))))
 
-dfu-gen: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
-
 dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
 	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
@@ -338,12 +340,15 @@ dfu-bootloader:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
 	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
 
-uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
+# Create DFU package file ( firmware + checksum )
+dfu-gen: $(BUILD)/dfu-package.zip
 
-$(BUILD)/dfu-package.zip: dfu-gen
+# Bootloader will reject incompatible SD FirmwareID (specified with --sd-req)
+# Use 0xFFFE to bypass the check for now.	
+$(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
+# Linking rule	
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
