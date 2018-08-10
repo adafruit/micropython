@@ -80,6 +80,3 @@
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb.git
 	branch = develop
-[submodule "ports/nrf/bootloaders"]
-	path = ports/nrf/bootloaders
-	url = https://github.com/adafruit/Adafruit_nRF52_Bootloader.git
