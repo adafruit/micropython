@@ -248,7 +248,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.phony: all flash sd binary hex bootloader
+.phony: all flash sd binary hex
 
 all: binary hex uf2
 
@@ -291,9 +291,6 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
-bootloader:
-	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
-
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -308,16 +305,12 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
 	pyocd-tool -t $(MCU_SUB_VARIANT) reset $(BOOT_SETTING_ADDR)
 
-bootloader:
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(BOOT_FILE).hex --chip_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset
-
 endif
 
 #####################
 # Flash with DFU
 #####################
-.phony: dfu-gen dfu-flash dfu-bootloader
+.phony: dfu-gen dfu-flash
 
 ifeq ($(OS),Windows_NT)
    NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
@@ -336,15 +329,10 @@ dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
 	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
 
-dfu-bootloader:
-	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
-	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
-
-# Create DFU package file ( firmware + checksum )
+# Create DFU package file
 dfu-gen: $(BUILD)/dfu-package.zip
 
-# Bootloader will reject incompatible SD FirmwareID (specified with --sd-req)
-# Use 0xFFFE to bypass the check for now.	
+# Use 0xFFFE to bypass bootloader SD check for now.	
 $(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
