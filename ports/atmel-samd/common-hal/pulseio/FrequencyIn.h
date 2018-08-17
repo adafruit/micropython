@@ -38,14 +38,11 @@ typedef struct {
     uint8_t channel;
     uint8_t event_channel;
     uint16_t frequency;
-    //uint16_t last_capture;
     uint16_t pulse_width;
     uint8_t TC_IRQ;
-    //bool max_frequency_captured;
     uint32_t base_clock;
 } pulseio_frequencyin_obj_t;
 
-//void pulseout_reset(void);
 void frequencyin_interrupt_handler(uint8_t index);
 void frequencyin_emergency_cancel_capture(uint8_t index);
 

@@ -49,11 +49,7 @@
 #endif
 
 static pulseio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
-//static uint8_t err_count = 0;
-//static uint8_t ovf_count = 0;
 
-
-// TODO (sommersoft): change this to dynamically set the MAX based on the GCLK (clock_get_frequency()?)
 // Current TC clocks are all 48MHz; lockup is occurring past a capture of 512kHz
 // 48MHz / 512kHz = 93.75
 static uint8_t MAX_FREQUENCY = 93;
@@ -87,27 +83,10 @@ void frequencyin_emergency_cancel_capture(uint8_t index) {
 void frequencyin_interrupt_handler(uint8_t index) {
     Tc* tc = tc_insts[index];
 
-    if (tc->COUNT16.INTFLAG.bit.ERR) {
-        //err_count++; // for debug
-        tc->COUNT16.INTFLAG.reg |= TC_INTFLAG_ERR;
-    }
-    // TODO (sommersoft): calibrate freq based on the overflow
-    if (tc->COUNT16.INTFLAG.bit.OVF) {
-        //ovf_count++;  // for debug
-        tc->COUNT16.INTFLAG.reg |= TC_INTFLAG_OVF;
-    }
-
     if (!tc->COUNT16.INTFLAG.bit.MC0) return; // false trigger     
 
     pulseio_frequencyin_obj_t* self = active_frequencyins[index];
-    
-    #ifdef SAMD51
-    // get the current clock speed of DFLL48MHz using FREQM
-    self->base_clock = freqm_read();
-    if (self->base_clock < 0) {
-        mp_raise_RuntimeError("An error occurred in measuring the frequency. (FREQM peripheral usage.)");
-    }
-    #endif
+
     // since we use EVACT.PPW, the Period is put into the CC[0] register
     // and that's all we need. CC[1] will contain the Pulse Width.
     uint16_t freq = tc->COUNT16.CC[0].bit.CC;
@@ -127,9 +106,6 @@ void frequencyin_interrupt_handler(uint8_t index) {
     // Check if we've reached the upper limit of detection (~512kHz)
     if (freq < MAX_FREQUENCY && freq > 0){
         frequencyin_emergency_cancel_capture(index);
-        /*self->max_frequency_captured = true;
-    } else {
-        self->max_frequency_captured = false;*/
     }
 }
 
@@ -141,7 +117,7 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
 
     uint32_t mask = 1 << pin->extint_channel;
     if (eic_get_enable() == 1 &&
- #ifdef SAMD21
+#ifdef SAMD21
     ((EIC->INTENSET.vec.EXTINT & mask) != 0 || (EIC->EVCTRL.vec.EXTINTEO & mask) != 0)) {
 #endif
 #ifdef SAMD51
@@ -151,7 +127,6 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     }
 
     Tc *tc = NULL;
-    //#ifdef SAMD21 // Find a spare timer.
     int8_t index = TC_INST_NUM - 1;
     for (; index >= 0; index--) {
         if (tc_insts[index]->COUNT16.CTRLA.bit.ENABLE == 0) {
@@ -167,7 +142,6 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     self->tc_index = index;
     self->pin = pin->pin;
     self->channel = pin->extint_channel;
-    //self->max_frequency_captured = false;
     self->base_clock = 48000000;
     #ifdef SAMD21
     self->TC_IRQ = TC3_IRQn + index;
@@ -225,9 +199,9 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     tc->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_PPW_Val;
     tc->COUNT16.CTRLC.bit.CPTEN0 = 1;
     tc->COUNT16.INTENSET.bit.MC0 = 1;
-    #endif // end SAMD21
+    #endif
 
-    #ifdef SAMD51 // start SAMD51
+    #ifdef SAMD51
     tc_set_enable(tc, false);
     tc_reset(tc);
 
@@ -238,7 +212,7 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
                             TC_CTRLA_PRESCALER_DIV1 |
                             (1 << TC_CTRLA_CAPTEN0_Pos);
     tc->COUNT16.INTENSET.bit.MC0 = 1;
-    #endif // end SAMD51
+    #endif
 
     NVIC_EnableIRQ(self->TC_IRQ);
     
@@ -259,9 +233,9 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     tc_set_enable(tc, true);
     #ifdef SAMD51
     // setup the FREQM peripheral since DFLL is in open loop and may not be running
-    // at exactly 48MHz. FREQM uses GCLK11 sourced from OSCULP32K (@ 1kHz) for the
+    // at exactly 48MHz. FREQM uses a free GCLK sourced from OSCULP32K (@ 32kHz) for the
     // reference clock, and GCLK1 as the DFLL clock to measure.
-    freqm_init(GCLK_PCHCTRL_GEN_GCLK11_Val, GCLK_PCHCTRL_GEN_GCLK1_Val, 2);
+    freqm_init(GCLK_PCHCTRL_GEN_GCLK1_Val, 2);
     #endif
 }
 
@@ -287,6 +261,7 @@ void common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
     uint32_t masked_value = EIC->EVCTRL.bit.EXTINTEO;
     EIC->EVCTRL.bit.EXTINTEO = masked_value | (0 << self->channel);
     EIC->ASYNCH.bit.ASYNCH = 0;
+    freqm_deinit();
     #endif
 
     // check if any other objects are using the EIC; if not, turn it off
@@ -310,25 +285,27 @@ void common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
     active_frequencyins[self->tc_index] = NULL;
     self->tc_index = 0xff;
     self->pin = NO_PIN;
-    //self->max_frequency_captured = false;
     self->TC_IRQ = 0;
 
 }
 
 uint32_t common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self) {
-    //common_hal_mcu_disable_interrupts();
     NVIC_DisableIRQ(self->TC_IRQ);
     #ifdef SAMD21
     NVIC_DisableIRQ(EIC_IRQn);
     #endif
     #ifdef SAMD51
     NVIC_DisableIRQ(EIC_0_IRQn + self->channel);
+
+    // get the current clock speed of DFLL48MHz using FREQM
+    self->base_clock = freqm_read();
+    if (self->base_clock < 0) {
+        mp_raise_RuntimeError("An error occurred in measuring the frequency. (FREQM peripheral usage.)");
+    }
     #endif
 
     uint32_t value = self->base_clock / self->frequency;
-    //uint16_t value = self->frequency;
-    
-    //common_hal_mcu_enable_interrupts();
+
     NVIC_ClearPendingIRQ(self->TC_IRQ);
     NVIC_EnableIRQ(self->TC_IRQ);
     #ifdef SAMD21
@@ -350,11 +327,11 @@ void common_hal_pulseio_frequencyin_pause(pulseio_frequencyin_obj_t* self) {
     }
     tc->COUNT16.EVCTRL.bit.TCEI = 0;
     
-    #ifdef SAMD21 // pause the EIC
+    #ifdef SAMD21
     uint32_t masked_value = EIC->EVCTRL.vec.EXTINTEO;
     EIC->EVCTRL.vec.EXTINTEO = masked_value | (0 << self->channel);
     #endif
-    #ifdef SAMD51 // pause the EIC
+    #ifdef SAMD51
     uint32_t masked_value = EIC->EVCTRL.bit.EXTINTEO;
     EIC->EVCTRL.bit.EXTINTEO = masked_value | (0 << self->channel);
     #endif
@@ -368,11 +345,11 @@ void common_hal_pulseio_frequencyin_resume(pulseio_frequencyin_obj_t* self) {
     }
     tc->COUNT16.EVCTRL.bit.TCEI = 1;
     
-    #ifdef SAMD21 // resume the EIC
+    #ifdef SAMD21
     uint32_t masked_value = EIC->EVCTRL.vec.EXTINTEO;
     EIC->EVCTRL.vec.EXTINTEO = masked_value | (1 << self->channel);
     #endif
-    #ifdef SAMD51 // resume the EIC
+    #ifdef SAMD51
     uint32_t masked_value = EIC->EVCTRL.bit.EXTINTEO;
     EIC->EVCTRL.bit.EXTINTEO = masked_value | (1 << self->channel);
     #endif
@@ -390,7 +367,6 @@ void common_hal_pulseio_frequencyin_clear(pulseio_frequencyin_obj_t* self) {
 
     self->frequency = 0;
     self->pulse_width = 0;
-    //self->max_frequency_captured = false;
 
     NVIC_ClearPendingIRQ(self->TC_IRQ);
     NVIC_EnableIRQ(self->TC_IRQ);
