@@ -6,9 +6,16 @@ compiler:
 git:
   depth: 1
 env:
+  - TRAVIS_TEST=unix
+  - TRAVIS_TEST=docs
+  - TRAVIS_TEST=translations
   - TRAVIS_BOARD=feather_huzzah
-  - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
+  - TRAVIS_BOARD=pca10056
+  - TRAVIS_BOARD=trinket_m0
+  - TRAVIS_BOARD=feather_m4_express
+  - TRAVIS_BOARD=feather_radiofruit_zigbee
+  - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
   - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
@@ -16,19 +23,14 @@ env:
   - TRAVIS_BOARD=feather_m0_rfm9x
   - TRAVIS_BOARD=feather_m0_express
   - TRAVIS_BOARD=feather_m0_express_crickit
-  - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=itsybitsy_m4_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
   - TRAVIS_BOARD=pirkey_m0
-  - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
+  - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=feather52832
-  - TRAVIS_BOARD=pca10056
-  - TRAVIS_TEST=qemu
-  - TRAVIS_TEST=unix
-  - TRAVIS_TEST=docs
 
 addons:
   artifacts:
@@ -49,19 +51,19 @@ notifications:
 before_script:
   - sudo dpkg --add-architecture i386
 
-  - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y qemu-system)
-  - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
-  - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For huzzah builds
   - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
   # For coverage testing (upgrade is used to get latest urllib3 version)
+  - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y python3-pip)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
   - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
+  - ([[ $TRAVIS_TEST != "translations" ]] || sudo pip3 install polib)
   - gcc --version
-  - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
+  - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || arm-none-eabi-gcc --version)
   - python3 --version
 
 script:
@@ -79,10 +81,6 @@ script:
   - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix -j2)
   - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix coverage -j2)
   - echo -en 'travis_fold:end:unix\\r'
-
-  - echo 'Building qemu' && echo -en 'travis_fold:start:qemu\\r'
-  - ([[ $TRAVIS_TEST != "qemu" ]] || make -C ports/qemu-arm test -j2)
-  - echo -en 'travis_fold:end:qemu\\r'
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests -j1)
@@ -109,10 +107,12 @@ script:
   - ([[ $TRAVIS_TEST != "docs" ]] || sphinx-build -E -W -b html . _build/html)
   - echo -en 'travis_fold:end:build_docs\\r'
 
+  - (echo 'Building translations' && echo -en 'travis_fold:start:build_translations\\r')
+  - ([[ $TRAVIS_TEST != "translations" ]] || make check-translate)
+  - echo -en 'travis_fold:end:build_translations\\r'
 
   # run coveralls coverage analysis (try to, even if some builds/tests failed)
   #- (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" ports/qemu-arm/build/console.out)

@@ -89,6 +89,7 @@ SECTIONS
         *common-hal/*.o*(.literal* .text*)
         *shared-bindings/*.o*(.literal* .text*)
         *shared-module/*.o*(.literal* .text*)
+        *supervisor/*.o*(.literal* .text*)
 
         *py/argcheck.o*(.literal* .text*)
         *py/asm*.o*(.literal* .text*)
@@ -139,6 +140,7 @@ SECTIONS
         *lib/netutils/*.o*(.literal*, .text*)
         *lib/timeutils/*.o*(.literal*, .text*)
         *lib/utils/*.o*(.literal*, .text*)
+        *drivers/bus/*.o(.literal* .text*)
 
         build/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)

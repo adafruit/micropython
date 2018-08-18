@@ -144,7 +144,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
-    const char **caps = alloca(caps_num * sizeof(char*));
+    const char **caps = mp_local_alloc(caps_num * sizeof(char*));
     while (true) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
         memset((char**)caps, 0, caps_num * sizeof(char*));
@@ -158,13 +158,15 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, caps[0] - subj.begin);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
-            mp_raise_NotImplementedError("Splitting with sub-captures");
+            mp_raise_NotImplementedError(translate("Splitting with sub-captures"));
         }
         subj.begin = caps[1];
         if (maxsplit > 0 && --maxsplit == 0) {
             break;
         }
     }
+    // cast is a workaround for a bug in msvc (see above)
+    mp_local_free((char**)caps);
 
     mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
     mp_obj_list_append(retval, s);
@@ -202,7 +204,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
 error:
-        mp_raise_ValueError("Error in regex");
+        mp_raise_ValueError(translate("Error in regex"));
     }
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);

@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "supervisor/shared/translate.h"
 
 #include "tick.h"
 
@@ -62,13 +63,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t tx_pad = 255; // Unset pad
 
     if (bits > 8) {
-        mp_raise_NotImplementedError("bytes > 8 bits not supported");
+        mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
     }
 
     bool have_tx = tx != mp_const_none;
     bool have_rx = rx != mp_const_none;
     if (!have_tx && !have_rx) {
-        mp_raise_ValueError("tx and rx cannot both be None");
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
     self->baudrate = baudrate;
@@ -91,7 +92,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
-            tx_pinmux = PINMUX(tx->pin, (i == 0) ? MUX_C : MUX_D);
+            tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (rx == mp_const_none) {
                 sercom = potential_sercom;
@@ -103,7 +104,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                   sercom_insts[rx->sercom[j].index]->USART.CTRLA.bit.ENABLE == 0) ||
                  sercom_index == rx->sercom[j].index) &&
                 rx->sercom[j].pad != tx_pad) {
-                rx_pinmux = PINMUX(rx->pin, (j == 0) ? MUX_C : MUX_D);
+                rx_pinmux = PINMUX(rx->number, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
                 sercom = sercom_insts[rx->sercom[j].index];
                 sercom_index = rx->sercom[j].index;
@@ -115,7 +116,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        mp_raise_ValueError("Invalid pins");
+        mp_raise_ValueError(translate("Invalid pins"));
     }
     if (!have_tx) {
         tx_pad = 0;
@@ -135,7 +136,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, false);
         if (self->buffer == NULL) {
             common_hal_busio_uart_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
+            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
     } else {
         self->buffer_length = 0;
@@ -143,7 +144,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (usart_async_init(usart_desc_p, sercom, self->buffer, self->buffer_length, NULL) != ERR_NONE) {
-        mp_raise_ValueError("Could not initialize UART");
+        mp_raise_ValueError(translate("Could not initialize UART"));
     }
 
     // usart_async_init() sets a number of defaults based on a prototypical SERCOM
@@ -187,20 +188,20 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
 
     if (have_tx) {
-        gpio_set_pin_direction(tx->pin, GPIO_DIRECTION_OUT);
-        gpio_set_pin_pull_mode(tx->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(tx->pin, tx_pinmux);
-        self->tx_pin  = tx->pin;
+        gpio_set_pin_direction(tx->number, GPIO_DIRECTION_OUT);
+        gpio_set_pin_pull_mode(tx->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(tx->number, tx_pinmux);
+        self->tx_pin  = tx->number;
         claim_pin(tx);
     } else {
         self->tx_pin = NO_PIN;
     }
 
     if (have_rx) {
-        gpio_set_pin_direction(rx->pin, GPIO_DIRECTION_IN);
-        gpio_set_pin_pull_mode(rx->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(rx->pin, rx_pinmux);
-        self->rx_pin  = rx->pin;
+        gpio_set_pin_direction(rx->number, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(rx->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(rx->number, rx_pinmux);
+        self->rx_pin  = rx->number;
         claim_pin(rx);
     } else {
         self->rx_pin = NO_PIN;
@@ -230,7 +231,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NO_PIN) {
-        mp_raise_ValueError("No RX pin");
+        mp_raise_ValueError(translate("No RX pin"));
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.
@@ -280,7 +281,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
-        mp_raise_ValueError("No TX pin");
+        mp_raise_ValueError(translate("No TX pin"));
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.

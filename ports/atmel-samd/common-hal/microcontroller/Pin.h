@@ -27,45 +27,9 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
 
-#include "py/obj.h"
+#include <assert.h>
 
-#include "mpconfigport.h"
-
-#include "include/component/sercom.h"
-
-typedef struct {
-    uint8_t index:6;            // 0, 1, etc. corresponding to SERCOM<n>.
-    uint8_t pad:2;              // which of the four SERCOM pads to use
-} pin_sercom_t;
-
-typedef struct {
-    uint8_t index;
-    bool is_tc:1;
-    uint8_t wave_output:7;
-} pin_timer_t;
-
-#ifdef SAMD21
-    #define NUM_TIMERS_PER_PIN 2
-    #define NUM_ADC_PER_PIN 1
-#endif
-#ifdef SAMD51
-    #define NUM_TIMERS_PER_PIN 3
-    #define NUM_ADC_PER_PIN 2
-#endif
-#define NUM_SERCOMS_PER_PIN 2
-
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    uint8_t pin;
-    bool has_extint:1;
-    uint8_t extint_channel:7;
-    bool has_touch:1;
-    uint8_t touch_y_line:7; // 0 - 15. Assumed to be Y channel.
-    uint8_t adc_input[NUM_ADC_PER_PIN];
-    pin_timer_t timer[NUM_TIMERS_PER_PIN];
-    pin_sercom_t sercom[NUM_SERCOMS_PER_PIN];
-} mcu_pin_obj_t;
+#include "peripherals/samd/pins.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 extern bool neopixel_in_use;
@@ -80,7 +44,5 @@ void reset_all_pins(void);
 // need to store a full pointer.
 void reset_pin(uint8_t pin);
 void claim_pin(const mcu_pin_obj_t* pin);
-
-#include "peripherals/samd/pins.h"
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H

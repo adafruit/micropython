@@ -123,6 +123,9 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
+
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 
@@ -171,6 +174,7 @@ extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
+extern const struct _mp_obj_module_t i2cslave_module;
 extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
@@ -210,17 +214,30 @@ extern const struct _mp_obj_module_t usb_hid_module;
     // Scan gamepad every 32ms
     #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
-    #if defined(__SAMD51G19A__) || defined(__SAMD51G18A__)
+    #if defined(__SAMD51G19A__) || defined(__SAMD51G18A__) || defined(__SAMR21G18A__)
         #define AUDIOBUSIO_MODULE
     #else
         #define AUDIOBUSIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
     #endif
 
+    #if defined(__SAMR21G18A__)
+        #define AUDIOIO_MODULE
+    #else
+        #define AUDIOIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
+    #endif
+
+    #ifdef CIRCUITPY_I2CSLAVE
+        #define I2CSLAVE_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_i2cslave), (mp_obj_t)&i2cslave_module },
+    #else
+        #define I2CSLAVE_MODULE
+    #endif
+
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
+        AUDIOIO_MODULE \
         AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
+        I2CSLAVE_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
     #endif
@@ -334,5 +351,9 @@ void run_background_tasks(void);
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+
+// TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
+// stack.
+#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

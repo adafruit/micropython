@@ -1,7 +1,3 @@
-# Set default python interpreters
-PYTHON2 ?= $(which python2 || which python2.7)
-PYTHON3 ?= python3
-
 # Select the board to build for.
 ifeq ($(BOARD),)
   $(error You must provide a BOARD parameter)
@@ -288,7 +284,8 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/autogen_usb_descriptor.c \
-	freetouch/adafruit_ptc.c
+	freetouch/adafruit_ptc.c \
+	supervisor/shared/memory.c
 
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
@@ -311,6 +308,8 @@ SRC_COMMON_HAL = \
 	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
+	i2cslave/__init__.c \
+	i2cslave/I2CSlave.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
@@ -336,8 +335,6 @@ SRC_COMMON_HAL = \
 	pulseio/FrequencyIn.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c \
-	audioio/__init__.c \
-	audioio/AudioOut.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
 
@@ -378,13 +375,8 @@ SRC_BINDINGS_ENUMS = \
 	supervisor/__init__.c \
 	util.c
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
@@ -402,16 +394,32 @@ SRC_SHARED_MODULE = \
 	uheap/__init__.c \
 	ustack/__init__.c
 
+# SAMRs don't have a DAC
+ifneq ($(CHIP_VARIANT),SAMR21G18A)
+	SRC_COMMON_HAL += \
+		audioio/__init__.c \
+		audioio/AudioOut.c
+	SRC_SHARED_MODULE += \
+		audioio/RawSample.c \
+		audioio/WaveFile.c
+endif
+
 # The smallest SAMD51 packages don't have I2S. Everything else does.
 ifneq ($(CHIP_VARIANT),SAMD51G18A)
 	ifneq ($(CHIP_VARIANT),SAMD51G19A)
-		SRC_COMMON_HAL += \
-			audiobusio/__init__.c \
-			audiobusio/I2SOut.c \
-			audiobusio/PDMIn.c
-		SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
+		ifneq ($(CHIP_VARIANT),SAMR21G18A)
+			SRC_COMMON_HAL += \
+				audiobusio/__init__.c \
+				audiobusio/I2SOut.c \
+				audiobusio/PDMIn.c
+			SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
+		endif
 	endif
 endif
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
@@ -428,6 +436,8 @@ endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
+# Sources that only hold QSTRs after pre-processing.
+SRC_QSTR_PREPROCESSOR += peripherals/samd/$(CHIP_FAMILY)/clocks.c
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
@@ -437,20 +447,21 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
+	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
-	$(ECHO) "Create $@"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
+	$(STEPECHO) "Create $@"
+	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
 
 .INTERMEDIATE: autogen_usb_descriptor.intermediate
 
-autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
-	install -d $(BUILD)/genhdr
-	$(PYTHON3) tools/gen_usb_descriptor.py \
+autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)install -d $(BUILD)/genhdr
+	$(Q)$(PYTHON3) tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\

@@ -34,6 +34,8 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
+#include "supervisor/shared/translate.h"
+
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
@@ -164,7 +166,14 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
                 #endif
-                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
+
+                // Check if a qstr with this data already exists
+                qstr q = qstr_find_strn((const char*)str_data, str_len);
+                if (q != MP_QSTR_NULL) {
+                    return MP_OBJ_NEW_QSTR(q);
+                }
+
+                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
                 return MP_OBJ_FROM_PTR(o);
@@ -176,7 +185,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
                 #endif
-                return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
+                return mp_obj_new_str(bufinfo.buf, bufinfo.len);
             }
     }
 }
@@ -205,7 +214,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         if (str_hash == 0) {
             str_hash = qstr_compute_hash(str_data, str_len);
         }
-        mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len));
+        mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(&mp_type_bytes, NULL, str_len));
         o->data = str_data;
         o->hash = str_hash;
         return MP_OBJ_FROM_PTR(o);
@@ -216,7 +225,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     }
 
     if (MP_OBJ_IS_SMALL_INT(args[0])) {
-        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        if (len < 0) {
+            mp_raise_ValueError(NULL);
+        }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
@@ -226,7 +238,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // check if argument has the buffer protocol
     mp_buffer_info_t bufinfo;
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
-        return mp_obj_new_str_of_type(&mp_type_bytes, bufinfo.buf, bufinfo.len);
+        return mp_obj_new_bytes(bufinfo.buf, bufinfo.len);
     }
 
     vstr_t vstr;
@@ -246,7 +258,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         mp_int_t val = mp_obj_get_int(item);
         #if MICROPY_FULL_CHECKS
         if (val < 0 || val > 255) {
-            mp_raise_ValueError("bytes value out of range");
+            mp_raise_ValueError(translate("bytes value out of range"));
         }
         #endif
         vstr_add_byte(&vstr, val);
@@ -255,7 +267,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 
 wrong_args:
-    mp_raise_TypeError("wrong number of arguments");
+    mp_raise_TypeError(translate("wrong number of arguments"));
 }
 
 // like strstr but with specified length and allows \0 bytes
@@ -377,8 +389,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             return mp_obj_new_str_from_vstr(lhs_type, &vstr);
         }
 
-        case MP_BINARY_OP_IN:
-            /* NOTE `a in b` is `b.__contains__(a)` */
+        case MP_BINARY_OP_CONTAINS:
             return mp_obj_new_bool(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
 
         //case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
@@ -413,7 +424,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
             }
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
@@ -423,7 +434,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MICROPY_PY_BUILTINS_STR_UNICODE || type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         } else {
-            return mp_obj_new_str((char*)&self_data[index_val], 1, true);
+            return mp_obj_new_str_via_qstr((char*)&self_data[index_val], 1);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -453,7 +464,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     for (size_t i = 0; i < seq_len; i++) {
         if (mp_obj_get_type(seq_items[i]) != self_type) {
             mp_raise_TypeError(
-                "join expects a list of str/bytes objects consistent with self object");
+                translate("join expects a list of str/bytes objects consistent with self object"));
         }
         if (i > 0) {
             required_len += sep_len;
@@ -528,7 +539,7 @@ mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
-            mp_raise_ValueError("empty separator");
+            mp_raise_ValueError(translate("empty separator"));
         }
 
         for (;;) {
@@ -627,13 +638,13 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = splits;
 
     if (sep == mp_const_none) {
-        mp_raise_NotImplementedError("rsplit(None,n)");
+        mp_raise_NotImplementedError(translate("rsplit(None,n)"));
     } else {
         size_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
-            mp_raise_ValueError("empty separator");
+            mp_raise_ValueError(translate("empty separator"));
         }
 
         const byte *beg = s;
@@ -654,9 +665,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
             }
             res->items[idx--] = mp_obj_new_str_of_type(self_type, s + sep_len, last - s - sep_len);
             last = s;
-            if (splits > 0) {
-                splits--;
-            }
+            splits--;
         }
         if (idx != 0) {
             // We split less parts than split limit, now go cleanup surplus
@@ -701,7 +710,7 @@ STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
     out_error:
         // not found
         if (is_index) {
-            mp_raise_ValueError("substring not found");
+            mp_raise_ValueError(translate("substring not found"));
         } else {
             return MP_OBJ_NEW_SMALL_INT(-1);
         }
@@ -758,7 +767,7 @@ STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     size_t suffix_len;
     const char *suffix = mp_obj_str_get_data(args[1], &suffix_len);
     if (n_args > 2) {
-        mp_raise_NotImplementedError("start/end indices");
+        mp_raise_NotImplementedError(translate("start/end indices"));
     }
 
     if (suffix_len > str_len) {
@@ -919,7 +928,7 @@ STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
 STATIC NORETURN void terse_str_format_value_error(void) {
-    mp_raise_ValueError("bad format string");
+    mp_raise_ValueError(translate("bad format string"));
 }
 #else
 // define to nothing to improve coverage
@@ -941,7 +950,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
-                mp_raise_ValueError("single '}' encountered in format string");
+                mp_raise_ValueError(translate("single '}' encountered in format string"));
             }
         }
         if (*str != '{') {
@@ -980,13 +989,13 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
-                    mp_raise_ValueError("bad conversion specifier");
+                    mp_raise_ValueError(translate("bad conversion specifier"));
                 } else {
                     if (str >= top) {
                         mp_raise_ValueError(
-                            "end of format while looking for conversion specifier");
+                            translate("end of format while looking for conversion specifier"));
                     } else {
-                        mp_raise_ValueError_varg("unknown conversion specifier %c", *str);
+                        mp_raise_ValueError_varg(translate("unknown conversion specifier %c"), *str);
                     }
                 }
             }
@@ -1017,14 +1026,14 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
-                mp_raise_ValueError("unmatched '{' in format");
+                mp_raise_ValueError(translate("unmatched '{' in format"));
             }
         }
         if (*str != '}') {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
-                mp_raise_ValueError("expected ':' after format specifier");
+                mp_raise_ValueError(translate("expected ':' after format specifier"));
             }
         }
 
@@ -1038,19 +1047,19 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError(
-                            "can't switch from automatic field numbering to manual field specification");
+                            translate("can't switch from automatic field numbering to manual field specification"));
                     }
                 }
                 field_name = str_to_int(field_name, field_name_top, &index);
                 if ((uint)index >= n_args - 1) {
-                    mp_raise_IndexError("tuple index out of range");
+                    mp_raise_IndexError(translate("tuple index out of range"));
                 }
                 arg = args[index + 1];
                 *arg_i = -1;
             } else {
                 const char *lookup;
                 for (lookup = field_name; lookup < field_name_top && *lookup != '.' && *lookup != '['; lookup++);
-                mp_obj_t field_q = mp_obj_new_str(field_name, lookup - field_name, true/*?*/);
+                mp_obj_t field_q = mp_obj_new_str_via_qstr(field_name, lookup - field_name); // should it be via qstr?
                 field_name = lookup;
                 mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
                 if (key_elem == NULL) {
@@ -1059,7 +1068,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 arg = key_elem->value;
             }
             if (field_name < field_name_top) {
-                mp_raise_NotImplementedError("attributes not supported yet");
+                mp_raise_NotImplementedError(translate("attributes not supported yet"));
             }
         } else {
             if (*arg_i < 0) {
@@ -1067,11 +1076,11 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     terse_str_format_value_error();
                 } else {
                     mp_raise_ValueError(
-                        "can't switch from manual field specification to automatic field numbering");
+                        translate("can't switch from manual field specification to automatic field numbering"));
                 }
             }
             if ((uint)*arg_i >= n_args - 1) {
-                mp_raise_IndexError("tuple index out of range");
+                mp_raise_IndexError(translate("tuple index out of range"));
             }
             arg = args[(*arg_i) + 1];
             (*arg_i)++;
@@ -1159,7 +1168,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_ValueError("invalid format specifier");
+                    mp_raise_ValueError(translate("invalid format specifier"));
                 }
             }
             vstr_clear(&format_spec_vstr);
@@ -1180,7 +1189,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_ValueError("sign not allowed in string format specifier");
+                    mp_raise_ValueError(translate("sign not allowed in string format specifier"));
                 }
             }
             if (type == 'c') {
@@ -1188,7 +1197,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     terse_str_format_value_error();
                 } else {
                     mp_raise_ValueError(
-                        "sign not allowed with integer format specifier 'c'");
+                        translate("sign not allowed with integer format specifier 'c'"));
                 }
             }
         }
@@ -1247,7 +1256,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            "unknown format code '%c' for object of type '%s'",
+                            translate("unknown format code '%c' for object of type '%s'"),
                             type, mp_obj_get_type_str(arg));
                     }
             }
@@ -1319,7 +1328,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            "unknown format code '%c' for object of type 'float'",
+                            translate("unknown format code '%c' for object of type 'float'"),
                             type, mp_obj_get_type_str(arg));
                     }
             }
@@ -1331,7 +1340,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     terse_str_format_value_error();
                 } else {
                     mp_raise_ValueError(
-                        "'=' alignment not allowed in string format specifier");
+                        translate("'=' alignment not allowed in string format specifier"));
                 }
             }
 
@@ -1355,7 +1364,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            "unknown format code '%c' for object of type 'str'",
+                            translate("unknown format code '%c' for object of type 'str'"),
                             type, mp_obj_get_type_str(arg));
                     }
             }
@@ -1403,7 +1412,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         // Dictionary value lookup
         if (*str == '(') {
             if (dict == MP_OBJ_NULL) {
-                mp_raise_TypeError("format requires a dict");
+                mp_raise_TypeError(translate("format requires a dict"));
             }
             arg_i = 1; // we used up the single dict argument
             const byte *key = ++str;
@@ -1412,12 +1421,12 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
-                        mp_raise_ValueError("incomplete format key");
+                        mp_raise_ValueError(translate("incomplete format key"));
                     }
                 }
                 ++str;
             }
-            mp_obj_t k_obj = mp_obj_new_str((const char*)key, str - key, true);
+            mp_obj_t k_obj = mp_obj_new_str_via_qstr((const char*)key, str - key);
             arg = mp_obj_dict_get(dict, k_obj);
             str++;
         }
@@ -1470,7 +1479,7 @@ incomplete_format:
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
-                mp_raise_ValueError("incomplete format");
+                mp_raise_ValueError(translate("incomplete format"));
             }
         }
 
@@ -1478,7 +1487,7 @@ incomplete_format:
         if (arg == MP_OBJ_NULL) {
             if (arg_i >= n_args) {
 not_enough_args:
-                mp_raise_TypeError("not enough arguments for format string");
+                mp_raise_TypeError(translate("not enough arguments for format string"));
             }
             arg = args[arg_i++];
         }
@@ -1488,14 +1497,14 @@ not_enough_args:
                     size_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
                     if (slen != 1) {
-                        mp_raise_TypeError("%%c requires int or char");
+                        mp_raise_TypeError(translate("%%c requires int or char"));
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
                 } else {
-                    mp_raise_TypeError("integer required");
+                    mp_raise_TypeError(translate("integer required"));
                 }
                 break;
 
@@ -1558,14 +1567,14 @@ not_enough_args:
                     terse_str_format_value_error();
                 } else {
                     mp_raise_ValueError_varg(
-                        "unsupported format character '%c' (0x%x) at index %d",
+                        translate("unsupported format character '%c' (0x%x) at index %d"),
                         *str, *str, str - start_str);
                 }
         }
     }
 
     if (arg_i != n_args) {
-        mp_raise_TypeError("not all arguments converted during string formatting");
+        mp_raise_TypeError(translate("not all arguments converted during string formatting"));
     }
 
     return mp_obj_new_str_from_vstr(is_bytes ? &mp_type_bytes : &mp_type_str, &vstr);
@@ -1702,7 +1711,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
 
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
-        return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char*)start, end - start) + 1);
+        return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
     }
 
     // count the occurrences
@@ -1732,7 +1741,7 @@ STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
     GET_STR_DATA_LEN(arg, sep, sep_len);
 
     if (sep_len == 0) {
-        mp_raise_ValueError("empty separator");
+        mp_raise_ValueError(translate("empty separator"));
     }
 
     mp_obj_t result[3];
@@ -1981,8 +1990,9 @@ const mp_obj_type_t mp_type_bytes = {
 const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const byte*)""};
 
 // Create a str/bytes object using the given data.  New memory is allocated and
-// the data is copied across.
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len) {
+// the data is copied across.  This function should only be used if the type is bytes,
+// or if the type is str and the string data is known to be not interned.
+mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte* data, size_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
@@ -1994,6 +2004,22 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, siz
         p[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
     }
     return MP_OBJ_FROM_PTR(o);
+}
+
+// Create a str/bytes object using the given data.  If the type is str and the string
+// data is already interned, then a qstr object is returned.  Otherwise new memory is
+// allocated for the object and the data is copied across.
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len) {
+    if (type == &mp_type_str) {
+        return mp_obj_new_str((const char*)data, len);
+    } else {
+        return mp_obj_new_bytes(data, len);
+    }
+}
+
+// Create a str using a qstr to store the data; may use existing or new qstr.
+mp_obj_t mp_obj_new_str_via_qstr(const char* data, size_t len) {
+    return MP_OBJ_NEW_QSTR(qstr_from_strn(data, len));
 }
 
 // Create a str/bytes object from the given vstr.  The vstr buffer is resized to
@@ -2026,29 +2052,30 @@ mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_obj_t mp_obj_new_str(const char* data, size_t len, bool make_qstr_if_not_already) {
-    if (make_qstr_if_not_already) {
-        // use existing, or make a new qstr
-        return MP_OBJ_NEW_QSTR(qstr_from_strn(data, len));
+mp_obj_t mp_obj_new_str(const char* data, size_t len) {
+    qstr q = qstr_find_strn(data, len);
+    if (q != MP_QSTR_NULL) {
+        // qstr with this data already exists
+        return MP_OBJ_NEW_QSTR(q);
     } else {
-        qstr q = qstr_find_strn(data, len);
-        if (q != MP_QSTR_NULL) {
-            // qstr with this data already exists
-            return MP_OBJ_NEW_QSTR(q);
-        } else {
-            // no existing qstr, don't make one
-            return mp_obj_new_str_of_type(&mp_type_str, (const byte*)data, len);
-        }
+        // no existing qstr, don't make one
+        return mp_obj_new_str_copy(&mp_type_str, (const byte*)data, len);
     }
 }
 
 mp_obj_t mp_obj_str_intern(mp_obj_t str) {
     GET_STR_DATA_LEN(str, data, len);
-    return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
+    return mp_obj_new_str_via_qstr((const char*)data, len);
+}
+
+mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj) {
+    size_t len;
+    const char *data = mp_obj_str_get_data(obj, &len);
+    return mp_obj_new_str_via_qstr((const char*)data, len);
 }
 
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len) {
-    return mp_obj_new_str_of_type(&mp_type_bytes, data, len);
+    return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
@@ -2070,13 +2097,13 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     }
 }
 
-STATIC void bad_implicit_conversion(mp_obj_t self_in) {
+STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_TypeError("can't convert to str implicitly");
+        mp_raise_TypeError(translate("can't convert to str implicitly"));
     } else {
         const qstr src_name = mp_obj_get_type(self_in)->name;
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "can't convert '%q' object to %q implicitly",
+            translate("can't convert '%q' object to %q implicitly"),
             src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));
     }
 }
@@ -2142,7 +2169,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
-        mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
+        mp_obj_t o_out = mp_obj_new_str_via_qstr((const char*)str + self->cur, 1);
         self->cur += 1;
         return o_out;
     } else {

@@ -53,6 +53,22 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t mosi_pad = 0;
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
+    #ifdef PIN_PC19
+    if (miso == &pin_PC19) {
+        if (mosi == &pin_PB30 && clock == &pin_PC18) {
+            sercom = SERCOM4;
+            sercom_index = 4;
+            clock_pinmux = MUX_F;
+            mosi_pinmux = MUX_F;
+            miso_pinmux = MUX_F;
+            clock_pad = 3;
+            mosi_pad = 2;
+            miso_pad = 0;
+            dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
+        }
+        // Error, leave SERCOM unset to throw an exception later.
+    } else {
+    #endif
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
         if (sercom_index >= SERCOM_INST_NUM) {
@@ -69,7 +85,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         #endif
             continue;
         }
-        clock_pinmux = PINMUX(clock->pin, (i == 0) ? MUX_C : MUX_D);
+        clock_pinmux = PINMUX(clock->number, (i == 0) ? MUX_C : MUX_D);
         clock_pad = clock->sercom[i].pad;
         if (!samd_peripherals_valid_spi_clock_pad(clock_pad)) {
             continue;
@@ -77,7 +93,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (!mosi_none) {
                 if (sercom_index == mosi->sercom[j].index) {
-                    mosi_pinmux = PINMUX(mosi->pin, (j == 0) ? MUX_C : MUX_D);
+                    mosi_pinmux = PINMUX(mosi->number, (j == 0) ? MUX_C : MUX_D);
                     mosi_pad = mosi->sercom[j].pad;
                     dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
                     if (dopo > 0x3) {
@@ -94,7 +110,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             if (!miso_none) {
                 for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
                     if (sercom_index == miso->sercom[k].index) {
-                        miso_pinmux = PINMUX(miso->pin, (k == 0) ? MUX_C : MUX_D);
+                        miso_pinmux = PINMUX(miso->number, (k == 0) ? MUX_C : MUX_D);
                         miso_pad = miso->sercom[k].pad;
                         sercom = potential_sercom;
                         break;
@@ -109,8 +125,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             break;
         }
     }
+    #ifdef PIN_PC19
+    }
+    #endif
     if (sercom == NULL) {
-        mp_raise_ValueError("Invalid pins");
+        mp_raise_ValueError(translate("Invalid pins"));
     }
 
     // Set up SPI clocks on SERCOM.
@@ -138,29 +157,29 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_OSError(MP_EIO);
     }
 
-    gpio_set_pin_direction(clock->pin, GPIO_DIRECTION_OUT);
-    gpio_set_pin_pull_mode(clock->pin, GPIO_PULL_OFF);
-    gpio_set_pin_function(clock->pin, clock_pinmux);
+    gpio_set_pin_direction(clock->number, GPIO_DIRECTION_OUT);
+    gpio_set_pin_pull_mode(clock->number, GPIO_PULL_OFF);
+    gpio_set_pin_function(clock->number, clock_pinmux);
     claim_pin(clock);
-    self->clock_pin = clock->pin;
+    self->clock_pin = clock->number;
 
     if (mosi_none) {
         self->MOSI_pin = NO_PIN;
     } else {
-        gpio_set_pin_direction(mosi->pin, GPIO_DIRECTION_OUT);
-        gpio_set_pin_pull_mode(mosi->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(mosi->pin, mosi_pinmux);
-        self->MOSI_pin = mosi->pin;
+        gpio_set_pin_direction(mosi->number, GPIO_DIRECTION_OUT);
+        gpio_set_pin_pull_mode(mosi->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(mosi->number, mosi_pinmux);
+        self->MOSI_pin = mosi->number;
         claim_pin(mosi);
     }
 
     if (miso_none) {
         self->MISO_pin = NO_PIN;
     } else {
-        gpio_set_pin_direction(miso->pin, GPIO_DIRECTION_IN);
-        gpio_set_pin_pull_mode(miso->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(miso->pin, miso_pinmux);
-        self->MISO_pin = miso->pin;
+        gpio_set_pin_direction(miso->number, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(miso->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(miso->number, miso_pinmux);
+        self->MISO_pin = miso->number;
         claim_pin(miso);
     }
 

@@ -67,10 +67,6 @@
 #define MICROPY_VFS                              (1)
 #define MICROPY_VFS_FAT                          (MICROPY_VFS)
 
-// TODO these should be generic, not bound to fatfs
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
-
 // use vfs's functions for import stat and builtin open
 #if MICROPY_VFS
 #define mp_import_stat mp_vfs_import_stat
@@ -99,18 +95,18 @@
 #define MICROPY_MODULE_BUILTIN_INIT              (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO          (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN            (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN            (1)
 #define MICROPY_NONSTANDARD_TYPECODES            (0)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS          (0)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS          (1)
 #define MICROPY_PY_SYS_EXIT                      (1)
 #define MICROPY_PY_SYS_MAXSIZE                   (1)
-#define MICROPY_PY_SYS_STDFILES                  (0)
-#define MICROPY_PY_SYS_STDIO_BUFFER              (0)
+#define MICROPY_PY_SYS_STDFILES                  (1)
+#define MICROPY_PY_SYS_STDIO_BUFFER              (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (0)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS        (0)
 #define MICROPY_PY_CMATH                         (0)
-#define MICROPY_PY_IO                            (0)
-#define MICROPY_PY_IO_FILEIO                     (0)
+#define MICROPY_PY_IO                            (1)
+#define MICROPY_PY_IO_FILEIO                     (1)
 #define MICROPY_PY_UERRNO                        (0)
 #define MICROPY_PY_UBINASCII                     (1)
 #define MICROPY_PY_URANDOM                       (0)
@@ -165,6 +161,9 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#define mp_type_fileio mp_type_vfs_fat_fileio
+
 // extra built in modules to add to the list of known ones
 
 extern const struct _mp_obj_module_t microcontroller_module;
@@ -181,6 +180,7 @@ extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
+extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
 
 extern const struct _mp_obj_module_t mp_module_ubluepy;
@@ -197,6 +197,12 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 #define BLEIO_MODULE
 #endif
 
+#ifdef NRF52840_XXAA
+#define USBHID_MODULE                       { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid), (mp_obj_t)&usb_hid_module },
+#else
+#define USBHID_MODULE
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR (MP_QSTR_board           ), (mp_obj_t)&board_module           }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_busio           ), (mp_obj_t)&busio_module           }, \
@@ -207,27 +213,26 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
     { MP_OBJ_NEW_QSTR (MP_QSTR_bitbangio       ), (mp_obj_t)&bitbangio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
-    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
+    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_struct          ), (mp_obj_t)&struct_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
-    BLEIO_MODULE \
+    USBHID_MODULE  \
+    BLEIO_MODULE   \
     UBLUEPY_MODULE \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR     (MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) }, \
-    { MP_OBJ_NEW_QSTR (MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj  }, \
-    { MP_ROM_QSTR     (MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) }, \
+    { MP_ROM_QSTR     (MP_QSTR_help  ), MP_ROM_PTR(&mp_builtin_help_obj) }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_input ), (mp_obj_t)&mp_builtin_input_obj  }, \
+    { MP_ROM_QSTR     (MP_QSTR_open  ), MP_ROM_PTR(&mp_builtin_open_obj) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t gamepad_singleton; \
-
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -237,5 +242,6 @@ void run_background_tasks(void);
 #define MICROPY_VM_HOOK_RETURN  run_background_tasks();
 
 //#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif

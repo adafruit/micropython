@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/translate.h"
 #include "usb.h"
 
 extern volatile bool mp_msc_enabled;
@@ -44,7 +45,7 @@ void common_hal_storage_remount(const char* mount_path, bool readonly) {
     // TODO(dhalbert): is this is a good enough check? It checks for
     // CDC enabled. There is no "MSC enabled" check.
     if (usb_connected()) {
-        mp_raise_RuntimeError("Cannot remount '/' when USB is active.");
+        mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
     }
 
     flash_set_usb_writable(readonly);

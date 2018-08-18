@@ -38,6 +38,8 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -45,6 +47,8 @@
 #define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
 #endif
+
+#if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 #define PATH_SEP_CHAR '/'
 
@@ -246,7 +250,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #else
 
     // If we get here then the file was not frozen and we can't compile scripts.
-    mp_raise_ImportError("script compilation not supported");
+    mp_raise_ImportError(translate("script compilation not supported"));
     #endif
 }
 
@@ -331,11 +335,11 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         // We must have some component left over to import from
         if (p == this_name) {
-            mp_raise_ValueError("cannot perform relative import");
+            mp_raise_ValueError(translate("cannot perform relative import"));
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
-        char *new_mod = alloca(new_mod_l);
+        char *new_mod = mp_local_alloc(new_mod_l);
         memcpy(new_mod, this_name, p - this_name);
         if (mod_len != 0) {
             new_mod[p - this_name] = '.';
@@ -343,9 +347,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         }
 
         qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
+        mp_local_free(new_mod);
         DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
-        mod_str = new_mod;
+        mod_str = qstr_str(new_mod_q);
         mod_len = new_mod_l;
     }
 
@@ -406,6 +411,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     }
                     // found weak linked module
                     module_obj = el->value;
+                    mp_module_call_init(mod_name, module_obj);
                 } else {
                     no_exist:
                 #else
@@ -413,10 +419,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 #endif
                     // couldn't find the file, so fail
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                        mp_raise_ImportError("module not found");
+                        mp_raise_ImportError(translate("module not found"));
                     } else {
                         mp_raise_msg_varg(&mp_type_ImportError,
-                            "no module named '%q'", mod_name);
+                            translate("no module named '%q'"), mod_name);
                     }
                 }
             } else {
@@ -452,7 +458,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     DEBUG_printf("%.*s is dir\n", vstr_len(&path), vstr_str(&path));
                     // https://docs.python.org/3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
-                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
+                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
                     size_t orig_path_len = path.len;
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
@@ -497,4 +503,41 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     // Otherwise, we need to return top-level package
     return top_module_obj;
 }
+
+#else // MICROPY_ENABLE_EXTERNAL_IMPORT
+
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+    // Check that it's not a relative import
+    if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
+        mp_raise_NotImplementedError(translate("relative import"));
+    }
+
+    // Check if module already exists, and return it if it does
+    qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
+    mp_obj_t module_obj = mp_module_get(module_name_qstr);
+    if (module_obj != MP_OBJ_NULL) {
+        return module_obj;
+    }
+
+    #if MICROPY_MODULE_WEAK_LINKS
+    // Check if there is a weak link to this module
+    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
+    if (el != NULL) {
+        // Found weak-linked module
+        mp_module_call_init(module_name_qstr, el->value);
+        return el->value;
+    }
+    #endif
+
+    // Couldn't find the module, so fail
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        mp_raise_msg(&mp_type_ImportError, translate("module not found"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+            translate("no module named '%q'"), module_name_qstr));
+    }
+}
+
+#endif // MICROPY_ENABLE_EXTERNAL_IMPORT
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);

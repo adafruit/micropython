@@ -32,6 +32,7 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
@@ -44,18 +45,21 @@
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    if (pin->pin != PIN_PA02
+    #if defined(SAMD21) && !defined(PIN_PA02)
+    mp_raise_NotImplementedError(translate("No DAC on chip"));
+    #else
+    if (pin->number != PIN_PA02
     #ifdef SAMD51
-        && pin->pin != PIN_PA05
+        && pin->number != PIN_PA05
     #endif
     ) {
-        mp_raise_ValueError("AnalogOut not supported on given pin");
+        mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
         return;
     }
 
     self->channel = 0;
     #ifdef SAMD51
-    if (pin->pin == PIN_PA05) {
+    if (pin->number == PIN_PA05) {
         self->channel = 1;
     }
     #endif
@@ -93,9 +97,10 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     }
     claim_pin(pin);
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_B);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
 
     dac_sync_enable_channel(&self->descriptor, self->channel);
+    #endif
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
@@ -103,6 +108,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
+    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     if (common_hal_analogio_analogout_deinited(self)) {
         return;
     }
@@ -118,16 +124,23 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     #endif
     self->deinited = true;
     // TODO(tannewt): Turn off the DAC clocks to save power.
+    #endif
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
+    #if defined(SAMD21) && !defined(PIN_PA02)
+    return;
+    #endif
     // Input is 16 bit so make sure and set LEFTADJ to 1 so it takes the top
     // bits. This is currently done in asf4_conf/*/hpl_dac_config.h.
     dac_sync_write(&self->descriptor, self->channel, &value, 1);
 }
 
 void analogout_reset(void) {
+    #if defined(SAMD21) && !defined(PIN_PA02)
+    return;
+    #endif
     #ifdef SAMD21
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
     #endif

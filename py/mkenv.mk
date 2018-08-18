@@ -49,6 +49,9 @@ CP = cp
 FIND = find
 MKDIR = mkdir
 PYTHON = python
+# Set default python interpreters
+PYTHON2 ?= $(which python2 || which python2.7)
+PYTHON3 ?= python3
 RM = rm
 RSYNC = rsync
 SED = sed
@@ -67,9 +70,9 @@ CXX += -m32
 LD += -m32
 endif
 
-MAKE_FROZEN = $(TOP)/tools/make-frozen.py
+MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
-MPY_TOOL = $(TOP)/tools/mpy-tool.py
+MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
 all:

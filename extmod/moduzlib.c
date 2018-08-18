@@ -31,6 +31,8 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UZLIB
 
 #include "../../lib/uzlib/src/tinf.h"
@@ -53,7 +55,7 @@ STATIC unsigned char read_src_stream(TINF_DATA *data) {
     p -= offsetof(mp_obj_decompio_t, decomp);
     mp_obj_decompio_t *self = (mp_obj_decompio_t*)p;
 
-    const mp_stream_p_t *stream = mp_get_stream_raise(self->src_stream, MP_STREAM_OP_READ);
+    const mp_stream_p_t *stream = mp_get_stream(self->src_stream);
     int err;
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
@@ -68,6 +70,7 @@ STATIC unsigned char read_src_stream(TINF_DATA *data) {
 
 STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
     o->base.type = type;
     memset(&o->decomp, 0, sizeof(o->decomp));
@@ -91,7 +94,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
         dict_opt = uzlib_zlib_parse_header(&o->decomp);
         if (dict_opt < 0) {
 header_error:
-            mp_raise_ValueError("compression header");
+            mp_raise_ValueError(translate("compression header"));
         }
         dict_sz = 1 << dict_opt;
     } else {

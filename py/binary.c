@@ -35,6 +35,8 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 // Helpers to work with binary-encoded data
 
 #ifndef alignof
@@ -107,7 +109,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     }
 
     if (size == 0) {
-        mp_raise_ValueError("bad typecode");
+        mp_raise_ValueError(translate("bad typecode"));
     }
 
     if (palign != NULL) {
@@ -148,7 +150,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
         #endif
 #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
-            return mp_obj_new_float((mp_float_t)((float*)p)[index]);
+            return mp_obj_new_float(((float*)p)[index]);
         case 'd':
             return mp_obj_new_float(((double*)p)[index]);
 #endif
@@ -213,7 +215,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
 #if MICROPY_NONSTANDARD_TYPECODES
     } else if (val_type == 'S') {
         const char *s_val = (const char*)(uintptr_t)(mp_uint_t)val;
-        return mp_obj_new_str(s_val, strlen(s_val), false);
+        return mp_obj_new_str(s_val, strlen(s_val));
 #endif
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {

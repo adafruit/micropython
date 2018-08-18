@@ -30,6 +30,8 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_THREAD
 
 #include "py/mpthread.h"
@@ -165,6 +167,12 @@ STATIC void *thread_entry(void *args_in) {
     mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
     mp_stack_set_limit(args->stack_size);
 
+    #if MICROPY_ENABLE_PYSTACK
+    // TODO threading and pystack is not fully supported, for now just make a small stack
+    mp_obj_t mini_pystack[128];
+    mp_pystack_init(mini_pystack, &mini_pystack[128]);
+    #endif
+
     // set locals and globals from the calling context
     mp_locals_set(args->dict_locals);
     mp_globals_set(args->dict_globals);
@@ -229,7 +237,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
-            mp_raise_TypeError("expecting a dict for keyword args");
+            mp_raise_TypeError(translate("expecting a dict for keyword args"));
         }
         mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);

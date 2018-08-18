@@ -37,7 +37,10 @@
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
+#include "supervisor/shared/translate.h"
 #include "hspi.h"
+
+#if MICROPY_PY_MACHINE_SPI
 
 typedef struct _machine_hspi_obj_t {
     mp_obj_base_t base;
@@ -64,6 +67,9 @@ STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint
         while (i < len) {
             spi_tx8fast(HSPI, src[i]);
             ++i;
+        }
+        // wait for SPI transaction to complete
+        while (spi_busy(HSPI)) {
         }
     } else {
         // we need to read and write data
@@ -122,13 +128,13 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
         spi_init_gpio(HSPI, SPI_CLK_80MHZ_NODIV);
         spi_clock(HSPI, 0, 0);
     } else if (self->baudrate > 40000000L) {
-        mp_raise_ValueError("impossible baudrate");
+        mp_raise_ValueError(translate("impossible baudrate"));
     } else {
         uint32_t divider = 40000000L / self->baudrate;
         uint16_t prediv = MIN(divider, SPI_CLKDIV_PRE + 1);
         uint16_t cntdiv = (divider / prediv) * 2; // cntdiv has to be even
         if (cntdiv > SPI_CLKCNT_N + 1 || cntdiv == 0 || prediv == 0) {
-            mp_raise_ValueError("impossible baudrate");
+            mp_raise_ValueError(translate("impossible baudrate"));
         }
         self->baudrate = 80000000L / (prediv * cntdiv);
         spi_init_gpio(HSPI, SPI_CLK_USE_DIV);
@@ -177,3 +183,5 @@ const mp_obj_type_t machine_hspi_type = {
     .protocol = &machine_hspi_p,
     .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
 };
+
+#endif // MICROPY_PY_MACHINE_SPI

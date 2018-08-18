@@ -37,14 +37,13 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
 
 // Number of traceback entries to reserve in the emergency exception buffer
 #define EMG_TRACEBACK_ALLOC (2 * TRACEBACK_ENTRY_LEN)
-
-// Instance of MemoryError exception - needed by mp_malloc_fail
-const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
 
 // Optionally allocated buffer for storing the first argument of an exception
 // allocated when the heap is locked.
@@ -96,7 +95,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // definition module-private so far, have it here.
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
 
-STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
@@ -115,9 +114,17 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
         } else if (o->args->len == 1) {
             // try to provide a nice OSError error message
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
-                qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTR_NULL) {
-                    mp_printf(print, "[Errno %d] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                const compressed_string_t* common = mp_common_errno_to_str(o->args->items[0]);
+                const char* msg;
+                char decompressed[50];
+                if (common != NULL && common->length <= 50) {
+                    decompress(common, decompressed);
+                    msg = decompressed;
+                } else {
+                    msg = mp_errno_to_str(o->args->items[0]);
+                }
+                if (msg[0] != '\0') {
+                    mp_printf(print, "[Errno " INT_FMT "] %s", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), msg);
                     return;
                 }
             }
@@ -187,7 +194,7 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     }
 }
 
-STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
@@ -210,37 +217,12 @@ STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t exc___init__(size_t n_args, const mp_obj_t *args) {
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_t argst = mp_obj_new_tuple(n_args - 1, args + 1);
-    self->args = MP_OBJ_TO_PTR(argst);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(exc___init___obj, 1, MP_OBJ_FUN_ARGS_MAX, exc___init__);
-
-STATIC const mp_rom_map_elem_t exc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&exc___init___obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(exc_locals_dict, exc_locals_dict_table);
-
 const mp_obj_type_t mp_type_BaseException = {
     { &mp_type_type },
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
-    .attr = exception_attr,
-    .locals_dict = (mp_obj_dict_t*)&exc_locals_dict,
-};
-
-#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-const mp_obj_type_t mp_type_ ## exc_name = { \
-    { &mp_type_type }, \
-    .name = MP_QSTR_ ## exc_name, \
-    .print = mp_obj_exception_print, \
-    .make_new = mp_obj_exception_make_new, \
-    .attr = exception_attr, \
-    .parent = &mp_type_ ## base_name, \
+    .attr = mp_obj_exception_attr,
 };
 
 // List of all exceptions, arranged as in the table at:
@@ -337,7 +319,7 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
     return exc_type->make_new(exc_type, n_args, 0, args);
 }
 
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     return mp_obj_new_exception_msg_varg(exc_type, msg);
 }
 
@@ -375,7 +357,7 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
 }
 
 
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, ap);
@@ -383,7 +365,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     return exception;
 }
 
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list ap) {
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
@@ -391,7 +373,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const cha
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-    size_t o_str_alloc = strlen(fmt) + 1;
+    size_t o_str_alloc = fmt->length + 1;
     byte *o_str_buf = m_new_maybe(byte, o_str_alloc);
 
     bool used_emg_buf = false;
@@ -417,15 +399,16 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const cha
     }
 
     if (o_str_buf == NULL) {
-        // No memory for the string buffer: assume that the fmt string is in ROM
-        // and use that data as the data of the string
-        o_str->len = o_str_alloc - 1; // will be equal to strlen(fmt)
-        o_str->data = (const byte*)fmt;
+        // No memory for the string buffer: the string is compressed so don't add it.
+        o_str->len = 0;
+        o_str->data = NULL;
     } else {
         // We have some memory to format the string
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        mp_vprintf(&print, fmt, ap);
+        char fmt_decompressed[fmt->length];
+        decompress(fmt, fmt_decompressed);
+        mp_vprintf(&print, fmt_decompressed, ap);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;

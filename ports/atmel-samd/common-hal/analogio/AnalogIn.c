@@ -36,6 +36,7 @@
 
 #include "samd/adc.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "supervisor/shared/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_adc_sync.h"
@@ -59,11 +60,11 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     }
     if (adc_channel == 0xff) {
         // No ADC function on that pin
-        mp_raise_ValueError("Pin does not have ADC capabilities");
+        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
     }
     claim_pin(pin);
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_B);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
 
     static Adc* adc_insts[] = ADC_INSTS;
     self->instance = adc_insts[adc_index];
@@ -79,7 +80,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (common_hal_analogio_analogin_deinited(self)) {
         return;
     }
-    reset_pin(self->pin->pin);
+    reset_pin(self->pin->number);
     self->pin = mp_const_none;
 }
 

@@ -32,6 +32,8 @@
 #include "py/lexer.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_ENABLE_COMPILER
 
 #define TAB_SIZE (8)
@@ -340,7 +342,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                             // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                             // roughly half a meg of storage. This form of Unicode escape may be added
                             // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_raise_NotImplementedError("unicode name escapes");
+                            mp_raise_NotImplementedError(translate("unicode name escapes"));
                             break;
                         default:
                             if (c >= '0' && c <= '7') {
@@ -589,6 +591,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     lex->tok_kind = MP_TOKEN_FLOAT_OR_IMAG;
                 }
                 vstr_add_char(&lex->vstr, CUR_CHAR(lex));
+                next_char(lex);
+            } else if (is_char(lex, '_')) {
                 next_char(lex);
             } else {
                 break;

@@ -30,11 +30,12 @@
 
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
     const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
     if (!pin_a->has_extint || !pin_a->has_extint) {
-        mp_raise_RuntimeError("Both pins must support hardware interrupts");
+        mp_raise_RuntimeError(translate("Both pins must support hardware interrupts"));
     }
 
     // TODO: The SAMD51 has a peripheral dedicated to quadrature encoder debugging. Use it instead
@@ -42,7 +43,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
 
     if (eic_get_enable()) {
         if (!eic_channel_free(pin_a->extint_channel) || !eic_channel_free(pin_b->extint_channel)) {
-            mp_raise_RuntimeError("A hardware interrupt channel is already in use");
+            mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
         }
     } else {
         turn_on_external_interrupt_controller();
@@ -51,8 +52,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // These default settings apply when the EIC isn't yet enabled.
     self->eic_channel_a = pin_a->extint_channel;
     self->eic_channel_b = pin_b->extint_channel;
-    self->pin_a = pin_a->pin;
-    self->pin_b = pin_b->pin;
+    self->pin_a = pin_a->number;
+    self->pin_b = pin_b->number;
 
     gpio_set_pin_function(self->pin_a, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_pull_mode(self->pin_a, GPIO_PULL_UP);
