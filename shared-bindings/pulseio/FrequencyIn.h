@@ -39,9 +39,6 @@ extern bool common_hal_pulseio_frequencyin_deinited(pulseio_frequencyin_obj_t* s
 extern void common_hal_pulseio_frequencyin_pause(pulseio_frequencyin_obj_t* self);
 extern void common_hal_pulseio_frequencyin_resume(pulseio_frequencyin_obj_t* self);
 extern void common_hal_pulseio_frequencyin_clear(pulseio_frequencyin_obj_t* self);
-//extern uint16_t common_hal_pulseio_frequencyin_popleft(pulseio_frequencyin_obj_t* self);
-//extern uint16_t common_hal_pulseio_frequencyin_get_maxlen(pulseio_frequencyin_obj_t* self);
-//extern uint16_t common_hal_pulseio_frequencyin_get_len(pulseio_frequencyin_obj_t* self);
 extern uint32_t common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_FREQUENCYIN_H
