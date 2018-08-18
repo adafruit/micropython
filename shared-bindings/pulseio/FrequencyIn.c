@@ -24,12 +24,6 @@
  * THE SOFTWARE.
  */
 
-/* TODO:
-
-    - Research expansion to other ports
-
-*/
-
 #include <stdint.h>
 
 #include "lib/utils/context_manager_helpers.h"
@@ -40,6 +34,29 @@
 #include "shared-bindings/pulseio/FrequencyIn.h"
 #include "shared-bindings/util.h"
 #include "peripheral_clk_config.h"
+
+void MP_WEAK common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self,
+    const mcu_pin_obj_t* pin) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+void MP_WEAK common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+bool MP_WEAK common_hal_pulseio_frequencyin_deinited(pulseio_frequencyin_obj_t* self) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+void MP_WEAK common_hal_pulseio_frequencyin_pause(pulseio_frequencyin_obj_t* self) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+void MP_WEAK common_hal_pulseio_frequencyin_resume(pulseio_frequencyin_obj_t* self){
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+void MP_WEAK common_hal_pulseio_frequencyin_clear(pulseio_frequencyin_obj_t* self) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
+uint32_t MP_WEAK common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self) {
+    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
+}
 
 //| .. currentmodule:: pulseio
 //|
@@ -165,8 +182,6 @@ STATIC mp_obj_t pulseio_frequencyin_obj_get_value(mp_obj_t self_in) {
     raise_error_if_deinited(common_hal_pulseio_frequencyin_deinited(self));
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_frequencyin_get_item(self));
-    //mp_uint_t value = (mp_uint_t) common_hal_pulseio_frequencyin_get_item(self);
-    //return mp_obj_new_int_from_uint(value);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_frequencyin_get_value_obj, pulseio_frequencyin_obj_get_value);
 
