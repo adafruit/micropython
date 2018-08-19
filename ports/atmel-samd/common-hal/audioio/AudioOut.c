@@ -46,6 +46,7 @@
 #endif
 
 #include "audio_dma.h"
+#include "timer_handler.h"
 
 #include "samd/dma.h"
 #include "samd/events.h"
@@ -181,7 +182,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     tc_gclk = 1;
     #endif
 
-    turn_on_clocks(true, tc_index, tc_gclk);
+    turn_on_clocks(true, tc_index, tc_gclk, TC_HANDLER_NO_INTERRUPT);
 
     // Don't bother setting the period. We set it before you playback anything.
     tc_set_enable(t, false);
