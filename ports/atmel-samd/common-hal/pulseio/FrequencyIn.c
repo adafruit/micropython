@@ -29,9 +29,11 @@
 #include "common-hal/pulseio/FrequencyIn.h"
 #include "hal/include/hal_gpio.h"
 #include "atmel_start_pins.h"
+#include "supervisor/shared/translate.h"
 
 #include "mpconfigport.h"
 #include "py/runtime.h"
+#include "timer_handler.h"
 
 #include "samd/clocks.h"
 #include "samd/timers.h"
@@ -77,7 +79,7 @@ void frequencyin_emergency_cancel_capture(uint8_t index) {
     #ifdef SAMD51
     NVIC_EnableIRQ(EIC_0_IRQn + self->channel);
     #endif
-    mp_raise_RuntimeError("Frequency captured is above capability. Capture Paused.");
+    mp_raise_RuntimeError(translate("Frequency captured is above capability. Capture Paused."));
 }
 
 void frequencyin_interrupt_handler(uint8_t index) {
@@ -112,7 +114,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
 void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin) {
 
     if (!pin->has_extint) {
-        mp_raise_RuntimeError("No hardware support on pin");
+        mp_raise_RuntimeError(translate("No hardware support on pin"));
     }
 
     uint32_t mask = 1 << pin->extint_channel;
@@ -123,7 +125,7 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
 #ifdef SAMD51
     ((EIC->INTENSET.bit.EXTINT & mask) != 0 || (EIC->EVCTRL.bit.EXTINTEO & mask) != 0)) {
 #endif
-        mp_raise_RuntimeError("EXTINT channel already in use");
+        mp_raise_RuntimeError(translate("EXTINT channel already in use"));
     }
 
     Tc *tc = NULL;
@@ -136,11 +138,11 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     }
 
     if (tc == NULL) {
-        mp_raise_RuntimeError("All timers in use");
+        mp_raise_RuntimeError(translate("All timers in use"));
     }
 
     self->tc_index = index;
-    self->pin = pin->pin;
+    self->pin = pin->number;
     self->channel = pin->extint_channel;
     self->base_clock = 48000000;
     #ifdef SAMD21
@@ -155,10 +157,10 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run at 48mhz making our
     // math the same across the boards.
     #ifdef SAMD21
-    turn_on_clocks(true, index, 0);
+    turn_on_clocks(true, index, 0, TC_HANDLER_FREQUENCYIN);
     #endif
     #ifdef SAMD51
-    turn_on_clocks(true, index, 1);
+    turn_on_clocks(true, index, 1, TC_HANDLER_FREQUENCYIN);
     #endif
 
     // Ensure EIC is on
@@ -228,7 +230,7 @@ void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, c
     init_async_event_channel(evsys_channel, (EVSYS_ID_GEN_EIC_EXTINT_0 + self->channel));
     self->event_channel = evsys_channel;
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_A);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
 
     tc_set_enable(tc, true);
     #ifdef SAMD51
@@ -300,7 +302,8 @@ uint32_t common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self
     // get the current clock speed of DFLL48MHz using FREQM
     self->base_clock = freqm_read();
     if (self->base_clock < 0) {
-        mp_raise_RuntimeError("An error occurred in measuring the frequency. (FREQM peripheral usage.)");
+        mp_raise_RuntimeError(translate("An error occurred in measuring the frequency." 
+                              " (FREQM peripheral usage.)"));
     }
     #endif
 
