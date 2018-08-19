@@ -250,6 +250,7 @@ SRC_C = \
 	flash_api.c \
 	mphalport.c \
 	reset.c \
+	timer_handler.c \
 	peripherals/samd/clocks.c \
 	peripherals/samd/dma.c \
 	peripherals/samd/events.c \
