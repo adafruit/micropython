@@ -263,15 +263,15 @@ void common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
     uint32_t masked_value = EIC->EVCTRL.bit.EXTINTEO;
     EIC->EVCTRL.bit.EXTINTEO = masked_value | (0 << self->channel);
     EIC->ASYNCH.bit.ASYNCH = 0;
+    NVIC_DisableIRQ(EIC_0_IRQn + self->channel);
+    NVIC_ClearPendingIRQ(EIC_0_IRQn + self->channel);
     freqm_deinit();
     #endif
 
     // check if any other objects are using the EIC; if not, turn it off
     if (EIC->EVCTRL.reg == 0 && EIC->INTENSET.reg == 0) {
-        eic_set_enable(false);
+        turn_off_external_interrupt_controller();
         #ifdef SAMD21
-        PM->APBAMASK.bit.EIC_ = false;
-        hri_gclk_write_CLKCTRL_reg(GCLK, GCLK_CLKCTRL_ID(EIC_GCLK_ID));
         NVIC_DisableIRQ(EIC_IRQn);
         NVIC_ClearPendingIRQ(EIC_IRQn);
         #endif
@@ -288,7 +288,7 @@ void common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
     self->tc_index = 0xff;
     self->pin = NO_PIN;
     self->TC_IRQ = 0;
-
+    self->channel = 0;
 }
 
 uint32_t common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self) {
