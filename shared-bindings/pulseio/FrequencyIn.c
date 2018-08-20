@@ -34,6 +34,7 @@
 #include "shared-bindings/pulseio/FrequencyIn.h"
 #include "shared-bindings/util.h"
 #include "peripheral_clk_config.h"
+#include "supervisor/shared/translate.h"
 
 void MP_WEAK common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self,
     const mcu_pin_obj_t* pin) {
@@ -64,7 +65,9 @@ uint32_t MP_WEAK common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj
 //| ========================================================
 //|
 //| FrequencyIn is used to measure the frequency, in hertz, of a digital signal
-//| on an incoming pin. It will not determine pulse width (use ``PulseIn``).
+//| on an incoming pin. Accuracy has shown to be within 1kHz, if not better.
+//| Current maximum detectable frequency is ~512kHz.
+//| It will not determine pulse width (use ``PulseIn``).
 //|
 //| .. class:: FrequencyIn(pin)
 //|
