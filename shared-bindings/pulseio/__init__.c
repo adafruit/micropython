@@ -34,16 +34,14 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
-#if defined(SAMD21) || defined(SAMD51)
 #include "shared-bindings/pulseio/FrequencyIn.h"
-#endif
 
 //| :mod:`pulseio` --- Support for pulse based protocols
 //| =====================================================
 //|
 //| .. module:: pulseio
 //|   :synopsis: Support for pulse based protocols
-//|   :platform: SAMD21, ESP8266
+//|   :platform: SAMD, ESP8266
 //|
 //| The `pulseio` module contains classes to provide access to basic pulse IO.
 //|
@@ -55,6 +53,7 @@
 //|     PulseIn
 //|     PulseOut
 //|     PWMOut
+//|     FrequencyIn (SAMD Only)
 //|
 
 //| .. warning:: This module is not available in some SAMD21 builds. See the
@@ -88,9 +87,7 @@ STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PulseIn), MP_ROM_PTR(&pulseio_pulsein_type) },
     { MP_ROM_QSTR(MP_QSTR_PulseOut), MP_ROM_PTR(&pulseio_pulseout_type) },
     { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&pulseio_pwmout_type) },
-#if defined(SAMD21) || defined(SAMD51)
     { MP_ROM_QSTR(MP_QSTR_FrequencyIn), MP_ROM_PTR(&pulseio_frequencyin_type) },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pulseio_module_globals, pulseio_module_globals_table);
