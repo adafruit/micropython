@@ -53,7 +53,7 @@
 //|     PulseIn
 //|     PulseOut
 //|     PWMOut
-//|     FrequencyIn (SAMD Only)
+//|     FrequencyIn (SAMD Only) <FrequencyIn>
 //|
 
 //| .. warning:: This module is not available in some SAMD21 builds. See the
