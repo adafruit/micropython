@@ -154,6 +154,7 @@ SRC_COMMON_HAL += \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	pulseio/FrequencyIn.c \
 	storage/__init__.c \
 	supervisor/__init__.c \
 	supervisor/Runtime.c \

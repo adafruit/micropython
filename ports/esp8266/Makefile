@@ -113,6 +113,7 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	pulseio/FrequencyIn.c \
 	busio/__init__.c \
 	busio/SPI.c \
 	busio/UART.c \
