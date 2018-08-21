@@ -36,29 +36,6 @@
 #include "peripheral_clk_config.h"
 #include "supervisor/shared/translate.h"
 
-void MP_WEAK common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self,
-    const mcu_pin_obj_t* pin) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-void MP_WEAK common_hal_pulseio_frequencyin_deinit(pulseio_frequencyin_obj_t* self) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-bool MP_WEAK common_hal_pulseio_frequencyin_deinited(pulseio_frequencyin_obj_t* self) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-void MP_WEAK common_hal_pulseio_frequencyin_pause(pulseio_frequencyin_obj_t* self) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-void MP_WEAK common_hal_pulseio_frequencyin_resume(pulseio_frequencyin_obj_t* self){
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-void MP_WEAK common_hal_pulseio_frequencyin_clear(pulseio_frequencyin_obj_t* self) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-uint32_t MP_WEAK common_hal_pulseio_frequencyin_get_item(pulseio_frequencyin_obj_t* self) {
-    mp_raise_NotImplementedError(translate("FrequencyIn is not supported on this board"));
-}
-
 //| .. currentmodule:: pulseio
 //|
 //| :class:`FrequencyIn` -- Read a frequency signal
