@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/FrequencyIn.h"
 #include "shared-bindings/util.h"
-#include "peripheral_clk_config.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: pulseio
@@ -50,7 +49,7 @@
 //|
 //|   Create a FrequencyIn object associated with the given pin.
 //|
-//|   :param ~microcontroller.Pin pin: Pin to read pulses from.
+//|   :param ~microcontroller.Pin pin: Pin to read frequency from.
 //|
 //|   Read the incoming frequency from a pin::
 //|
