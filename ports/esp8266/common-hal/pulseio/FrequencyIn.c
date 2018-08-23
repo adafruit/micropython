@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "py/runtime.h"
+#include "shared-bindings/pulseio/FrequencyIn.h"
 
 void common_hal_pulseio_frequencyin_construct(pulseio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No hardware support for FrequencyIn."));
