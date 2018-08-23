@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 23:01+0000\n"
+"POT-Creation-Date: 2018-08-23 02:28+0000\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1359,16 +1359,6 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: shared-bindings/pulseio/FrequencyIn.c:41
-#: shared-bindings/pulseio/FrequencyIn.c:44
-#: shared-bindings/pulseio/FrequencyIn.c:47
-#: shared-bindings/pulseio/FrequencyIn.c:50
-#: shared-bindings/pulseio/FrequencyIn.c:53
-#: shared-bindings/pulseio/FrequencyIn.c:56
-#: shared-bindings/pulseio/FrequencyIn.c:59
-msgid "FrequencyIn is not supported on this board"
-msgstr ""
-
 #: shared-bindings/pulseio/PWMOut.c:164
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
@@ -1743,28 +1733,28 @@ msgstr ""
 msgid "Unsupported baudrate"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:82
+#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:80
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:117
+#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:115
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:128
+#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:126
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:141
+#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:111
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:174
 msgid "All timers in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:305
+#: ports/atmel-samd/common-hal/pulseio/FrequencyIn.c:303
 msgid "An error occurred in measuring the frequency. (FREQM peripheral usage.)"
 msgstr ""
 
@@ -2034,6 +2024,11 @@ msgstr ""
 #: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
 #: ports/nrf/common-hal/busio/UART.c:88
 msgid "busio.UART not yet implemented"
+msgstr ""
+
+#: ports/nrf/common-hal/pulseio/FrequencyIn.c:32
+#: ports/esp8266/common-hal/pulseio/FrequencyIn.c:33
+msgid "No hardware support for FrequencyIn."
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
