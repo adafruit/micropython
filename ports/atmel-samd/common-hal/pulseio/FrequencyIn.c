@@ -26,13 +26,11 @@
 
 #include <stdint.h>
 
-#include "common-hal/pulseio/FrequencyIn.h"
 #include "hal/include/hal_gpio.h"
 #include "atmel_start_pins.h"
 #include "supervisor/shared/translate.h"
 
 #include "mpconfigport.h"
-#include "py/runtime.h"
 #include "timer_handler.h"
 
 #include "samd/clocks.h"
@@ -41,7 +39,6 @@
 #include "samd/pins.h"
 #include "samd/external_interrupts.h"
 
-#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/FrequencyIn.h"
 #include "peripheral_clk_config.h"
 #include "hpl_gclk_config.h"
