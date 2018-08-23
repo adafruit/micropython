@@ -31,6 +31,7 @@
 #include "supervisor/shared/translate.h"
 
 #include "mpconfigport.h"
+#include "py/runtime.h"
 #include "timer_handler.h"
 
 #include "samd/clocks.h"
