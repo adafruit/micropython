@@ -186,6 +186,7 @@ SRC_SHARED_MODULE = \
 	storage/__init__.c \
 	struct/__init__.c \
 	gamepad/__init__.c \
+	display/ili9341.c \
 	gamepad/GamePad.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
@@ -198,6 +199,9 @@ SRC_SHARED_MODULE = \
 
 SRC_SHARED_BINDINGS = \
 	struct/__init__.c \
+	display/__init__.c \
+	display/ili9341.c \
+	display/rotation.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \
 	bitbangio/__init__.c \
