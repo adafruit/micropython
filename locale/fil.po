@@ -1348,7 +1348,7 @@ msgstr "Ang bagay ay hindi maaaring ma-subscript"
 #: py/obj.c:506
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr ""
+msgstr "'%s' object ay hindi maaaring i-subscript"
 
 #: py/obj.c:510
 msgid "object does not support item assignment"
@@ -1357,7 +1357,7 @@ msgstr "Ang object na '%s' ay hindi maaaring i-subscript"
 #: py/obj.c:513
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr ""
+msgstr "'%s' object hindi sumusuporta ng item assignment"
 
 #: py/obj.c:544
 msgid "object with buffer protocol required"
