@@ -2112,36 +2112,36 @@ msgstr "Basahin-lamang"
 
 #: shared-bindings/pulseio/PulseOut.c:134
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "May halfwords (type 'H') dapat ang array"
 
 #: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop hindi maabot sa simula"
 
 #: shared-bindings/random/__init__.c:111
 msgid "step must be non-zero"
-msgstr ""
+msgstr "step ay dapat hindi zero"
 
 #: shared-bindings/random/__init__.c:114
 msgid "invalid step"
-msgstr ""
+msgstr "mali ang step"
 
 #: shared-bindings/random/__init__.c:146
 msgid "empty sequence"
-msgstr ""
+msgstr "walang laman ang sequence"
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
 #: shared-bindings/time/__init__.c:192
 msgid "RTC is not supported on this board"
-msgstr ""
+msgstr "Hindi supportado ang RTC sa board na ito"
 
 #: shared-bindings/rtc/RTC.c:52
 msgid "RTC calibration is not supported on this board"
-msgstr ""
+msgstr "RTC calibration ay hindi supportado ng board na ito"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "ang filesystem dapat mag bigay ng mount method"
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
