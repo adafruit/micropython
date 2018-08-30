@@ -241,7 +241,7 @@ msgstr "Walang default SPI bus"
 
 #: ports/atmel-samd/board_busses.c:91
 msgid "No default UART bus"
-msgstr Walang default UART bus"
+msgstr "Walang default UART bus"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
@@ -886,7 +886,7 @@ msgstr "function nangangailangan ng positional argument #%d"
 
 #: py/bc.c:260
 msgid "function missing required keyword argument '%q'"
-msgstr "function nangangailangan ng keyword argument '%q""
+msgstr "function nangangailangan ng keyword argument '%q'"
 
 #: py/bc.c:269
 msgid "function missing keyword-only argument"
