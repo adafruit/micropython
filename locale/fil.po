@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-30 14:35-0700\n"
-"PO-Revision-Date: 2018-08-30 14:35-0700\n"
+"PO-Revision-Date: 2018-08-30 16:35-0700\n"
 "Last-Translator: Timothy Garcia <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
 "Language: fil\n"
@@ -33,7 +33,7 @@ msgstr "address %08x ay hindi pantay sa %d bytes"
 
 #: extmod/machine_spi.c:57
 msgid "invalid SPI peripheral"
-msgstr "Hindi wastong SPI peripheral"
+msgstr "hindi wastong SPI peripheral"
 
 #: extmod/machine_spi.c:124
 msgid "buffers must be the same length"
@@ -53,7 +53,7 @@ msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
 
 #: extmod/modframebuf.c:299
 msgid "invalid format"
-msgstr "Hindi wastong pag-format"
+msgstr "hindi wastong pag-format"
 
 #: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
 msgid "a bytes-like object is required"
@@ -73,11 +73,11 @@ msgstr "mali ang padding"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
-msgstr "May pagkakamali sa sintaks sa uctypes descriptor"
+msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar "
+msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
@@ -113,15 +113,15 @@ msgstr "May pagkakamali sa REGEX"
 
 #: extmod/modussl_axtls.c:81
 msgid "invalid key"
-msgstr "Mali ang key"
+msgstr "mali ang key"
 
 #: extmod/modussl_axtls.c:87
 msgid "invalid cert"
-msgstr "Mali ang cert"
+msgstr "mali ang cert"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr "Puno na ang pila (overflow)"
+msgstr "puno na ang pila (overflow)"
 
 #: extmod/moduzlib.c:97
 msgid "compression header"
@@ -129,7 +129,7 @@ msgstr "compression header"
 
 #: extmod/uos_dupterm.c:120
 msgid "invalid dupterm index"
-msgstr "Mali ang dupterm index"
+msgstr "mali ang dupterm index"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:150
 msgid "Read-only filesystem"
@@ -145,7 +145,7 @@ msgstr "abort() tinawag"
 
 #: lib/netutils/netutils.c:83
 msgid "invalid arguments"
-msgstr "Mali ang mga argumento"
+msgstr "mali ang mga argumento"
 
 #: lib/utils/pyexec.c:97 py/builtinimport.c:253
 msgid "script compilation not supported"
@@ -156,22 +156,22 @@ msgid " output:\n"
 msgstr " output:\n"
 
 #: main.c:157 main.c:230
-msgid ""
-"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
-"disable.\n"
-msgstr "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
+msgid "Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"
+msgstr ""
+"Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB para patakbuhin sila "
+"o pasukin ang REPL para i-disable ito.\n"
 
 #: main.c:159
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF."
+msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
-msgstr "Awtomatikong pag re-reload ay OFF."
+msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code."
+msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
@@ -186,29 +186,26 @@ msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #: main.c:249
-msgid ""
-"You are running in safe mode which means something really bad happened.\n"
+msgid "You are running in safe mode which means something really bad happened.\n"
 msgstr "Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang nangyari.\n"
 
 #: main.c:251
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!!!!"
+msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
 #: main.c:252
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY drive:\n"
 
 #: main.c:255
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
-msgstr "Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power supply"
+msgid "The microcontroller's power dipped. Please make sure your power supply provides\n"
+msgstr "Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power supply \n"
 
 #: main.c:256
-msgid ""
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
-msgstr " ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset (pagkatapos i-eject ang CIRCUITPY).\n"
+msgid "enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"
+msgstr ""
+"ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset (pagkatapos i-"
+"eject ang CIRCUITPY).\n"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -216,10 +213,9 @@ msgstr "Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang
 
 #: main.c:415
 msgid "soft reboot\n"
-msgstr "malambot na reboot"
+msgstr "malambot na reboot\n"
 
-#: ports/atmel-samd/audio_dma.c:285
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
+#: ports/atmel-samd/audio_dma.c:285 ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
 
@@ -229,7 +225,7 @@ msgstr "pagkakalibrate ay basahin lamang"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:137
 msgid "calibration is out of range"
-msgstr "Kalibrasion ay wala sa sakop"
+msgstr "kalibrasion ay wala sa sakop"
 
 #: ports/atmel-samd/board_busses.c:39
 msgid "No default I2C bus"
@@ -293,7 +289,7 @@ msgstr "Sobra ang channels sa sample."
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
 msgid "No DMA channel found"
-msgstr "Walang DMA channel na mahanap."
+msgstr "Walang DMA channel na mahanap"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
@@ -306,7 +302,7 @@ msgstr "Mali ang clock pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
-msgstr "Tanging 8 o 16 na bit mono na may"
+msgstr "Tanging 8 o 16 na bit mono na may "
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
@@ -352,11 +348,9 @@ msgstr "Lahat ng event channels ginagamit"
 msgid "Not enough pins available"
 msgstr "Hindi sapat ang magagamit na pins"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:132
+#: ports/atmel-samd/common-hal/busio/I2C.c:78 ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:58
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45 ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -370,11 +364,11 @@ msgstr "Hindi supportadong baudrate"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
-msgstr "Hindi sinusuportahan ang bytes > 8 bits"
+msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
 msgid "tx and rx cannot both be None"
-msgstr "TX at RX hindi pwedeng parehas na None "
+msgstr "tx at rx hindi pwedeng parehas na None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:139
 msgid "Failed to allocate RX buffer"
@@ -403,8 +397,7 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366 ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
 
@@ -450,29 +443,26 @@ msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
-msgstr "Ang halaga ng pagkakalibrate ay wala sa sakop +/-127"
+msgstr "ang halaga ng pagkakalibrate ay wala sa sakop +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
-msgstr "Hindi ma-remount '/' kapag aktibo ang USB"
+msgstr "Hindi ma-remount '/' kapag aktibo ang USB."
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
 msgstr "Walang libreng GCLKs"
 
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
-#: ports/nrf/common-hal/usb_hid/Device.c:45
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:78 ports/nrf/common-hal/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Mali ang size ng buffer. Dapat %d bytes."
 
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:53
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:82 ports/nrf/common-hal/usb_hid/Device.c:53
 msgid "USB Busy"
 msgstr "Busy ang USB"
 
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:59
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:82 ports/nrf/common-hal/usb_hid/Device.c:59
 msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
@@ -502,26 +492,24 @@ msgstr "mali ang stop bits"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr "Walang pull down support ang ESP8266"
+msgstr "Walang pull down support ang ESP8266."
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr "Walang pull down support ang GPI016"
+msgstr "Walang pull down support ang GPI016."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr "Walang safemode support ang ESP8266"
+msgstr "Walang safemode support ang ESP8266."
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:54
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:113
+#: ports/esp8266/common-hal/pulseio/PWMOut.c:54 ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr "Pinakamataas na PWM frequency ay %dhz"
+msgstr "Pinakamataas na PWM frequency ay %dhz."
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:57
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:116
+#: ports/esp8266/common-hal/pulseio/PWMOut.c:57 ports/esp8266/common-hal/pulseio/PWMOut.c:116
 msgid "Minimum PWM frequency is 1hz."
-msgstr "Pinakamababang PWM frequency ay 1hz"
+msgstr "Pinakamababang PWM frequency ay 1hz."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
@@ -568,11 +556,11 @@ msgstr "Walang pull support ang Pin(16)"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr "Mali ang pin"
+msgstr "mali ang pin"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr "Walang IRQ capabilities ang pin"
+msgstr "walang IRQ capabilities ang pin"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
@@ -581,7 +569,7 @@ msgstr "masyadong mahaba ng buffer"
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr "Mali ang alarm"
+msgstr "mali ang alarm"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
@@ -599,11 +587,11 @@ msgstr "len ay dapat multiple ng 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "Nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+msgstr "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr "Dapat na mas mababa sa 1MB ang lokasyon ng flash"
+msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
@@ -643,7 +631,7 @@ msgstr "Dapat aktibo ang STA"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr "Nabigo ang pag-scan"
+msgstr "nabigo ang pag-scan"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
@@ -691,7 +679,7 @@ msgstr "Hindi supportado ang AnalogOut"
 #: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
 #: ports/nrf/common-hal/busio/UART.c:88
 msgid "busio.UART not yet implemented"
-msgstr "Hindi pa implemented ang busio.UART"
+msgstr "hindi pa implemented ang busio.UART"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
@@ -700,11 +688,11 @@ msgstr "Hindi makuha ang temperatura. status 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr "Hindi ma-apply ang GAP parameters"
+msgstr "Hindi ma-apply ang GAP parameters."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr "Hindi ma-set ang PPCP parameters"
+msgstr "Hindi ma-set ang PPCP parameters."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
@@ -714,35 +702,31 @@ msgstr "Hindi maaaring mag-query para sa address ng device."
 msgid "Can not add Vendor Specific 128-bit UUID."
 msgstr "Hindi maaaring magdagdag ng Vendor Specific na 128-bit UUID."
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:284
-#: ports/nrf/drivers/bluetooth/ble_drv.c:298
+#: ports/nrf/drivers/bluetooth/ble_drv.c:284 ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
 msgstr "Hindi maidaragdag ang serbisyo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr "Hindi mabasa and Characteristic"
+msgstr "Hindi mabasa and Characteristic."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr "Hindi maaaring ma-aplay ang device name sa stack"
+msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:464
-#: ports/nrf/drivers/bluetooth/ble_drv.c:514
+#: ports/nrf/drivers/bluetooth/ble_drv.c:464 ports/nrf/drivers/bluetooth/ble_drv.c:514
 msgid "Can not encode UUID, to check length."
-msgstr "Hindi ma-encode UUID, para suriin ang haba"
+msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:470
-#: ports/nrf/drivers/bluetooth/ble_drv.c:520
+#: ports/nrf/drivers/bluetooth/ble_drv.c:470 ports/nrf/drivers/bluetooth/ble_drv.c:520
 msgid "Can encode UUID into the advertisment packet."
-msgstr "Maaring i-encode ang UUID sa advertisement packet"
+msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
 msgid "Can not fit data into the advertisment packet."
 msgstr "Hindi makasya ang data sa loob ng advertisement packet."
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:558
-#: ports/nrf/drivers/bluetooth/ble_drv.c:604
+#: ports/nrf/drivers/bluetooth/ble_drv.c:558 ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
 msgid "Can not apply advertisment data. status: 0x%02x"
 msgstr "Hindi ma i-apply ang advertisment data. status: 0x%02x"
@@ -757,14 +741,12 @@ msgstr "Hindi masimulaan ang advertisement. status 0x%02x"
 msgid "Can not stop advertisment. status: 0x%02x"
 msgstr "Hindi mahinto ang advertisment. status: 0x%02x"
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:650
-#: ports/nrf/drivers/bluetooth/ble_drv.c:726
+#: ports/nrf/drivers/bluetooth/ble_drv.c:650 ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
 msgstr "Hindi mabasa ang value ng attribute. status: 0x%02x"
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:667
-#: ports/nrf/drivers/bluetooth/ble_drv.c:756
+#: ports/nrf/drivers/bluetooth/ble_drv.c:667 ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
 msgstr "Hindi maisulat ang attribute value. status: 0x%02x"
@@ -786,8 +768,7 @@ msgstr "Hindi makaconnect. status: 0x%02x"
 
 #: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:80
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:132
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
+#: ports/nrf/modules/ubluepy/ubluepy_service.c:132 ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
 msgstr "Mali ang UUID parameter"
 
@@ -822,12 +803,12 @@ msgstr "[addrinfo error %d]"
 
 #: py/argcheck.c:44
 msgid "function does not take keyword arguments"
-msgstr "Ang function ay hindi kumukuha ng mga argumento ng keyword"
+msgstr "ang function ay hindi kumukuha ng mga argumento ng keyword"
 
 #: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr "Ang function ay kumuhuha ng %d positional arguments ngunit %d ang ibinigay"
+msgstr "ang function ay kumuhuha ng %d positional arguments ngunit %d ang ibinigay"
 
 #: py/argcheck.c:64
 #, c-format
@@ -857,7 +838,7 @@ msgstr "hindi tugma ang argument num/types"
 
 #: py/argcheck.c:147
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr "Hindi pa ipinapatupad ang (mga) argument(s) ng keyword - gumamit ng normal args"
+msgstr "kindi pa ipinapatupad ang (mga) argument(s) ng keyword - gumamit ng normal args"
 
 #: py/bc.c:88 py/objnamedtuple.c:108
 msgid "%q() takes %d positional arguments but %d were given"
@@ -996,8 +977,7 @@ msgstr "non-keyword arg sa huli ng */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "non-keyword arg sa huli ng keyword arg"
 
-#: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
-#: py/parse.c:1176
+#: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742 py/parse.c:1176
 msgid "invalid syntax"
 msgstr "mali ang sintaks"
 
@@ -1067,7 +1047,7 @@ msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
 
 #: py/emitinlinextensa.c:91 py/emitinlinextensa.c:96
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr "Ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
+msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
 
 #: py/emitinlinextensa.c:162
 #, c-format
@@ -1160,7 +1140,7 @@ msgstr "casting"
 
 #: py/emitnative.c:2173
 msgid "return expected '%q' but got '%q'"
-msgstr "return umasa ng '%q' pero '%q' ang nakuha"
+msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
 
 #: py/emitnative.c:2191
 msgid "must raise an object"
@@ -1207,8 +1187,8 @@ msgstr "dapat gumamit ng keyword argument para sa key function"
 msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
 
-#: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
-#: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
+#: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222 py/objint_mpz.c:230
+#: py/runtime.c:619 shared-bindings/math/__init__.c:346
 msgid "division by zero"
 msgstr "dibisyon ng zero"
 
@@ -1313,7 +1293,7 @@ msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
 
 #: py/obj.c:400
 msgid "indices must be integers"
-msgstr "Ang mga indeks ay dapat na integer"
+msgstr "ang mga indeks ay dapat na integer"
 
 #: py/obj.c:403
 msgid "%q indices must be integers, not %s"
@@ -1334,7 +1314,7 @@ msgstr "object na type '%s' walang len()"
 
 #: py/obj.c:496
 msgid "object does not support item deletion"
-msgstr "Ang object ay hindi sumusuporta sa pagbura ng item"
+msgstr "ang object ay hindi sumusuporta sa pagbura ng item"
 
 #: py/obj.c:499
 #, c-format
@@ -1343,7 +1323,7 @@ msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
 
 #: py/obj.c:503
 msgid "object is not subscriptable"
-msgstr "Ang bagay ay hindi maaaring ma-subscript"
+msgstr "ang bagay ay hindi maaaring ma-subscript"
 
 #: py/obj.c:506
 #, c-format
@@ -1352,7 +1332,7 @@ msgstr "'%s' object ay hindi maaaring i-subscript"
 
 #: py/obj.c:510
 msgid "object does not support item assignment"
-msgstr "Ang object na '%s' ay hindi maaaring i-subscript"
+msgstr "ang object na '%s' ay hindi maaaring i-subscript"
 
 #: py/obj.c:513
 #, c-format
@@ -1366,7 +1346,7 @@ msgstr "object na may buffer protocol kinakailangan"
 #: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
-msgstr "Ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
+msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
 #: py/objarray.c:426
 msgid "lhs and rhs should be compatible"
@@ -1498,7 +1478,7 @@ msgstr "Haba ay dapat hindi negatibo"
 
 #: py/objslice.c:86 py/sequence.c:57
 msgid "slice step cannot be zero"
-msgstr "Slice step ay hindi puedeng 0"
+msgstr "slice step ay hindi puedeng 0"
 
 #: py/objslice.c:159
 msgid "Cannot subclass slice"
@@ -1514,7 +1494,7 @@ msgstr "mali ang bilang ng argumento"
 
 #: py/objstr.c:467
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr "join umaaasang may listahan ng str/bytes objects na naalinsunod sa self object "
+msgstr "join umaaasang may listahan ng str/bytes objects na naalinsunod sa self object"
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
 msgid "empty separator"
@@ -1562,8 +1542,7 @@ msgid "expected ':' after format specifier"
 msgstr "umaasa ng ':' pagkatapos ng format specifier"
 
 #: py/objstr.c:1050
-msgid ""
-"can't switch from automatic field numbering to manual field specification"
+msgid "can't switch from automatic field numbering to manual field specification"
 msgstr "hindi mapalitan ang awtomatikong field numbering sa manual field specification"
 
 #: py/objstr.c:1055 py/objstr.c:1083
@@ -1575,8 +1554,7 @@ msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
 
 #: py/objstr.c:1079
-msgid ""
-"can't switch from manual field specification to automatic field numbering"
+msgid "can't switch from manual field specification to automatic field numbering"
 msgstr "hindi mapalitan ang manual field specification sa awtomatikong field numbering"
 
 #: py/objstr.c:1171
@@ -1655,7 +1633,7 @@ msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 #: py/objstrunicode.c:134
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr "Ang indeks ng string ay dapat na integer, hindi %s"
+msgstr "ang indeks ng string ay dapat na integer, hindi %s"
 
 #: py/objstrunicode.c:145 py/objstrunicode.c:164
 msgid "string index out of range"
@@ -1672,11 +1650,11 @@ msgstr "__init__() dapat magbalink na None, hindi '%s'"
 
 #: py/objtype.c:623 py/objtype.c:1275 py/runtime.c:1065
 msgid "unreadable attribute"
-msgstr "Hindi mabasa ang attribute"
+msgstr "hindi mabasa ang attribute"
 
 #: py/objtype.c:868 py/runtime.c:653
 msgid "object not callable"
-msgstr "Hindi matatawag ang object"
+msgstr "hindi matatawag ang object"
 
 #: py/objtype.c:870 py/runtime.c:655
 #, c-format
@@ -1766,10 +1744,11 @@ msgstr "decimal numbers hindi sinusuportahan"
 
 #: py/persistentcode.c:223
 msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See http://adafru.it/"
-"mpy-update for more info."
+"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for "
+"more info."
+msgstr ""
+".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See http://adafru.it/mpy-"
+"update for more info."
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
@@ -1862,7 +1841,7 @@ msgstr "abigo ang paglalaan ng memorya, ang heap ay naka-lock"
 #: py/runtime.c:1539
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
-msgstr "Nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
+msgstr "nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
 
 #: py/runtime.c:1609
 msgid "maximum recursion depth exceeded"
@@ -1912,8 +1891,7 @@ msgstr "masyadong maliit ang buffer"
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr "AnalogOut ay 16 bits. Value ay dapat hindi hihigit pa sa 65536."
 
-#: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audiobusio/I2SOut.c:225 shared-bindings/audioio/AudioOut.c:223
 msgid "Not playing"
 msgstr "Hindi playing"
 
@@ -1931,7 +1909,7 @@ msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 
 #: shared-bindings/audiobusio/PDMIn.c:193
 msgid "destination_length must be an int >= 0"
-msgstr "Ang destination_length ay dapat na isang int >= 0"
+msgstr "ang destination_length ay dapat na isang int >= 0"
 
 #: shared-bindings/audiobusio/PDMIn.c:199
 msgid "Cannot record to a file"
@@ -1939,25 +1917,21 @@ msgstr "Hindi ma-record sa isang file"
 
 #: shared-bindings/audiobusio/PDMIn.c:202
 msgid "Destination capacity is smaller than destination_length."
-msgstr "Ang kapasidad ng destinasyon ay mas maliit kaysa sa destination_length"
+msgstr "Ang kapasidad ng destinasyon ay mas maliit kaysa sa destination_length."
 
 #: shared-bindings/audiobusio/PDMIn.c:206
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr "Ang destination buffer ay dapat na isang array ng uri 'H' para sa bit_depth = 16"
+msgstr "ang destination buffer ay dapat na isang array ng uri 'H' para sa bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c:208
-msgid ""
-"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgid "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"Ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' para sa bit_depth = 8"
+"ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' para sa bit_depth = 8"
 
 #: shared-bindings/audioio/RawSample.c:98
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
+msgid "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"
 msgstr ""
-"Ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', 'H', 'b' o"
-"'B'"
+"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', 'H', 'b' o'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
@@ -1990,7 +1964,7 @@ msgstr "Mali ang bilang ng bits"
 
 #: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
 msgid "buffer slices must be of equal length"
-msgstr "Parehas na haba dapat ang buffer slices"
+msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
@@ -2010,15 +1984,13 @@ msgstr "Mali ang direksyon."
 
 #: shared-bindings/digitalio/DigitalInOut.c:240
 msgid "Cannot set value when direction is input."
-msgstr "Hindi ma i-set ang value kapag ang direksyon ay input"
+msgstr "Hindi ma i-set ang value kapag ang direksyon ay input."
 
-#: shared-bindings/digitalio/DigitalInOut.c:266
-#: shared-bindings/digitalio/DigitalInOut.c:281
+#: shared-bindings/digitalio/DigitalInOut.c:266 shared-bindings/digitalio/DigitalInOut.c:281
 msgid "Drive mode not used when direction is input."
-msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input"
+msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
 
-#: shared-bindings/digitalio/DigitalInOut.c:314
-#: shared-bindings/digitalio/DigitalInOut.c:331
+#: shared-bindings/digitalio/DigitalInOut.c:314 shared-bindings/digitalio/DigitalInOut.c:331
 msgid "Pull not used when direction is output."
 msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 
@@ -2046,8 +2018,7 @@ msgstr "wala sa sakop ang address"
 msgid "addresses is empty"
 msgstr "walang laman ang address"
 
-#: shared-bindings/microcontroller/Pin.c:89
-#: shared-bindings/neopixel_write/__init__.c:67
+#: shared-bindings/microcontroller/Pin.c:89 shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:75
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
@@ -2085,14 +2056,12 @@ msgid "No hardware random available"
 msgstr "Walang magagamit na hardware random"
 
 #: shared-bindings/pulseio/PWMOut.c:164
-msgid ""
-"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgid "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
-msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
-msgstr "PWM frequency hindi maisulat kapag variable_frequency ay False sa pag buo"
+msgid "PWM frequency not writeable when variable_frequency is False on construction."
+msgstr "PWM frequency hindi maisulat kapag variable_frequency ay False sa pag buo."
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
@@ -2104,7 +2073,7 @@ msgstr "Hindi suportado ang Slices"
 
 #: shared-bindings/pulseio/PulseIn.c:287
 msgid "index must be int"
-msgstr "Index ay dapat int"
+msgstr "index ay dapat int"
 
 #: shared-bindings/pulseio/PulseIn.c:293
 msgid "Read-only"
@@ -2130,8 +2099,7 @@ msgstr "mali ang step"
 msgid "empty sequence"
 msgstr "walang laman ang sequence"
 
-#: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:192
+#: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44 shared-bindings/time/__init__.c:192
 msgid "RTC is not supported on this board"
 msgstr "Hindi supportado ang RTC sa board na ito"
 
@@ -2149,7 +2117,7 @@ msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "Ang laki ng stack ay dapat na hindi bababa sa 256"
 
 #: shared-bindings/time/__init__.c:80
 msgid "sleep length must be non-negative"
@@ -2180,8 +2148,7 @@ msgid "threshold must be in the range 0-65536"
 msgstr "ang threshold ay dapat sa range 0-65536"
 
 #: shared-bindings/util.c:38
-msgid ""
-"Object has been deinitialized and can no longer be used. Create a new object."
+msgid "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr "Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong Object."
 
 #: shared-module/audioio/WaveFile.c:61
@@ -2218,7 +2185,7 @@ msgstr "Masyadong mahaba ang Clock stretch"
 
 #: shared-module/bitbangio/SPI.c:45
 msgid "Clock pin init failed."
-msgstr "Nabigo sa pag init ng Clock pin"
+msgstr "Nabigo sa pag init ng Clock pin."
 
 #: shared-module/bitbangio/SPI.c:51
 msgid "MOSI pin init failed."
