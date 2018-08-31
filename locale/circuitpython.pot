@@ -8,7 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2018-08-30 17:14-0700\n"
+=======
+"POT-Creation-Date: 2018-08-30 16:12-0700\n"
+>>>>>>> master
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -580,6 +584,7 @@ msgstr ""
 msgid "cannot import name %q"
 msgstr ""
 
+<<<<<<< HEAD
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
 msgstr ""
@@ -587,6 +592,14 @@ msgstr ""
 #: py/runtime.c:1539
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
+=======
+#: ports/esp8266/modnetwork.c:61
+msgid "AP required"
+msgstr ""
+
+#: ports/esp8266/modnetwork.c:61
+msgid "STA required"
+>>>>>>> master
 msgstr ""
 
 #: py/runtime.c:1609
@@ -2105,9 +2118,15 @@ msgstr ""
 msgid "impossible baudrate"
 msgstr ""
 
+<<<<<<< HEAD
 #: ports/unix/modusocket.c:474
 #, c-format
 msgid "[addrinfo error %d]"
+=======
+#: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
+#: shared-bindings/time/__init__.c:190
+msgid "RTC is not supported on this board"
+>>>>>>> master
 msgstr ""
 
 #: ports/unix/modffi.c:138
@@ -2126,6 +2145,7 @@ msgstr ""
 msgid "Don't know how to pass object to native function"
 msgstr ""
 
+<<<<<<< HEAD
 #: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
 #: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
 #: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
@@ -2153,6 +2173,30 @@ msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
+=======
+#: shared-bindings/time/__init__.c:78
+msgid "sleep length must be non-negative"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:88
+msgid "time.struct_time() takes exactly 1 argument"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:91
+msgid "time.struct_time() takes a 9-sequence"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+msgid "Tuple or struct_time argument required"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+msgid "function takes exactly 9 arguments"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+msgid "timestamp out of range for platform time_t"
+>>>>>>> master
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
