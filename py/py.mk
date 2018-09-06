@@ -49,7 +49,9 @@ SRC_MOD += extmod/modlwip.c lib/netutils/netutils.c
 SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/def.c \
 	core/dns.c \
+	core/inet_chksum.c \
 	core/init.c \
+	core/ip.c \
 	core/mem.c \
 	core/memp.c \
 	core/netif.c \
@@ -60,21 +62,27 @@ SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/tcp.c \
 	core/tcp_in.c \
 	core/tcp_out.c \
-	core/timers.c \
+	core/timeouts.c \
 	core/udp.c \
 	core/ipv4/autoip.c \
+	core/ipv4/dhcp.c \
+	core/ipv4/etharp.c \
 	core/ipv4/icmp.c \
 	core/ipv4/igmp.c \
-	core/ipv4/inet.c \
-	core/ipv4/inet_chksum.c \
-	core/ipv4/ip_addr.c \
-	core/ipv4/ip.c \
-	core/ipv4/ip_frag.c \
+	core/ipv4/ip4_addr.c \
+	core/ipv4/ip4.c \
+	core/ipv4/ip4_frag.c \
+	core/ipv6/dhcp6.c \
+	core/ipv6/ethip6.c \
+	core/ipv6/icmp6.c \
+        netif/ethernet.c \
 	)
+
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
 SRC_MOD += $(LWIP_DIR)/netif/slipif.c
 endif
+
 endif
 
 ifeq ($(MICROPY_PY_BTREE),1)

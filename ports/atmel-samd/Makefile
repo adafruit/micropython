@@ -7,6 +7,7 @@ else
   endif
 endif
 
+INC += -Ilwip_inc
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
@@ -62,7 +63,6 @@ BASE_CFLAGS = \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
 	-Wno-endif-labels \
-	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
 	-Wpointer-arith \
 	-Wfloat-equal \
@@ -72,7 +72,6 @@ BASE_CFLAGS = \
 	-Wsign-compare \
 	-Wmissing-format-attribute \
 	-Wno-deprecated-declarations \
-	-Wpacked \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
@@ -86,6 +85,7 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
 
+# XXX temporarily removed -Wstrict-prototypes -Wpacked
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
@@ -121,8 +121,11 @@ else
   CFLAGS += -flto
 endif
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+#CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
+# XXX removed -Werror for the moment
+CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+# /XXX
 
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
@@ -287,6 +290,67 @@ SRC_C = \
 	freetouch/adafruit_ptc.c \
 	supervisor/shared/memory.c
 
+ifeq ($(MICROPY_PY_NETWORK),1)
+CFLAGS += -DMICROPY_PY_NETWORK=1
+
+# XXX NOT PROUD OF THIS
+CFLAGS += -Wno-error=packed -Wno-error=attributes -Wno-error=strict-prototypes -Wno-error=sign-compare
+# /XXX 
+
+SRC_C += modnetwork.c
+INC += -Ilwip_inc
+endif
+
+ifeq ($(MICROPY_PY_NETWORK),1)
+CFLAGS += -DMICROPY_PY_NETWORK=1
+
+SRC_C += modnetwork.c
+
+ifeq ($(MICROPY_PY_LWIP),1)
+INC := -Ilwip_inc $(INC)
+CFLAGS_MOD += -DMICROPY_PY_USOCKET=0
+else
+SRC_MOD += lib/netutils/netutils.c modusocket.c
+CFLAGS_MOD += -DMICROPY_PY_USOCKET=1
+endif
+
+ifneq ($(MICROPY_PY_WIZNET5K),0)
+WIZNET5K_DIR=drivers/wiznet5k
+INC += -I$(TOP)/$(WIZNET5K_DIR)
+CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
+SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
+SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
+        ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
+        ethernet/wizchip_conf.c \
+        ethernet/socket.c \
+        internet/dns/dns.c \
+        )
+endif
+
+# for CC3000 module
+ifeq ($(MICROPY_PY_CC3K),1)
+CC3000_DIR=drivers/cc3000
+INC += -I$(TOP)/$(CC3000_DIR)/inc
+CFLAGS_MOD += -DMICROPY_PY_CC3K=1
+SRC_MOD += modnwcc3k.c
+SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
+        cc3000_common.c \
+        evnt_handler.c \
+        hci.c \
+        netapp.c \
+        nvmem.c \
+        security.c \
+        socket.c \
+        wlan.c \
+        ccspi.c \
+        inet_ntop.c \
+        inet_pton.c \
+        patch.c \
+        patch_prog.c \
+        )
+endif
+endif
+
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
@@ -361,7 +425,6 @@ SRC_LIBM = $(addprefix lib/,\
 	)
 endif
 
-
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
 SRC_BINDINGS_ENUMS = \
@@ -433,6 +496,7 @@ ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 # Sources that only hold QSTRs after pre-processing.
