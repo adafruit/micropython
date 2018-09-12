@@ -99,7 +99,6 @@ SRC_NRFX += $(addprefix nrfx/,\
 SRC_C += \
 	background.c \
 	fatfs_port.c \
-	internal_flash.c \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
@@ -107,6 +106,7 @@ SRC_C += \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+	flash_api/internal_flash.c \
 	flash_api/flash_api.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
