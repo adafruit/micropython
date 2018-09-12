@@ -31,7 +31,6 @@
 
 #include "mpconfigport.h"
 
-#define FLASH_PAGE_SIZE                 0x1000
 #define CIRCUITPY_INTERNAL_NVM_SIZE     0
 
 #define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
@@ -40,7 +39,6 @@
 void      internal_flash_init(void);
 uint32_t  internal_flash_get_block_size(void);
 uint32_t  internal_flash_get_block_count(void);
-void      internal_flash_irq_handler(void);
 void      internal_flash_flush(void);
 
 // these return 0 on success, non-zero on error

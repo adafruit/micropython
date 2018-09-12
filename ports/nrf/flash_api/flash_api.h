@@ -29,7 +29,7 @@
 
 #include "extmod/vfs_fat.h"
 
-#define FLASH_API_BLOCK_SIZE        512
+#define FLASH_API_BLOCK_SIZE        FILESYSTEM_BLOCK_SIZE
 #define FLASH_API_PAGE_SIZE         4096
 #define FLASH_API_BLOCK_PER_PAGE    (FLASH_API_PAGE_SIZE/FLASH_API_BLOCK_SIZE)
 
