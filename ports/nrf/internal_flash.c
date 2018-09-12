@@ -28,8 +28,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
+#include "flash_api/flash_api.h"
+
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -100,15 +100,15 @@ mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num
     return 0; // success
 }
 
-mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+mp_uint_t internal_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
 
 #ifdef MICROPY_HW_LED_MSC
     port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
 #endif
 
     while (num_blocks) {
-        uint32_t const addr      = lba2addr(lba);
-        uint32_t const page_addr = addr & ~(FL_PAGE_SZ - 1);
+        const uint32_t addr = lba2addr(lba);
+        const uint32_t page_addr = addr & ~(FL_PAGE_SZ - 1);
 
         uint32_t count = 8 - (lba % 8); // up to page boundary
         count = MIN(num_blocks, count);
@@ -145,7 +145,7 @@ mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t
 // Expose the flash as an object with the block protocol.
 
 // there is a singleton Flash object
-STATIC const mp_obj_base_t internal_flash_obj = {&internal_flash_type};
+STATIC const mp_obj_base_t internal_flash_obj = { &internal_flash_type };
 
 STATIC mp_obj_t internal_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -219,8 +219,4 @@ void flash_init_vfs(fs_user_mount_t *vfs) {
 
     vfs->u.ioctl[0] = (mp_obj_t)&internal_flash_obj_ioctl_obj;
     vfs->u.ioctl[1] = (mp_obj_t)&internal_flash_obj;
-}
-
-void flash_flush(void) {
-    internal_flash_flush();
 }

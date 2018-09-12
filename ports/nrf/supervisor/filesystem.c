@@ -29,8 +29,7 @@
 #include "lib/oofatfs/diskio.h"
 
 #include "py/mpstate.h"
-
-#include "internal_flash.h"
+#include "flash_api/flash_api.h"
 
 static mp_vfs_mount_t _mp_vfs;
 static fs_user_mount_t _internal_vfs;

@@ -48,3 +48,11 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_P1_01)
 #define DEFAULT_UART_BUS_TX         (&pin_P1_02)
+
+// On-board QSPI Flash
+#define QSPI_FLASH_CS               NRF_GPIO_PIN_MAP(0, 17)
+#define QSPI_FLASH_CLK              NRF_GPIO_PIN_MAP(0, 19)
+#define QSPI_FLASH_D0               NRF_GPIO_PIN_MAP(0, 20)
+#define QSPI_FLASH_D1               NRF_GPIO_PIN_MAP(0, 21)
+#define QSPI_FLASH_D2               NRF_GPIO_PIN_MAP(0, 22)
+#define QSPI_FLASH_D3               NRF_GPIO_PIN_MAP(0, 23)

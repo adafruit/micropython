@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "tusb.h"
+#include "flash_api/flash_api.h"
 #include "internal_flash.h"
 
 // For updating fatfs's cache
@@ -43,21 +44,11 @@
 #include "lib/oofatfs/ff.h"
 #include "py/mpstate.h"
 
-/*------------------------------------------------------------------*/
-/* MACRO TYPEDEF CONSTANT ENUM
- *------------------------------------------------------------------*/
-#define MSC_FLASH_ADDR_END      0xED000
-#define MSC_FLASH_SIZE          (256*1024)
-#define MSC_FLASH_ADDR_START    (MSC_FLASH_ADDR_END-MSC_FLASH_SIZE)
-#define MSC_FLASH_BLOCK_SIZE    512
-
-#define FL_PAGE_SZ              4096
-
 // Callback invoked when received an SCSI command not in built-in list below
 // - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
 // - READ10 and WRITE10 has their own callbacks
-int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
-    void const* response = NULL;
+int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, uint16_t bufsize) {
+    const void* response = NULL;
     uint16_t resplen = 0;
 
     switch ( scsi_cmd[0] ) {
@@ -110,11 +101,11 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
     (void) lun;
     (void) offset;
 
-    uint32_t const block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
+    const uint32_t block_count = bufsize / FLASH_API_BLOCK_SIZE;
 
-    internal_flash_read_blocks(buffer, lba, block_count);
+    flash_read_blocks(buffer, lba, block_count);
 
-    return block_count * MSC_FLASH_BLOCK_SIZE;
+    return block_count * FLASH_API_BLOCK_SIZE;
 }
 
 // Callback invoked when received WRITE10 command.
@@ -123,19 +114,19 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     (void) lun;
     (void) offset;
 
-    uint32_t const block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
+    const uint32_t block_count = bufsize / FLASH_API_BLOCK_SIZE;
 
     // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
-    internal_flash_write_blocks(buffer, lba, block_count);
+    flash_write_blocks(buffer, lba, block_count);
 
     // update fatfs's cache if address matches
     fs_user_mount_t* vfs = MP_STATE_VM(vfs_mount_table)->obj;
 
-    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize / MSC_FLASH_BLOCK_SIZE)) ) {
-        memcpy(vfs->fatfs.win, buffer + MSC_FLASH_BLOCK_SIZE * (vfs->fatfs.winsect - lba), MSC_FLASH_BLOCK_SIZE);
+    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize / FLASH_API_BLOCK_SIZE)) ) {
+        memcpy(vfs->fatfs.win, buffer + FLASH_API_BLOCK_SIZE * (vfs->fatfs.winsect - lba), FLASH_API_BLOCK_SIZE);
     }
 
-    return block_count * MSC_FLASH_BLOCK_SIZE;
+    return block_count * FLASH_API_BLOCK_SIZE;
 }
 
 // Callback invoked when WRITE10 command is completed (status received and accepted by host).
@@ -144,5 +135,5 @@ void tud_msc_write10_complete_cb (uint8_t lun) {
     (void) lun;
 
     // flush pending cache when write10 is complete
-    internal_flash_flush();
+    flash_flush();
 }

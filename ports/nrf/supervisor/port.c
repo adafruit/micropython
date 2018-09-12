@@ -32,6 +32,10 @@
 #include "nrf/clocks.h"
 #include "nrf/power.h"
 
+#ifdef NRF52840_XXAA
+#include "usb/usb.h"
+#endif
+
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PWMOut.h"
@@ -59,8 +63,11 @@ safe_mode_t port_init(void) {
     #endif
 #endif
 
-    // Will do usb_init() if chip supports USB.
     board_init();
+
+#ifdef NRF52840_XXAA
+    usb_init();
+#endif
 
 #if 0
     if (board_requests_safe_mode()) {

@@ -87,11 +87,13 @@ LIBS := -L $(dir $(LIBM_FILE_NAME)) -lm
 LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
-SRC_NRFX = $(addprefix nrfx/,\
+SRC_NRFX += $(addprefix nrfx/,\
 	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
 	drivers/src/nrfx_uart.c \
+	hal/nrf_nvmc.c \
+	mdk/system_$(MCU_SUB_VARIANT).c \
 	)
 
 SRC_C += \
@@ -105,6 +107,7 @@ SRC_C += \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+	flash_api/flash_api.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -116,13 +119,16 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	nrfx/hal/nrf_nvmc.c \
-	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	peripherals/nrf/cache.c \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
 	supervisor/shared/memory.c
+
+ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+SRC_C += flash_api/qspi_flash.c
+SRC_NRFX += nrfx/drivers/src/nrfx_qspi.c
+endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \

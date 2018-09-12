@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2018 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef FLASH_API_H_
+#define FLASH_API_H_
 
-#include "mpconfigport.h"
+#include "extmod/vfs_fat.h"
 
-#define FLASH_PAGE_SIZE                 0x1000
-#define CIRCUITPY_INTERNAL_NVM_SIZE     0
+#define FLASH_API_BLOCK_SIZE        512
+#define FLASH_API_PAGE_SIZE         4096
+#define FLASH_API_BLOCK_PER_PAGE    (FLASH_API_PAGE_SIZE/FLASH_API_BLOCK_SIZE)
 
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
-void      internal_flash_init(void);
-uint32_t  internal_flash_get_block_size(void);
-uint32_t  internal_flash_get_block_count(void);
-void      internal_flash_irq_handler(void);
-void      internal_flash_flush(void);
+void flash_init_vfs (struct _fs_user_mount_t *vfs);
+void flash_flush (void);
 
-// these return 0 on success, non-zero on error
-mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t internal_flash_write_blocks (const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);
+mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count);
 
-extern const struct _mp_obj_type_t internal_flash_type;
+#ifdef __cplusplus
+ }
+#endif
 
-struct _fs_user_mount_t;
-
-#endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
+#endif /* FLASH_API_H_ */
