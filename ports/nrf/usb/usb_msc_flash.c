@@ -36,7 +36,6 @@
 
 #include "tusb.h"
 #include "flash_api/flash_api.h"
-#include "internal_flash.h"
 
 // For updating fatfs's cache
 #include "extmod/vfs.h"
@@ -114,6 +113,10 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     (void) lun;
     (void) offset;
 
+#ifdef MICROPY_HW_LED_MSC
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+#endif
+
     const uint32_t block_count = bufsize / FLASH_API_BLOCK_SIZE;
 
     // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
@@ -125,6 +128,10 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize / FLASH_API_BLOCK_SIZE)) ) {
         memcpy(vfs->fatfs.win, buffer + FLASH_API_BLOCK_SIZE * (vfs->fatfs.winsect - lba), FLASH_API_BLOCK_SIZE);
     }
+
+#ifdef MICROPY_HW_LED_MSC
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+#endif
 
     return block_count * FLASH_API_BLOCK_SIZE;
 }

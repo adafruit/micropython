@@ -31,6 +31,7 @@
  extern "C" {
 #endif
 
+void qspi_flash_init (void);
 uint32_t qspi_flash_get_block_count (void);
 
 mp_uint_t qspi_flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);

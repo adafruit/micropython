@@ -45,8 +45,4 @@ void      internal_flash_flush(void);
 mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t internal_flash_write_blocks (const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
-extern const struct _mp_obj_type_t internal_flash_type;
-
-struct _fs_user_mount_t;
-
 #endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H

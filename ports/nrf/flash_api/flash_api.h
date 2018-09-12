@@ -38,6 +38,8 @@
 #endif
 
 void flash_init_vfs (struct _fs_user_mount_t *vfs);
+
+void flash_init (void);
 uint32_t flash_get_block_count (void);
 
 mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);

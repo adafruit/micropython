@@ -28,7 +28,15 @@
 #include "internal_flash.h"
 #include "qspi_flash.h"
 
-#if 1
+#include "py/mphal.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+
+#if 0
+void flash_init (void) {
+    internal_flash_init();
+}
+
 mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
     return internal_flash_read_blocks(dst, lba, count);
 }
@@ -47,6 +55,10 @@ uint32_t flash_get_block_count (void) {
 
 #else
 
+void flash_init (void) {
+    qspi_flash_init();
+}
+
 mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
     return qspi_flash_read_blocks(dst, lba, count);
 }
@@ -64,3 +76,101 @@ uint32_t flash_get_block_count (void) {
 }
 
 #endif
+
+/******************************************************************************/
+// MicroPython bindings
+//
+// Expose the flash as an object with the block protocol.
+// there is a singleton Flash object
+extern const struct _mp_obj_type_t _flash_type;    // forward declaration
+
+STATIC const mp_obj_base_t _flash_obj = { &_flash_type };
+
+STATIC mp_obj_t flash_obj_make_new (const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return singleton object
+    return (mp_obj_t) &_flash_obj;
+}
+
+STATIC mp_obj_t flash_obj_readblocks (mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
+    mp_uint_t ret = flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_API_BLOCK_SIZE);
+    return MP_OBJ_NEW_SMALL_INT(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(flash_obj_readblocks_obj, flash_obj_readblocks);
+
+STATIC mp_obj_t flash_obj_writeblocks (mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    mp_uint_t ret = flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_API_BLOCK_SIZE);
+    return MP_OBJ_NEW_SMALL_INT(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(flash_obj_writeblocks_obj, flash_obj_writeblocks);
+
+STATIC mp_obj_t flash_obj_ioctl (mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
+    mp_int_t cmd = mp_obj_get_int(cmd_in);
+    switch ( cmd ) {
+        case BP_IOCTL_INIT:
+            flash_init();
+            return MP_OBJ_NEW_SMALL_INT(0);
+        case BP_IOCTL_DEINIT:
+            flash_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);    // TODO properly
+        case BP_IOCTL_SYNC:
+            flash_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);
+        case BP_IOCTL_SEC_COUNT:
+            return MP_OBJ_NEW_SMALL_INT(flash_get_block_count());
+        case BP_IOCTL_SEC_SIZE:
+            return MP_OBJ_NEW_SMALL_INT(FLASH_API_BLOCK_SIZE);
+        default:
+            return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(flash_obj_ioctl_obj, flash_obj_ioctl);
+
+STATIC const mp_rom_map_elem_t flash_obj_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&flash_obj_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&flash_obj_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&flash_obj_ioctl_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(flash_obj_locals_dict, flash_obj_locals_dict_table);
+
+const mp_obj_type_t _flash_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Flash,
+    .make_new = flash_obj_make_new,
+    .locals_dict = (mp_obj_t) &flash_obj_locals_dict,
+};
+
+void flash_init_vfs (fs_user_mount_t *vfs) {
+    vfs->base.type = &mp_fat_vfs_type;
+    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+
+//    vfs->fatfs.part = 1; // flash filesystem lives on first partition
+    vfs->readblocks[0] = (mp_obj_t) &flash_obj_readblocks_obj;
+    vfs->readblocks[1] = (mp_obj_t) &_flash_obj;
+    vfs->readblocks[2] = (mp_obj_t) flash_read_blocks;    // native version
+
+    vfs->writeblocks[0] = (mp_obj_t) &flash_obj_writeblocks_obj;
+    vfs->writeblocks[1] = (mp_obj_t) &_flash_obj;
+    vfs->writeblocks[2] = (mp_obj_t) flash_write_blocks;    // native version
+
+    vfs->u.ioctl[0] = (mp_obj_t) &flash_obj_ioctl_obj;
+    vfs->u.ioctl[1] = (mp_obj_t) &_flash_obj;
+
+    // Activity LED for flash writes.
+#ifdef MICROPY_HW_LED_MSC
+    struct port_config pin_conf;
+    port_get_config_defaults(&pin_conf);
+
+    pin_conf.direction = PORT_PIN_DIR_OUTPUT;
+    port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+#endif
+}

@@ -33,15 +33,16 @@
 //--------------------------------------------------------------------+
 // Flash caching
 //--------------------------------------------------------------------+
-#define FLASH_API_PAGE_SIZE    4096
-
 #define NO_CACHE 0xffffffff
 
 static uint32_t _fl_addr = NO_CACHE;
 static uint8_t _fl_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
 
-uint32_t qspi_flash_get_block_count (void)
-{
+void qspi_flash_init (void) {
+
+}
+
+uint32_t qspi_flash_get_block_count (void) {
     return QSPI_FLASH_SIZE / FLASH_API_BLOCK_SIZE;
 }
 
