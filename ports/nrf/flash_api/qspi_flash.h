@@ -24,43 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "flash_api.h"
-#include "internal_flash.h"
-#include "qspi_flash.h"
+#ifndef QSPI_FLASH_H_
+#define QSPI_FLASH_H_
 
-#if 1
-mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return internal_flash_read_blocks(dst, lba, count);
-}
-
-mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
-    return internal_flash_write_blocks(src, lba, count);
-}
-
-void flash_flush (void) {
-    internal_flash_flush();
-}
-
-uint32_t flash_get_block_count (void) {
-    return internal_flash_get_block_count();
-}
-
-#else
-
-mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return qspi_flash_read_blocks(dst, lba, count);
-}
-
-mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
-    return qspi_flash_write_blocks(src, lba, count);
-}
-
-void flash_flush (void) {
-    qspi_flash_flush();
-}
-
-uint32_t flash_get_block_count (void) {
-    return qspi_flash_get_block_count();
-}
-
+#ifdef __cplusplus
+ extern "C" {
 #endif
+
+uint32_t qspi_flash_get_block_count (void);
+
+mp_uint_t qspi_flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);
+mp_uint_t qspi_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count);
+void qspi_flash_flush (void);
+
+
+#ifdef __cplusplus
+ }
+#endif
+
+#endif /* QSPI_FLASH_H_ */

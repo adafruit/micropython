@@ -97,7 +97,8 @@
 #define CFG_TUD_MSC_MAXLUN          1
 
 // Number of Blocks
-#define CFG_TUD_MSC_BLOCK_NUM       (256*1024)/512
+extern unsigned long flash_get_block_count (void);
+#define CFG_TUD_MSC_BLOCK_NUM       flash_get_block_count()
 
 // Block size
 #define CFG_TUD_MSC_BLOCK_SZ        512

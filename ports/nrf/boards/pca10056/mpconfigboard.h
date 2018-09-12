@@ -56,3 +56,6 @@
 #define QSPI_FLASH_D1               NRF_GPIO_PIN_MAP(0, 21)
 #define QSPI_FLASH_D2               NRF_GPIO_PIN_MAP(0, 22)
 #define QSPI_FLASH_D3               NRF_GPIO_PIN_MAP(0, 23)
+
+#define QSPI_FLASH_SIZE             (8*1024*1024)
+

@@ -40,6 +40,11 @@
 static uint32_t _fl_addr = NO_CACHE;
 static uint8_t _fl_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
 
+uint32_t qspi_flash_get_block_count (void)
+{
+    return QSPI_FLASH_SIZE / FLASH_API_BLOCK_SIZE;
+}
+
 void qspi_flash_flush (void) {
     if ( _fl_addr == NO_CACHE ) return;
 
@@ -59,7 +64,7 @@ void qspi_flash_flush (void) {
 }
 
 
-mp_uint_t qspi_flash_write_blocks (uint8_t const *src, uint32_t lba, uint32_t count) {
+mp_uint_t qspi_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
     uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
     uint32_t newAddr = dst & ~(FLASH_API_PAGE_SIZE - 1);
 
