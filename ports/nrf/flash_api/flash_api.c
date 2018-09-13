@@ -56,10 +56,9 @@ mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
 }
 
 mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
-    uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
-
     // Program blocks up to page boundary each loop
     while ( num_blocks ) {
+        const uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
         const uint32_t page_addr = page_addr_of(dst);
         const uint32_t offset = page_offset_of(dst);
 
@@ -87,8 +86,8 @@ mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blo
         memcpy(_cache_buf + offset, src, wr_bytes);
 
         // adjust for next run
-        dst += wr_bytes;
         src += wr_bytes;
+        lba += wr_blocks;
         num_blocks -= wr_blocks;
     }
 
