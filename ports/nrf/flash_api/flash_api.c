@@ -96,7 +96,7 @@ uint32_t flash_read_blocks_nonblocking (uint8_t* dst, uint32_t lba, uint32_t cou
 // Flash HAL
 //--------------------------------------------------------------------+
 
-#if 1
+#if 0
 
 void flash_init (void) {
     internal_flash_init();
