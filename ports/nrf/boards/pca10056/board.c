@@ -25,22 +25,14 @@
  */
 
 #include "boards/board.h"
+#include "nrf_gpio.h"
 #include "nrfx_qspi.h"
 
 #define QSPI_STD_CMD_RSTEN  0x66
 #define QSPI_STD_CMD_RST    0x99
 #define QSPI_STD_CMD_WRSR   0x01
 
-extern void qspi_flash_complete (void);
-
-void qflash_hdl (nrfx_qspi_evt_t event, void * p_context)
-{
-    (void) p_context;
-    (void) event;
-
-//    qspi_flash_complete();
-}
-
+void qspi_flash_isr (nrfx_qspi_evt_t event, void * p_context);
 
 void board_init(void) {
     // Init QSPI flash
@@ -69,8 +61,7 @@ void board_init(void) {
         .irq_priority = 7,
     };
 
-//    nrfx_qspi_init(&qspi_cfg, qflash_hdl, NULL);
-    nrfx_qspi_init(&qspi_cfg, NULL, NULL);
+    nrfx_qspi_init(&qspi_cfg, qspi_flash_isr, NULL);
 
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = 0,
@@ -103,5 +94,15 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    // LEDs
+    for ( int i = 13; i <= 16; i++ ) {
+        nrf_gpio_cfg_output(i);
+        nrf_gpio_pin_set(i);
+    }
 
+    // Buttons
+    nrf_gpio_cfg_input(11, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(12, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(24, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(25, NRF_GPIO_PIN_PULLUP);
 }

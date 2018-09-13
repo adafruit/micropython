@@ -25,18 +25,26 @@
  */
 
 #include <string.h>
+
 #include "mpconfigboard.h"
 #include "nrfx_qspi.h"
 #include "flash_api.h"
 #include "qspi_flash.h"
 
-//--------------------------------------------------------------------+
-// Flash caching
-//--------------------------------------------------------------------+
 #define NO_CACHE 0xffffffff
 
-static uint32_t _fl_addr = NO_CACHE;
-static uint8_t _fl_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
+static uint32_t _cache_addr = NO_CACHE;
+static uint8_t _cache_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
+
+volatile static bool _qspi_complete = false;
+
+void qspi_flash_isr (nrfx_qspi_evt_t event, void * p_context)
+{
+    (void) p_context;
+    (void) event;
+
+    _qspi_complete = true;
+}
 
 void qspi_flash_init (void) {
 
@@ -47,21 +55,19 @@ uint32_t qspi_flash_get_block_count (void) {
 }
 
 void qspi_flash_flush (void) {
-    if ( _fl_addr == NO_CACHE ) return;
+    if ( _cache_addr == NO_CACHE ) return;
 
-    if ( !(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, _fl_addr)) ) return;
-//    while ( _fl_state != FLASH_STATE_COMPLETE )
-//    {
-//    }
-//    _fl_state = FLASH_STATE_IDLE;
+    if ( !(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, _cache_addr)) ) return;
+    while ( !_qspi_complete ) {
+    }
+    _qspi_complete = false;
 
-    if ( !(NRFX_SUCCESS == nrfx_qspi_write(_fl_buf, FLASH_API_PAGE_SIZE, _fl_addr)) ) return;
-//    while ( _fl_state != FLASH_STATE_COMPLETE )
-//    {
-//    }
-//    _fl_state = FLASH_STATE_IDLE;
+    if ( !(NRFX_SUCCESS == nrfx_qspi_write(_cache_buf, FLASH_API_PAGE_SIZE, _cache_addr)) ) return;
+    while ( !_qspi_complete ) {
+    }
+    _qspi_complete = false;
 
-    _fl_addr = NO_CACHE;
+    _cache_addr = NO_CACHE;
 }
 
 
@@ -69,19 +75,24 @@ mp_uint_t qspi_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t co
     uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
     uint32_t newAddr = dst & ~(FLASH_API_PAGE_SIZE - 1);
 
-    if ( newAddr != _fl_addr ) {
+    if ( newAddr != _cache_addr ) {
         qspi_flash_flush();
-        _fl_addr = newAddr;
+        _cache_addr = newAddr;
 
-        qspi_flash_read_blocks(_fl_buf, newAddr / FLASH_API_BLOCK_SIZE, FLASH_API_BLOCK_PER_PAGE);
+        qspi_flash_read_blocks(_cache_buf, newAddr / FLASH_API_BLOCK_SIZE, FLASH_API_BLOCK_PER_PAGE);
     }
 
-    memcpy(_fl_buf + (dst & (FLASH_API_PAGE_SIZE - 1)), src, count * FLASH_API_BLOCK_SIZE);
+    memcpy(_cache_buf + (dst & (FLASH_API_PAGE_SIZE - 1)), src, count * FLASH_API_BLOCK_SIZE);
     return 0;
 }
 
 mp_uint_t qspi_flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return nrfx_qspi_read(dst, count * FLASH_API_BLOCK_SIZE, lba * FLASH_API_BLOCK_SIZE);
+    nrfx_qspi_read(dst, count * FLASH_API_BLOCK_SIZE, lba * FLASH_API_BLOCK_SIZE);
+    while ( !_qspi_complete ) {
+    }
+    _qspi_complete = false;
+
+    return 0;
 }
 
 

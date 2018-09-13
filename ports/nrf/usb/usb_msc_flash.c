@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "tusb.h"
+#include "nrf_gpio.h"
 #include "flash_api/flash_api.h"
 
 // For updating fatfs's cache
@@ -114,7 +115,7 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     (void) offset;
 
 #ifdef MICROPY_HW_LED_MSC
-    port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+    nrf_gpio_pin_write(MICROPY_HW_LED_MSC, MICROPY_HW_LED_MSC_ACTIVE_LEVEL);
 #endif
 
     const uint32_t block_count = bufsize / FLASH_API_BLOCK_SIZE;
@@ -130,7 +131,7 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     }
 
 #ifdef MICROPY_HW_LED_MSC
-    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+    nrf_gpio_pin_write(MICROPY_HW_LED_MSC, 1 - MICROPY_HW_LED_MSC_ACTIVE_LEVEL);
 #endif
 
     return block_count * FLASH_API_BLOCK_SIZE;

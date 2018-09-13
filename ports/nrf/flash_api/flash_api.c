@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "nrf_gpio.h"
 #include "flash_api.h"
 #include "internal_flash.h"
 #include "qspi_flash.h"
@@ -166,11 +167,7 @@ void flash_init_vfs (fs_user_mount_t *vfs) {
 
     // Activity LED for flash writes.
 #ifdef MICROPY_HW_LED_MSC
-    struct port_config pin_conf;
-    port_get_config_defaults(&pin_conf);
-
-    pin_conf.direction = PORT_PIN_DIR_OUTPUT;
-    port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
-    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+    nrf_gpio_cfg_output(MICROPY_HW_LED_MSC);
+    nrf_gpio_pin_write(MICROPY_HW_LED_MSC, 1 - MICROPY_HW_LED_MSC_ACTIVE_LEVEL);
 #endif
 }
