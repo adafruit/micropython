@@ -31,10 +31,13 @@
 #include "nrfx_qspi.h"
 #include "flash_api.h"
 #include "qspi_flash.h"
+#include "flash_devices.h"
 
 #define QSPI_STD_CMD_RSTEN  0x66
 #define QSPI_STD_CMD_RST    0x99
 #define QSPI_STD_CMD_WRSR   0x01
+
+const qspi_flash_device_t _flash_device = QSPI_FLASH_DEVICE;
 
 volatile static bool _qspi_complete = false;
 
@@ -59,8 +62,8 @@ void qspi_flash_init (void) {
             .io3_pin = QSPI_FLASH_D3,
         },
         .prot_if = {
-            .readoc = QSPI_FLASH_READ_OPCODE,
-            .writeoc = QSPI_FLASH_WRITE_OPCODE,
+            .readoc = NRF_QSPI_READOC_READ4IO,
+            .writeoc = NRF_QSPI_WRITEOC_PP4IO,
             .addrmode = NRF_QSPI_ADDRMODE_24BIT,
             .dpmconfig = false
         },
@@ -94,15 +97,14 @@ void qspi_flash_init (void) {
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
 
-    // Switch to qspi mode
-    uint8_t sr_quad_en = 0x40;
+    // Switch to quad mode
     cinstr_cfg.opcode = QSPI_STD_CMD_WRSR;
-    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_2B;
-    nrfx_qspi_cinstr_xfer(&cinstr_cfg, &sr_quad_en, NULL);
+    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_3B;
+    nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_device.status_quad_enable, NULL);
 }
 
 uint32_t qspi_flash_get_block_count (void) {
-    return QSPI_FLASH_SIZE / FLASH_API_BLOCK_SIZE;
+    return _flash_device.total_size / FLASH_API_BLOCK_SIZE;
 }
 
 uint8_t qspi_flash_get_state (void) {
