@@ -34,9 +34,12 @@
 void qspi_flash_init (void);
 uint32_t qspi_flash_get_block_count (void);
 
-mp_uint_t qspi_flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);
-mp_uint_t qspi_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count);
-void qspi_flash_flush (void);
+void qspi_flash_hal_erase (uint32_t addr);
+void qspi_flash_hal_program (uint32_t dst, const void * src, uint32_t len);
+void qspi_flash_hal_read (void* dst, uint32_t src, uint32_t len);
+
+
+uint8_t qspi_flash_get_state (void);
 
 
 #ifdef __cplusplus

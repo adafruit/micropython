@@ -33,16 +33,11 @@
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE     0
 
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
+void internal_flash_init (void);
+uint32_t internal_flash_get_block_count (void);
 
-void      internal_flash_init(void);
-uint32_t  internal_flash_get_block_size(void);
-uint32_t  internal_flash_get_block_count(void);
-void      internal_flash_flush(void);
-
-// these return 0 on success, non-zero on error
-mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t internal_flash_write_blocks (const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+void internal_flash_hal_erase (uint32_t addr);
+void internal_flash_hal_program (uint32_t dst, const void * src, uint32_t len);
+void internal_flash_hal_read (void* dst, uint32_t src, uint32_t len);
 
 #endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H

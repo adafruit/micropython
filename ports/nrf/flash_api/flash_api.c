@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "nrf_gpio.h"
 #include "flash_api.h"
 #include "internal_flash.h"
@@ -33,25 +34,88 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#if 0
+//--------------------------------------------------------------------+
+// Block API with caching
+//--------------------------------------------------------------------+
+#define NO_CACHE 0xffffffff
+
+static uint32_t _cache_addr = NO_CACHE;
+static uint8_t _cache_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
+
+static inline uint32_t page_addr_of (uint32_t addr) {
+    return addr & ~(FLASH_API_PAGE_SIZE - 1);
+}
+
+mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
+    flash_hal_read(dst, lba * FLASH_API_BLOCK_SIZE, count * FLASH_API_BLOCK_SIZE);
+    return 0;
+}
+
+mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+    // Program blocks up to page boundary each loop
+    while ( num_blocks ) {
+        const uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
+        const uint32_t page_addr = page_addr_of(dst);
+
+        uint32_t wr_count = FLASH_API_BLOCK_PER_PAGE - (lba % FLASH_API_BLOCK_PER_PAGE);    // up to page boundary
+        wr_count = MIN(num_blocks, wr_count);
+
+        // Page changes, flush old and update new cache
+        if ( page_addr != _cache_addr ) {
+            flash_flush();
+
+            _cache_addr = page_addr;
+            flash_read_blocks(_cache_buf, page_addr / FLASH_API_BLOCK_SIZE, FLASH_API_BLOCK_PER_PAGE);
+        }
+
+        memcpy(_cache_buf + (dst & (FLASH_API_PAGE_SIZE - 1)), src, wr_count * FLASH_API_BLOCK_SIZE);
+
+        // adjust for next run
+        lba += wr_count;
+        src += wr_count * FLASH_API_BLOCK_SIZE;
+        num_blocks -= wr_count;
+    }
+
+    return 0;
+}
+
+void flash_flush (void) {
+    if ( _cache_addr == NO_CACHE ) return;
+
+    flash_hal_erase(_cache_addr);
+    flash_hal_program(_cache_addr, _cache_buf, FLASH_API_PAGE_SIZE);
+
+    _cache_addr = NO_CACHE;
+}
+
+uint32_t flash_read_blocks_nonblocking (uint8_t* dst, uint32_t lba, uint32_t count) {
+    return count;
+}
+
+//--------------------------------------------------------------------+
+// Flash HAL
+//--------------------------------------------------------------------+
+
+#if 1
+
 void flash_init (void) {
     internal_flash_init();
 }
 
-mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return internal_flash_read_blocks(dst, lba, count);
-}
-
-mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
-    return internal_flash_write_blocks(src, lba, count);
-}
-
-void flash_flush (void) {
-    internal_flash_flush();
-}
-
 uint32_t flash_get_block_count (void) {
     return internal_flash_get_block_count();
+}
+
+void flash_hal_erase (uint32_t addr) {
+    internal_flash_hal_erase(addr);
+}
+
+void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
+    internal_flash_hal_program(dst, src, len);
+}
+
+void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+    internal_flash_hal_read(dst, src, len);
 }
 
 #else
@@ -60,20 +124,20 @@ void flash_init (void) {
     qspi_flash_init();
 }
 
-mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return qspi_flash_read_blocks(dst, lba, count);
-}
-
-mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
-    return qspi_flash_write_blocks(src, lba, count);
-}
-
-void flash_flush (void) {
-    qspi_flash_flush();
-}
-
 uint32_t flash_get_block_count (void) {
     return qspi_flash_get_block_count();
+}
+
+void flash_hal_erase (uint32_t addr) {
+    qspi_flash_hal_erase(addr);
+}
+
+void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
+    qspi_flash_hal_program(dst, src, len);
+}
+
+void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+    qspi_flash_hal_read(dst, src, len);
 }
 
 #endif
@@ -83,9 +147,10 @@ uint32_t flash_get_block_count (void) {
 //
 // Expose the flash as an object with the block protocol.
 // there is a singleton Flash object
+/******************************************************************************/
 extern const struct _mp_obj_type_t _flash_type;    // forward declaration
 
-STATIC const mp_obj_base_t _flash_obj = { &_flash_type };
+const STATIC mp_obj_base_t _flash_obj = { &_flash_type };
 
 STATIC mp_obj_t flash_obj_make_new (const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -133,7 +198,7 @@ STATIC mp_obj_t flash_obj_ioctl (mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(flash_obj_ioctl_obj, flash_obj_ioctl);
 
-STATIC const mp_rom_map_elem_t flash_obj_locals_dict_table[] = {
+    const STATIC mp_rom_map_elem_t flash_obj_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&flash_obj_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&flash_obj_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&flash_obj_ioctl_obj) },

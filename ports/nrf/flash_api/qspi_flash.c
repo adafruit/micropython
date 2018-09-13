@@ -31,11 +31,6 @@
 #include "flash_api.h"
 #include "qspi_flash.h"
 
-#define NO_CACHE 0xffffffff
-
-static uint32_t _cache_addr = NO_CACHE;
-static uint8_t _cache_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
-
 volatile static bool _qspi_complete = false;
 
 void qspi_flash_isr (nrfx_qspi_evt_t event, void * p_context)
@@ -54,45 +49,27 @@ uint32_t qspi_flash_get_block_count (void) {
     return QSPI_FLASH_SIZE / FLASH_API_BLOCK_SIZE;
 }
 
-void qspi_flash_flush (void) {
-    if ( _cache_addr == NO_CACHE ) return;
-
-    if ( !(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, _cache_addr)) ) return;
-    while ( !_qspi_complete ) {
-    }
-    _qspi_complete = false;
-
-    if ( !(NRFX_SUCCESS == nrfx_qspi_write(_cache_buf, FLASH_API_PAGE_SIZE, _cache_addr)) ) return;
-    while ( !_qspi_complete ) {
-    }
-    _qspi_complete = false;
-
-    _cache_addr = NO_CACHE;
-}
-
-
-mp_uint_t qspi_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count) {
-    uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
-    uint32_t newAddr = dst & ~(FLASH_API_PAGE_SIZE - 1);
-
-    if ( newAddr != _cache_addr ) {
-        qspi_flash_flush();
-        _cache_addr = newAddr;
-
-        qspi_flash_read_blocks(_cache_buf, newAddr / FLASH_API_BLOCK_SIZE, FLASH_API_BLOCK_PER_PAGE);
-    }
-
-    memcpy(_cache_buf + (dst & (FLASH_API_PAGE_SIZE - 1)), src, count * FLASH_API_BLOCK_SIZE);
+uint8_t qspi_flash_get_state (void) {
     return 0;
 }
 
-mp_uint_t qspi_flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
-    nrfx_qspi_read(dst, count * FLASH_API_BLOCK_SIZE, lba * FLASH_API_BLOCK_SIZE);
+void qspi_flash_hal_erase (uint32_t addr) {
+    if ( !(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr)) ) return;
     while ( !_qspi_complete ) {
     }
     _qspi_complete = false;
-
-    return 0;
 }
 
+void qspi_flash_hal_program (uint32_t dst, const void* src, uint32_t len) {
+    if ( !(NRFX_SUCCESS == nrfx_qspi_write(src, len, dst)) ) return;
+    while ( !_qspi_complete ) {
+    }
+    _qspi_complete = false;
+}
 
+void qspi_flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+    nrfx_qspi_read(dst, len, src);
+    while ( !_qspi_complete ) {
+    }
+    _qspi_complete = false;
+}

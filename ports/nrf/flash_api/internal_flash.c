@@ -46,16 +46,12 @@ extern uint32_t __fatfs_flash_length[];
 uint8_t _flash_cache[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
-static inline uint32_t lba2addr(uint32_t block) {
-    return ((uint32_t) __fatfs_flash_start_addr) + block * FLASH_API_BLOCK_SIZE;
+static inline uint32_t log2phy_addr (uint32_t addr) {
+    return ((uint32_t) __fatfs_flash_start_addr) + addr;
 }
 
 void internal_flash_init(void) {
 
-}
-
-uint32_t internal_flash_get_block_size(void) {
-    return FLASH_API_BLOCK_SIZE;
 }
 
 uint32_t internal_flash_get_block_count(void) {
@@ -63,51 +59,15 @@ uint32_t internal_flash_get_block_count(void) {
 }
 
 // TODO support flashing with SD enabled
-void internal_flash_flush(void) {
-    if (_flash_page_addr == NO_CACHE) return;
-
-    // Skip if data is the same
-    if ( memcmp(_flash_cache, (void *) _flash_page_addr, FLASH_API_PAGE_SIZE) != 0 ) {
-//        _is_flashing = true;
-        nrf_nvmc_page_erase(_flash_page_addr);
-        nrf_nvmc_write_words(_flash_page_addr, (uint32_t *) _flash_cache, FLASH_API_PAGE_SIZE / sizeof(uint32_t));
-    }
-
-    _flash_page_addr = NO_CACHE;
+void internal_flash_hal_erase (uint32_t addr) {
+    nrf_nvmc_page_erase(log2phy_addr(addr));
 }
 
-mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-    uint32_t src = lba2addr(block);
-    memcpy(dest, (uint8_t*) src, FLASH_API_BLOCK_SIZE * num_blocks);
-    return 0; // success
+void internal_flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
+    nrf_nvmc_write_words(log2phy_addr(dst), (uint32_t *) src, len / sizeof(uint32_t));
 }
 
-mp_uint_t internal_flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
-    while (num_blocks) {
-        const uint32_t addr = lba2addr(lba);
-        const uint32_t page_addr = addr & ~(FLASH_API_PAGE_SIZE - 1);
-
-        uint32_t count = 8 - (lba % 8); // up to page boundary
-        count = MIN(num_blocks, count);
-
-        if (page_addr != _flash_page_addr) {
-            internal_flash_flush();
-
-            // writing previous cached data, skip current data until flashing is done
-            // tinyusb stack will invoke write_block() with the same parameters later on
-            //        if ( _is_flashing ) return;
-
-            _flash_page_addr = page_addr;
-            memcpy(_flash_cache, (void *) page_addr, FLASH_API_PAGE_SIZE);
-        }
-
-        memcpy(_flash_cache + (addr & (FLASH_API_PAGE_SIZE - 1)), src, count * FLASH_API_BLOCK_SIZE);
-
-        // adjust for next run
-        lba += count;
-        src += count * FLASH_API_BLOCK_SIZE;
-        num_blocks -= count;
-    }
-
-    return 0; // success
+void internal_flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+    memcpy(dst, (void*) log2phy_addr(src), len);
 }
+
