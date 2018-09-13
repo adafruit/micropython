@@ -46,34 +46,50 @@ static inline uint32_t page_addr_of (uint32_t addr) {
     return addr & ~(FLASH_API_PAGE_SIZE - 1);
 }
 
+static inline uint32_t page_offset_of (uint32_t addr) {
+    return addr & (FLASH_API_PAGE_SIZE - 1);
+}
+
 mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count) {
     flash_hal_read(dst, lba * FLASH_API_BLOCK_SIZE, count * FLASH_API_BLOCK_SIZE);
     return 0;
 }
 
 mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+    uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
+
     // Program blocks up to page boundary each loop
     while ( num_blocks ) {
-        const uint32_t dst = lba * FLASH_API_BLOCK_SIZE;
         const uint32_t page_addr = page_addr_of(dst);
+        const uint32_t offset = page_offset_of(dst);
 
-        uint32_t wr_count = FLASH_API_BLOCK_PER_PAGE - (lba % FLASH_API_BLOCK_PER_PAGE);    // up to page boundary
-        wr_count = MIN(num_blocks, wr_count);
+        uint32_t wr_blocks = FLASH_API_BLOCK_PER_PAGE - (lba % FLASH_API_BLOCK_PER_PAGE);    // up to page boundary
+        wr_blocks = MIN(num_blocks, wr_blocks);
+
+        const uint32_t wr_bytes = wr_blocks * FLASH_API_BLOCK_SIZE;
 
         // Page changes, flush old and update new cache
         if ( page_addr != _cache_addr ) {
             flash_flush();
-
             _cache_addr = page_addr;
-            flash_read_blocks(_cache_buf, page_addr / FLASH_API_BLOCK_SIZE, FLASH_API_BLOCK_PER_PAGE);
+
+            // read existing flash to cache except those we are writing
+            if ( offset ) {
+                flash_hal_read(_cache_buf, page_addr, offset);
+            }
+
+            const uint32_t last_byte = offset + wr_bytes;
+            if ( last_byte < FLASH_API_PAGE_SIZE ) {
+                flash_hal_read(_cache_buf + last_byte, page_addr + last_byte, FLASH_API_PAGE_SIZE - last_byte);
+            }
         }
 
-        memcpy(_cache_buf + (dst & (FLASH_API_PAGE_SIZE - 1)), src, wr_count * FLASH_API_BLOCK_SIZE);
+        memcpy(_cache_buf + offset, src, wr_bytes);
 
         // adjust for next run
-        lba += wr_count;
-        src += wr_count * FLASH_API_BLOCK_SIZE;
-        num_blocks -= wr_count;
+        dst += wr_bytes;
+        src += wr_bytes;
+        num_blocks -= wr_blocks;
     }
 
     return 0;

@@ -120,7 +120,6 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
 
     const uint32_t block_count = bufsize / FLASH_API_BLOCK_SIZE;
 
-    // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
     flash_write_blocks(buffer, lba, block_count);
 
     // update fatfs's cache if address matches
