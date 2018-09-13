@@ -33,13 +33,18 @@
 #include "qspi_flash.h"
 #include "flash_devices.h"
 
-#define QSPI_STD_CMD_RSTEN  0x66
-#define QSPI_STD_CMD_RST    0x99
-#define QSPI_STD_CMD_WRSR   0x01
+enum {
+    QSPI_CMD_RSTEN = 0x66,
+    QSPI_CMD_RST = 0x99,
+    QSPI_CMD_WRSR = 0x01,
+    QSPI_CMD_READID = 0x90
+};
+
 
 const qspi_flash_device_t _flash_device = QSPI_FLASH_DEVICE;
 
 volatile static bool _qspi_complete = false;
+//static bool _regconized_device = true;
 
 void qspi_flash_isr (nrfx_qspi_evt_t event, void * p_context)
 {
@@ -88,27 +93,41 @@ void qspi_flash_init (void) {
     };
 
     // Send reset enable
-    cinstr_cfg.opcode = QSPI_STD_CMD_RSTEN;
+    cinstr_cfg.opcode = QSPI_CMD_RSTEN;
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
 
     // Send reset command
-    cinstr_cfg.opcode = QSPI_STD_CMD_RST;
+    cinstr_cfg.opcode = QSPI_CMD_RST;
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
 
+#if 0
+    // Send Read ID + 3 zeroes byte
+    uint8_t dummy[3] = { 0 };
+    uint8_t id_resp[4] = { 0 };
+    cinstr_cfg.opcode = QSPI_CMD_READID;
+    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_4B;
+    nrfx_qspi_cinstr_xfer(&cinstr_cfg, dummy, id_resp);
+
+    // Check against configured device
+    if ( !(_flash_device.manufacturer_id == id_resp[2] && _flash_device.device_id == id_resp[3]) ) {
+        // ID not matched
+        _regconized_device = false;
+    }
+    else {
+        _regconized_device = true;
+    }
+#endif
+
     // Switch to quad mode
-    cinstr_cfg.opcode = QSPI_STD_CMD_WRSR;
+    cinstr_cfg.opcode = QSPI_CMD_WRSR;
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_3B;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_device.status_quad_enable, NULL);
 }
 
 uint32_t qspi_flash_get_block_count (void) {
     return _flash_device.total_size / FLASH_API_BLOCK_SIZE;
-}
-
-uint8_t qspi_flash_get_state (void) {
-    return 0;
 }
 
 void qspi_flash_hal_erase (uint32_t addr) {

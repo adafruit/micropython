@@ -39,9 +39,6 @@ void qspi_flash_hal_program (uint32_t dst, const void * src, uint32_t len);
 void qspi_flash_hal_read (void* dst, uint32_t src, uint32_t len);
 
 
-uint8_t qspi_flash_get_state (void);
-
-
 #ifdef __cplusplus
  }
 #endif

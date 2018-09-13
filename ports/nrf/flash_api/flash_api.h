@@ -52,15 +52,9 @@ void flash_hal_read (void* dst, uint32_t src, uint32_t len);
 
 void flash_init_vfs (struct _fs_user_mount_t *vfs);
 
-// Blocking API for circuitpython
 mp_uint_t flash_read_blocks (uint8_t* dst, uint32_t lba, uint32_t count);
 mp_uint_t flash_write_blocks (const uint8_t *src, uint32_t lba, uint32_t count);
 void flash_flush (void);
-
-// Non-blocking API for usb
-//uint8_t flash_get_state (void);
-//uint32_t flash_read_blocks_nonblocking (uint8_t* dst, uint32_t lba, uint32_t count);
-//uint32_t flash_write_blocks_nonblocking (const uint8_t *src, uint32_t lba, uint32_t count);
 
 
 #ifdef __cplusplus

@@ -41,11 +41,6 @@
 extern uint32_t __fatfs_flash_start_addr[];
 extern uint32_t __fatfs_flash_length[];
 
-#define NO_CACHE        0xffffffff
-
-uint8_t _flash_cache[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
-uint32_t _flash_page_addr = NO_CACHE;
-
 static inline uint32_t log2phy_addr (uint32_t addr) {
     return ((uint32_t) __fatfs_flash_start_addr) + addr;
 }

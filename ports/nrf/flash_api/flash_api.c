@@ -103,10 +103,6 @@ void flash_flush (void) {
     _cache_addr = NO_CACHE;
 }
 
-uint32_t flash_read_blocks_nonblocking (uint8_t* dst, uint32_t lba, uint32_t count) {
-    return count;
-}
-
 //--------------------------------------------------------------------+
 // Flash HAL
 //--------------------------------------------------------------------+
