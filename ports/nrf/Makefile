@@ -128,6 +128,7 @@ SRC_C += \
 ifeq ($(QSPI_FLASH_FILESYSTEM),1)
 SRC_C += flash_api/qspi_flash.c
 SRC_NRFX += nrfx/drivers/src/nrfx_qspi.c
+CFLAGS += -DQSPI_FLASH_FILESYSTEM
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\

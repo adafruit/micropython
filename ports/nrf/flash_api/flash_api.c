@@ -96,29 +96,7 @@ uint32_t flash_read_blocks_nonblocking (uint8_t* dst, uint32_t lba, uint32_t cou
 // Flash HAL
 //--------------------------------------------------------------------+
 
-#if 0
-
-void flash_init (void) {
-    internal_flash_init();
-}
-
-uint32_t flash_get_block_count (void) {
-    return internal_flash_get_block_count();
-}
-
-void flash_hal_erase (uint32_t addr) {
-    internal_flash_hal_erase(addr);
-}
-
-void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
-    internal_flash_hal_program(dst, src, len);
-}
-
-void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
-    internal_flash_hal_read(dst, src, len);
-}
-
-#else
+#ifdef QSPI_FLASH_FILESYSTEM
 
 void flash_init (void) {
     qspi_flash_init();
@@ -138,6 +116,28 @@ void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
 
 void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
     qspi_flash_hal_read(dst, src, len);
+}
+
+#else
+
+void flash_init (void) {
+    internal_flash_init();
+}
+
+uint32_t flash_get_block_count (void) {
+    return internal_flash_get_block_count();
+}
+
+void flash_hal_erase (uint32_t addr) {
+    internal_flash_hal_erase(addr);
+}
+
+void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
+    internal_flash_hal_program(dst, src, len);
+}
+
+void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+    internal_flash_hal_read(dst, src, len);
 }
 
 #endif
