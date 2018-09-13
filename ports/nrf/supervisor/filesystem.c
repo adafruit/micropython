@@ -32,11 +32,11 @@
 #include "flash_api/flash_api.h"
 
 static mp_vfs_mount_t _mp_vfs;
-static fs_user_mount_t _vfs;
+static fs_user_mount_t _user_vfs;
 
 void filesystem_init(bool create_allowed) {
     // init the vfs object
-    fs_user_mount_t *int_vfs = &_vfs;
+    fs_user_mount_t *int_vfs = &_user_vfs;
     int_vfs->flags = 0;
     flash_init_vfs(int_vfs);
 
@@ -81,7 +81,7 @@ void filesystem_flush(void) {
 }
 
 void filesystem_writable_by_python(bool writable) {
-    fs_user_mount_t *vfs = &_vfs;
+    fs_user_mount_t *vfs = &_user_vfs;
 
     if (writable) {
         vfs->flags |= FSUSER_USB_WRITABLE;
