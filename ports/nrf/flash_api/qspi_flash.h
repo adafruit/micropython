@@ -32,6 +32,7 @@
 #endif
 
 void qspi_flash_init (void);
+bool qspi_flash_detected (void);
 uint32_t qspi_flash_get_block_count (void);
 
 void qspi_flash_hal_erase (uint32_t addr);

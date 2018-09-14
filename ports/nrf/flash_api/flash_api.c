@@ -107,51 +107,70 @@ void flash_flush (void) {
 // Flash HAL
 //--------------------------------------------------------------------+
 
+
+void flash_init (void) {
 #ifdef QSPI_FLASH_FILESYSTEM
-
-void flash_init (void) {
     qspi_flash_init();
-}
 
-uint32_t flash_get_block_count (void) {
-    return qspi_flash_get_block_count();
-}
-
-void flash_hal_erase (uint32_t addr) {
-    qspi_flash_hal_erase(addr);
-}
-
-void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
-    qspi_flash_hal_program(dst, src, len);
-}
-
-void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
-    qspi_flash_hal_read(dst, src, len);
-}
-
-#else
-
-void flash_init (void) {
-    internal_flash_init();
-}
-
-uint32_t flash_get_block_count (void) {
-    return internal_flash_get_block_count();
-}
-
-void flash_hal_erase (uint32_t addr) {
-    internal_flash_hal_erase(addr);
-}
-
-void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
-    internal_flash_hal_program(dst, src, len);
-}
-
-void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
-    internal_flash_hal_read(dst, src, len);
-}
-
+    // Flash device is not detected, fall back to internal flash
+    if (!qspi_flash_detected() )
 #endif
+    {
+        internal_flash_init();
+    }
+}
+
+uint32_t flash_get_block_count (void) {
+#ifdef QSPI_FLASH_FILESYSTEM
+    // Flash device is not detected, fall back to internal flash
+    if ( qspi_flash_detected() ) {
+        return qspi_flash_get_block_count();
+    }
+    else
+#endif
+    {
+        return internal_flash_get_block_count();
+    }
+}
+
+void flash_hal_erase (uint32_t addr) {
+#ifdef QSPI_FLASH_FILESYSTEM
+    // Flash device is not detected, fall back to internal flash
+    if ( qspi_flash_detected() ) {
+        return qspi_flash_hal_erase(addr);
+    }
+    else
+#endif
+    {
+        internal_flash_hal_erase(addr);
+    }
+}
+
+void flash_hal_program (uint32_t dst, const void * src, uint32_t len) {
+#ifdef QSPI_FLASH_FILESYSTEM
+    // Flash device is not detected, fall back to internal flash
+    if ( qspi_flash_detected() ) {
+        qspi_flash_hal_program(dst, src, len);
+    }
+    else
+#endif
+    {
+        internal_flash_hal_program(dst, src, len);
+    }
+}
+
+void flash_hal_read (void* dst, uint32_t src, uint32_t len) {
+#ifdef QSPI_FLASH_FILESYSTEM
+    // Flash device is not detected, fall back to internal flash
+    if ( qspi_flash_detected() ) {
+        qspi_flash_hal_read(dst, src, len);
+    }
+    else
+#endif
+    {
+        internal_flash_hal_read(dst, src, len);
+    }
+}
 
 /******************************************************************************/
 // MicroPython bindings

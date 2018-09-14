@@ -40,19 +40,18 @@ enum {
     QSPI_CMD_READID = 0x90
 };
 
+// If Flash device is not specified, support all devices in flash_devices.h
+#ifdef QSPI_FLASH_DEVICE
+const qspi_flash_device_t _flash_devices_arr[] = { QSPI_FLASH_DEVICE };
+#else
+const qspi_flash_device_t _flash_devices_arr[] = {GD25Q16C, MX25R6435F};
+#endif
 
-const qspi_flash_device_t _flash_device = QSPI_FLASH_DEVICE;
+enum {
+    FLASH_DEVICE_COUNT = ARRAY_SIZE(_flash_devices_arr)
+};
 
-volatile static bool _qspi_complete = false;
-//static bool _regconized_device = true;
-
-void qspi_flash_isr (nrfx_qspi_evt_t event, void * p_context)
-{
-    (void) p_context;
-    (void) event;
-
-    _qspi_complete = true;
-}
+const qspi_flash_device_t* _flash_dev = NULL;
 
 void qspi_flash_init (void) {
     // Init QSPI flash
@@ -74,79 +73,85 @@ void qspi_flash_init (void) {
         },
         .phy_if = {
             .sck_freq = QSPI_FLASH_FREQ,
-            .sck_delay = 1,
+            .sck_delay = 1,    // min time CS must stay high before going low again. in unit of 62.5 ns
             .spi_mode = NRF_QSPI_MODE_0,
             .dpmen = false
         },
         .irq_priority = 7,
     };
 
-    nrfx_qspi_init(&qspi_cfg, qspi_flash_isr, NULL);
+    // No callback for blocking API
+    nrfx_qspi_init(&qspi_cfg, NULL, NULL);
 
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = 0,
         .length = 0,
         .io2_level = true,
         .io3_level = true,
-        .wipwait = true,
-        .wren = true
+        .wipwait = false,
+        .wren = false
     };
 
     // Send reset enable
     cinstr_cfg.opcode = QSPI_CMD_RSTEN;
-    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B;
+    cinstr_cfg.length = 1;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
 
     // Send reset command
     cinstr_cfg.opcode = QSPI_CMD_RST;
-    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_1B;
+    cinstr_cfg.length = 1;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
 
-#if 0
-    // Send Read ID + 3 zeroes byte
-    uint8_t dummy[3] = { 0 };
-    uint8_t id_resp[4] = { 0 };
+    NRFX_DELAY_US(100);    // wait for flash device to reset
+
+    // Send (Read ID + 3 dummy bytes) + Receive 2 bytes of (Manufacture + Device ID)
+    uint8_t dummy[6] = {0};
+    uint8_t id_resp[6] = { 0 };
     cinstr_cfg.opcode = QSPI_CMD_READID;
-    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_4B;
+    cinstr_cfg.length = 6;
+
+    // Bug with -nrf_qspi_cinstrdata_get() didn't combine data.
+    // https://devzone.nordicsemi.com/f/nordic-q-a/38540/bug-nrf_qspi_cinstrdata_get-didn-t-collect-data-from-both-cinstrdat1-and-cinstrdat0
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, dummy, id_resp);
 
-    // Check against configured device
-    if ( !(_flash_device.manufacturer_id == id_resp[2] && _flash_device.device_id == id_resp[3]) ) {
-        // ID not matched
-        _regconized_device = false;
-    }
-    else {
-        _regconized_device = true;
-    }
-#endif
+    // Due to the bug, we collect data manually
+    uint8_t dev_id = (uint8_t) NRF_QSPI->CINSTRDAT1;
+    uint8_t mfgr_id = (uint8_t) ( NRF_QSPI->CINSTRDAT0 >> 24);
 
-    // Switch to quad mode
-    cinstr_cfg.opcode = QSPI_CMD_WRSR;
-    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_3B;
-    nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_device.status_quad_enable, NULL);
+    // Look up the flash device in supported array
+    for ( int i = 0; i < FLASH_DEVICE_COUNT; i++ ) {
+        // Match ID
+        if ( _flash_devices_arr[i].manufacturer_id == mfgr_id && _flash_devices_arr[i].device_id == dev_id ) {
+            _flash_dev = &_flash_devices_arr[i];
+            break;
+        }
+    }
+
+    if ( _flash_dev ) {
+        // Switch to quad mode
+        cinstr_cfg.opcode = QSPI_CMD_WRSR;
+        cinstr_cfg.length = 3;
+        cinstr_cfg.wipwait = cinstr_cfg.wren = true;
+        nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_dev->status_quad_enable, NULL);
+    }
+}
+
+bool qspi_flash_detected (void) {
+    return _flash_dev != NULL;
 }
 
 uint32_t qspi_flash_get_block_count (void) {
-    return _flash_device.total_size / FLASH_API_BLOCK_SIZE;
+    return _flash_dev ? (_flash_dev->total_size / FLASH_API_BLOCK_SIZE) : 0;
 }
 
 void qspi_flash_hal_erase (uint32_t addr) {
     if ( !(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr)) ) return;
-    while ( !_qspi_complete ) {
-    }
-    _qspi_complete = false;
 }
 
 void qspi_flash_hal_program (uint32_t dst, const void* src, uint32_t len) {
     if ( !(NRFX_SUCCESS == nrfx_qspi_write(src, len, dst)) ) return;
-    while ( !_qspi_complete ) {
-    }
-    _qspi_complete = false;
 }
 
 void qspi_flash_hal_read (void* dst, uint32_t src, uint32_t len) {
     nrfx_qspi_read(dst, len, src);
-    while ( !_qspi_complete ) {
-    }
-    _qspi_complete = false;
 }
