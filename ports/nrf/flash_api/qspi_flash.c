@@ -41,8 +41,8 @@ enum {
 };
 
 // If Flash device is not specified, support all devices in flash_devices.h
-#ifdef QSPI_FLASH_DEVICE
-const qspi_flash_device_t _flash_devices_arr[] = { QSPI_FLASH_DEVICE };
+#ifdef EXTERNAL_FLASH_DEVICES
+const qspi_flash_device_t _flash_devices_arr[] = { EXTERNAL_FLASH_DEVICES };
 #else
 const qspi_flash_device_t _flash_devices_arr[] = {GD25Q16C, MX25R6435F};
 #endif
@@ -58,12 +58,12 @@ void qspi_flash_init (void) {
     nrfx_qspi_config_t qspi_cfg = {
         .xip_offset = 0,
         .pins = {
-            .sck_pin = QSPI_FLASH_SCK,
-            .csn_pin = QSPI_FLASH_CS,
-            .io0_pin = QSPI_FLASH_D0,
-            .io1_pin = QSPI_FLASH_D1,
-            .io2_pin = QSPI_FLASH_D2,
-            .io3_pin = QSPI_FLASH_D3,
+            .sck_pin = MICROPY_QSPI_SCK,
+            .csn_pin = MICROPY_QSPI_CS,
+            .io0_pin = MICROPY_QSPI_DATA0,
+            .io1_pin = MICROPY_QSPI_DATA1,
+            .io2_pin = MICROPY_QSPI_DATA2,
+            .io3_pin = MICROPY_QSPI_DATA3,
         },
         .prot_if = {
             .readoc = NRF_QSPI_READOC_READ4IO,
@@ -72,7 +72,7 @@ void qspi_flash_init (void) {
             .dpmconfig = false
         },
         .phy_if = {
-            .sck_freq = QSPI_FLASH_FREQ,
+            .sck_freq = NRF_QSPI_FREQ_32MDIV1,
             .sck_delay = 1,    // min time CS must stay high before going low again. in unit of 62.5 ns
             .spi_mode = NRF_QSPI_MODE_0,
             .dpmen = false

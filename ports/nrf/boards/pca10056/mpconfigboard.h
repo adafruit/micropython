@@ -53,14 +53,13 @@
 #define DEFAULT_UART_BUS_TX               (&pin_P1_02)
 
 // On-board QSPI Flash
-#define QSPI_FLASH_DEVICE                 MX25R6435F
-#define QSPI_FLASH_FREQ                   NRF_QSPI_FREQ_32MDIV1
+#define EXTERNAL_FLASH_DEVICES            MX25R6435F
 
-#define QSPI_FLASH_CS                     NRF_GPIO_PIN_MAP(0, 17)
-#define QSPI_FLASH_SCK                    NRF_GPIO_PIN_MAP(0, 19)
-#define QSPI_FLASH_D0                     NRF_GPIO_PIN_MAP(0, 20)
-#define QSPI_FLASH_D1                     NRF_GPIO_PIN_MAP(0, 21)
-#define QSPI_FLASH_D2                     NRF_GPIO_PIN_MAP(0, 22)
-#define QSPI_FLASH_D3                     NRF_GPIO_PIN_MAP(0, 23)
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 21)
+#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 22)
+#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 23)
+#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 19)
+#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 17)
 
 
