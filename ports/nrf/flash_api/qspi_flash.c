@@ -33,6 +33,17 @@
 #include "qspi_flash.h"
 #include "flash_devices.h"
 
+#define _VALID_PIN(n)       (defined(MICROPY_QSPI_DATA##n) && (MICROPY_QSPI_DATA##n != 0xff))
+
+#define QSPI_FLASH_MODE     \
+        (( _VALID_PIN(0) && _VALID_PIN(1) && _VALID_PIN(2) && _VALID_PIN(3) ) ? 4 : \
+         ( _VALID_PIN(0) && _VALID_PIN(1) ) ? 2 : \
+         ( _VALID_PIN(0) ) ? 1 : 0)
+
+#if !QSPI_FLASH_MODE
+#error MICROPY_QSPI_DATAn must be defined
+#endif
+
 enum {
     QSPI_CMD_RSTEN = 0x66,
     QSPI_CMD_RST = 0x99,
@@ -61,13 +72,14 @@ void qspi_flash_init (void) {
             .sck_pin = MICROPY_QSPI_SCK,
             .csn_pin = MICROPY_QSPI_CS,
             .io0_pin = MICROPY_QSPI_DATA0,
-            .io1_pin = MICROPY_QSPI_DATA1,
-            .io2_pin = MICROPY_QSPI_DATA2,
-            .io3_pin = MICROPY_QSPI_DATA3,
+            .io1_pin = NRF_QSPI_PIN_NOT_CONNECTED,
+            .io2_pin = NRF_QSPI_PIN_NOT_CONNECTED,
+            .io3_pin = NRF_QSPI_PIN_NOT_CONNECTED,
+            
         },
         .prot_if = {
-            .readoc = NRF_QSPI_READOC_READ4IO,
-            .writeoc = NRF_QSPI_WRITEOC_PP4IO,
+            .readoc = NRF_QSPI_READOC_FASTREAD,
+            .writeoc = NRF_QSPI_WRITEOC_PP,
             .addrmode = NRF_QSPI_ADDRMODE_24BIT,
             .dpmconfig = false
         },
@@ -79,6 +91,18 @@ void qspi_flash_init (void) {
         },
         .irq_priority = 7,
     };
+
+#if QSPI_FLASH_MODE > 1
+    qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
+    qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ2IO;
+    qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP2O;
+#if QSPI_FLASH_MODE > 2
+    qspi_cfg.pins.io2_pin = MICROPY_QSPI_DATA2;
+    qspi_cfg.pins.io3_pin = MICROPY_QSPI_DATA3;
+    qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
+    qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4IO;
+#endif
+#endif
 
     // No callback for blocking API
     nrfx_qspi_init(&qspi_cfg, NULL, NULL);
@@ -128,11 +152,13 @@ void qspi_flash_init (void) {
     }
 
     if ( _flash_dev ) {
-        // Switch to quad mode
+        // Enable quad mode if needed
+#if QSPI_FLASH_MODE == 4
         cinstr_cfg.opcode = QSPI_CMD_WRSR;
         cinstr_cfg.length = 3;
         cinstr_cfg.wipwait = cinstr_cfg.wren = true;
         nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_dev->status_quad_enable, NULL);
+#endif
     }
 }
 

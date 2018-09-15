@@ -36,6 +36,10 @@
 #define MICROPY_HW_LED_MSC                NRF_GPIO_PIN_MAP(0, 13)
 #define MICROPY_HW_LED_MSC_ACTIVE_LEVEL   1
 
+// Flash operation mode is determined by the value of MICROPY_QSPI_DATAn
+// Quad   mode: If all DATA0 --> DATA3 are defined and valid (not 0xff)
+// Dual   mode: If DATA0 and DATA1 are valid while either DATA2 or DATA3 are not
+// Single mode: If only DATA0 is defined and valid ( not 0xff)
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 9)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 11)
 #define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 12)
@@ -52,9 +56,9 @@
 
 #define BOARD_FLASH_SIZE                  (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
+// On-board QSPI Flash
+// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
 #define EXTERNAL_FLASH_DEVICES            GD25Q16C
-
-#define EXTERNAL_FLASH_QSPI_DUAL
 
 #define BOARD_HAS_CRYSTAL                 1
 
