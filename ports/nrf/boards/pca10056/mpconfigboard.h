@@ -53,13 +53,13 @@
 #define DEFAULT_UART_BUS_TX               (&pin_P1_02)
 
 // On-board QSPI Flash
-// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
 #define EXTERNAL_FLASH_DEVICES            MX25R6435F
 
-// Flash operation mode is determined by the value of MICROPY_QSPI_DATAn
-// Quad   mode: If all DATA0 --> DATA3 are defined and valid (not 0xff)
-// Dual   mode: If DATA0 and DATA1 are valid while either DATA2 or DATA3 are not
-// Single mode: If only DATA0 is defined and valid ( not 0xff)
+// Flash operation mode is determined by MICROPY_QSPI_DATAn pin configuration.
+// A pin config is valid if it is defined and its value is not 0xFF.
+// Quad   mode: If all DATA0 --> DATA3 are valid
+// Dual   mode: If DATA0 and DATA1 are valid while either DATA2 and/or DATA3 are invalid
+// Single mode: If only DATA0 is valid
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 21)
 #define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 22)

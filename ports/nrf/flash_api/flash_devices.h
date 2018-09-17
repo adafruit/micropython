@@ -46,6 +46,10 @@ typedef struct {
 
 } qspi_flash_device_t;
 
+// All supported devices
+#define ALL_EXTERNAL_FLASH_DEVICES   GD25Q16C, MX25R6435F
+
+
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/wp-content/uploads/2017/12/DS-00086-GD25Q16C-Rev2.6.pdf
 #define GD25Q16C {\

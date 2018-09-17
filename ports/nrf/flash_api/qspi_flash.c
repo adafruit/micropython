@@ -51,12 +51,7 @@ enum {
     QSPI_CMD_READID = 0x90
 };
 
-// If Flash device is not specified, support all devices in flash_devices.h
-#ifdef EXTERNAL_FLASH_DEVICES
 const qspi_flash_device_t _flash_devices_arr[] = { EXTERNAL_FLASH_DEVICES };
-#else
-const qspi_flash_device_t _flash_devices_arr[] = {GD25Q16C, MX25R6435F};
-#endif
 
 enum {
     FLASH_DEVICE_COUNT = ARRAY_SIZE(_flash_devices_arr)
@@ -159,6 +154,13 @@ void qspi_flash_init (void) {
         cinstr_cfg.wipwait = cinstr_cfg.wren = true;
         nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_dev->status_quad_enable, NULL);
 #endif
+
+        // Enable high performance mode
+        uint8_t sts_cfg[] = { 0x40, 0x00, 0x01 };
+        cinstr_cfg.opcode = QSPI_CMD_WRSR;
+        cinstr_cfg.length = 4;
+        cinstr_cfg.wipwait = cinstr_cfg.wren = true;
+        nrfx_qspi_cinstr_xfer(&cinstr_cfg, sts_cfg, NULL);
     }
 }
 
