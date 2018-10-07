@@ -170,6 +170,7 @@ bool run_code_py(safe_mode_t safe_mode) {
     result.exception_line = 0;
 
     bool found_main = false;
+    int frozen_ret = -1;
 
     if (safe_mode != NO_SAFE_MODE) {
         write_compressed(translate("Running in safe mode! Not running saved code.\n"));
@@ -184,13 +185,23 @@ bool run_code_py(safe_mode_t safe_mode) {
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
-        found_main = maybe_run_list(supported_filenames, &result);
-        if (!found_main){
-            found_main = maybe_run_list(double_extension_filenames, &result);
-            if (found_main) {
-                write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+
+        #if MICROPY_MODULE_FROZEN
+        const char *main_py_module;
+        main_py_module = "_main.py";
+        frozen_ret = pyexec_frozen_module(main_py_module);
+        #endif
+
+        if (frozen_ret != 0) {
+            found_main = maybe_run_list(supported_filenames, &result);
+            if (!found_main){
+                found_main = maybe_run_list(double_extension_filenames, &result);
+                if (found_main) {
+                    write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                }
             }
         }
+
         stop_mp();
         free_memory(heap);
 
@@ -198,7 +209,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         reset_board();
         reset_status_led();
 
-        if (result.return_code & PYEXEC_FORCED_EXIT) {
+        if ((frozen_ret == -1 && (result.return_code & PYEXEC_FORCED_EXIT)) || frozen_ret) {
             return reload_requested;
         }
     }
