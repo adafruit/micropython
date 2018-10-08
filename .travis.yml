@@ -4,7 +4,7 @@ language: c
 compiler:
   - gcc
 git:
-  depth: 1
+  submodules_depth: 1
 
 # Put a representative board from each port or sub-port near the top
 # to determine more quickly whether that port is going to build or not.
