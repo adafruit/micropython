@@ -1,3 +1,4 @@
+#error This build is intended to fail
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
