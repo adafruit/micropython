@@ -44,7 +44,10 @@
 #  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
 #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
 
-#define FREQUENCY_MAX 6000000
+// tested on Adafruit ItsyBitsy M4 Express:
+// → values above 30MHz generate no output.
+// → @ 30MHz output peak-to-peak voltage is only about 350mV (if my scope is correct)
+#define FREQUENCY_MAX 30000000
 
 static uint32_t tcc_periods[TCC_INST_NUM];
 static uint32_t tc_periods[TC_INST_NUM];
