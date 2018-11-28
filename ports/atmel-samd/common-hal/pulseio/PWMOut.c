@@ -44,6 +44,8 @@
 #  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
 #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
 
+#define FREQUENCY_MAX 6000000
+
 static uint32_t tcc_periods[TCC_INST_NUM];
 static uint32_t tc_periods[TC_INST_NUM];
 
@@ -116,7 +118,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         mp_raise_ValueError(translate("Invalid pin"));
     }
 
-    if (frequency == 0 || frequency > 6000000) {
+    if (frequency == 0 || frequency > FREQUENCY_MAX) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
 
@@ -365,7 +367,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
                                               uint32_t frequency) {
-    if (frequency == 0 || frequency > 6000000) {
+    if (frequency == 0 || frequency > FREQUENCY_MAX) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
     const pin_timer_t* t = self->timer;
