@@ -61,7 +61,6 @@ BASE_CFLAGS = \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
-	-Wpointer-arith \
 	-Wfloat-equal \
 	-Wundef \
 	-Wshadow \
@@ -69,7 +68,6 @@ BASE_CFLAGS = \
 	-Wsign-compare \
 	-Wmissing-format-attribute \
 	-Wno-deprecated-declarations \
-	-Wpacked \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
@@ -93,7 +91,7 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_C
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
-CFLAGS += -O0 -DNDEBUG
+CFLAGS += -Os -DNDEBUG
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
@@ -265,8 +263,8 @@ SRC_C = \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
-	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/dcd.c \
-	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/hal.c \
+	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/dcd_$(CHIP_FAMILY).c \
+	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/hal_$(CHIP_FAMILY).c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \

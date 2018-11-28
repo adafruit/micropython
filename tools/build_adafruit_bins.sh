@@ -8,6 +8,7 @@ rm -rf ports/nrf/build*
 HW_BOARDS="\
 arduino_mkr1300 \
 arduino_zero \
+catwan_usbstick \
 circuitplayground_express \
 circuitplayground_express_crickit \
 feather_huzzah \
@@ -69,8 +70,9 @@ for board in $boards; do
     for language_file in $(ls locale/*.po); do
         language=$(basename -s .po $language_file)
         echo "Building $board for $language"
+        # There is a bug in the Huzzah Makefile that causes it to fail occasionally with -j > 1.
         if [[ $board == "feather_huzzah" ]]; then
-            make $PARALLEL -C ports/esp8266 TRANSLATION=$language BOARD=$board
+            make -C ports/esp8266 TRANSLATION=$language BOARD=$board
             (( exit_status = exit_status || $? ))
             temp_filename=ports/esp8266/build/firmware-combined.bin
             extension=bin

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
 
-#include <stdbool.h>
+#include "boards/board.h"
 
-#include "mpconfigport.h"
+void board_init(void)
+{
+}
 
-#include "sam.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#ifdef SAMD51
-#define TOTAL_INTERNAL_FLASH_SIZE (FLASH_SIZE / 2)
-#endif
-
-#ifdef SAMD21
-#define TOTAL_INTERNAL_FLASH_SIZE 0x010000
-#endif
-
-#define INTERNAL_FLASH_MEM_SEG1_START_ADDR (FLASH_SIZE - TOTAL_INTERNAL_FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
-#define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / FILESYSTEM_BLOCK_SIZE)
-
-#define INTERNAL_FLASH_SYSTICK_MASK    (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick) (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
+void reset_board(void) {
+}
