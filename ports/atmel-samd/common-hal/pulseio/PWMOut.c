@@ -52,7 +52,7 @@
 // → @ 15MHz ~1.8V
 // → @ 30MHz ~0.35V
 // → values above 30MHz generate no output.
-// Voltage Levels are correct if my old scope and my meassuring is correct ;-)
+// Voltage Levels are correct if my old scope and my measuring is correct ;-)
 // so please someone with a good high-speed scope verify this..
 #define FREQUENCY_MAX 30000000
 
