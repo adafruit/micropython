@@ -45,8 +45,15 @@
 #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
 
 // tested on Adafruit ItsyBitsy M4 Express:
+// output peak-to-peak voltage
+// → @  6MHz ~3.3V
+// → @  7MHz ~3.1V
+// → @ 10MHz ~2.7V
+// → @ 15MHz ~1.8V
+// → @ 30MHz ~0.35V
 // → values above 30MHz generate no output.
-// → @ 30MHz output peak-to-peak voltage is only about 350mV (if my scope is correct)
+// Voltage Levels are correct if my old scope and my meassuring is correct ;-)
+// so please someone with a good high-speed scope verify this..
 #define FREQUENCY_MAX 30000000
 
 static uint32_t tcc_periods[TCC_INST_NUM];
