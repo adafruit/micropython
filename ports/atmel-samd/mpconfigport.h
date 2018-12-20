@@ -31,7 +31,6 @@
 #define MICROPY_ENABLE_DOC_STRING   (0)
 //#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
-#define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
@@ -157,6 +156,7 @@ typedef long mp_off_t;
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #define MICROPY_MODULE_WEAK_LINKS                   (0)
+#define MICROPY_PY_ASYNC_AWAIT                      (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
@@ -175,6 +175,7 @@ typedef long mp_off_t;
     X(EISDIR) \
     X(EINVAL) \
 
+#define MICROPY_PY_USELECT                          (0)
 #endif
 
 #ifdef SAMD51
@@ -185,13 +186,16 @@ typedef long mp_off_t;
 #define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
+#define MICROPY_PY_ASYNC_AWAIT                      (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
 #define MICROPY_PY_IO                               (1)
+#define MICROPY_PY_IO_IOBASE                        (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 #define MICROPY_PY_SYS_EXC_INFO                     (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
+#define MICROPY_PY_USELECT                          (1)
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -451,6 +455,7 @@ extern const struct _mp_obj_module_t wiznet_module;
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
+#define MICROPY_EVENT_POLL_HOOK run_background_tasks();
 #define MICROPY_VM_HOOK_LOOP run_background_tasks();
 #define MICROPY_VM_HOOK_RETURN run_background_tasks();
 
