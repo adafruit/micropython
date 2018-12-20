@@ -143,13 +143,22 @@ int common_hal_i2cslave_i2c_slave_is_addressed(i2cslave_i2c_slave_obj_t *self, u
 
     self->writing = false;
 
-    *address = self->sercom->I2CS.DATA.reg >> 1;
-    *is_read = self->sercom->I2CS.STATUS.bit.DIR;
-    *is_restart = self->sercom->I2CS.STATUS.bit.SR;
+    uint8_t addr = self->sercom->I2CS.DATA.reg >> 1;
+    if (address) {
+        *address = addr;
+    }
+    if (is_read) {
+        *is_read = self->sercom->I2CS.STATUS.bit.DIR;
+    }
+    if (is_restart) {
+        *is_restart = self->sercom->I2CS.STATUS.bit.SR;
+    }
 
     for (unsigned int i = 0; i < self->num_addresses; i++) {
-        if (*address == self->addresses[i]) {
-            common_hal_i2cslave_i2c_slave_ack(self, true);
+        if (addr == self->addresses[i]) {
+            if (address) {
+                common_hal_i2cslave_i2c_slave_ack(self, true);
+            }
             return 1;
         }
     }

@@ -38,6 +38,7 @@
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 
 STATIC mp_obj_t mp_obj_new_i2cslave_i2c_slave_request(i2cslave_i2c_slave_obj_t *slave, uint8_t address, bool is_read, bool is_restart) {
     i2cslave_i2c_slave_request_obj_t *self = m_new_obj(i2cslave_i2c_slave_request_obj_t);
@@ -226,10 +227,28 @@ STATIC const mp_rom_map_elem_t i2cslave_i2c_slave_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(i2cslave_i2c_slave_locals_dict, i2cslave_i2c_slave_locals_dict_table);
 
+STATIC mp_uint_t i2cslave_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+    i2cslave_i2c_slave_obj_t *self = MP_OBJ_TO_PTR(obj);
+    int status = -MP_EINVAL;
+    if (request == MP_STREAM_POLL) {
+        status = common_hal_i2cslave_i2c_slave_is_addressed(self, NULL, NULL, NULL);
+    }
+    if (status < 0) {
+        *errcode = -status;
+        return MP_STREAM_ERROR;
+    }
+    return status;
+}
+
+STATIC const mp_stream_p_t i2cslave_p = {
+    .ioctl = i2cslave_ioctl,
+};
+
 const mp_obj_type_t i2cslave_i2c_slave_type = {
    { &mp_type_type },
    .name = MP_QSTR_I2CSlave,
    .make_new = i2cslave_i2c_slave_make_new,
+   .protocol = &i2cslave_p,
    .locals_dict = (mp_obj_dict_t*)&i2cslave_i2c_slave_locals_dict,
 };
 
