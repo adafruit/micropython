@@ -1,0 +1,36 @@
+
+1. Consolidate common README text into ports/README.rst
+this bit:
+"""
+...Before building the firmware for a given board...
+git submodule update --init --recursive
+make -C mpy-cross
+"""
+
+2. Why doesn't make do
+make deplibs
+isn't that the point of make?
+
+side note: make will build ok with just
+make axtls
+
+
+3. Welcome banner should say CircuitPython:
+
+currently:
+circuitpython/ports/unix/build/genhdr$ ack MicroPython
+qstr.i.last
+619974:    mp_hal_stdout_tx_str("MicroPython " "4.0.0-alpha.5-28-gca60a034c-dirty" " on " "2018-12-20" "; "
+
+circuitpython/ports/unix$ ./micropython
+MicroPython 4.0.0-alpha.5-28-gca60a034c on 2018-12-19; linux version
+
+but this works:
+>>> sys.implementation
+(name='circuitpython', version=(4, 0, 0))
+
+
+4. I'm not sure this is relevant for linux, but about fpga Dan says:
+
+"... it doesn't include all the CircuitPython-specific stuff like GPIO and peripheral support. You might want to start with ports/atmel-samd and gut the common-hal part and replace it with what works..."
+
