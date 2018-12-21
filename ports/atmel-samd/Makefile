@@ -327,6 +327,7 @@ SRC_COMMON_HAL = \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	pulseio/__init__.c \
+	pulseio/Counter.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
