@@ -39,6 +39,9 @@ LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:
 SRC_COMMON_C = \
 	moduos.c \
 	modmachine.c \
+	supervisor/stub/stack.c \
+	supervisor/shared/translate.c \
+
 
 SRC_RUN_C = \
 	main.c \
@@ -66,6 +69,7 @@ LIB_SRC_C += $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	utils/sys_stdio_mphal.c \
+	upytesthelper/upytesthelper.c \
 	)
 
 OBJ_COMMON =
