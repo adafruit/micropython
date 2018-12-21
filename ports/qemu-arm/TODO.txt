@@ -1,0 +1,63 @@
+TODO.txt
+
+It builds, it runs, but tests aren't happy.
+
+1. make alone says failed/error. (so does micropython so maybe this is OK?)
+2. make -f Makefile.test test - fails most tests
+4. CP had 185 tests, micropython has 187 tests.
+3. CP starts 185 tests and has 186 results.
+
+
+1.
+circuitpython/ports/qemu-arm$ make
+qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel build/firmware.elf
+hello world!
+Makefile:96: recipe for target 'run' failed
+make: *** [run] Error 1
+
+2.
+circuitpython/ports/qemu-arm$ make -f Makefile.test test
+Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
+Makefile.test:11: warning: overriding recipe for target 'build/genhdr/tests.h'
+Makefile:107: warning: ignoring old recipe for target 'build/genhdr/tests.h'
+Makefile.test:15: warning: overriding recipe for target 'build/tinytest.o'
+Makefile:110: warning: ignoring old recipe for target 'build/tinytest.o'
+Makefile.test:18: warning: overriding recipe for target 'build/firmware-test.elf'
+Makefile:118: warning: ignoring old recipe for target 'build/firmware-test.elf'
+Makefile.test:22: warning: overriding recipe for target 'test'
+Makefile:99: warning: ignoring old recipe for target 'test'
+(cd ../../tests; ./run-tests --write-exp)
+skip  cmdline/cmd_parsetree.py
+skip  float/float2int_doubleprec_intbig.py
+build/console.outskip  float/float_divmod.py
+skip  float/float_parse_doubleprec.py
+0 tests performed (0 individual testcases)
+0 tests passed
+4 tests skipped: cmd_parsetree float2int_doubleprec_intbig float_divmod float_parse_doubleprec
+Generating build/genhdr/tests.h
+   text	   data	    bss	    dec	    hex	filename
+ 928141	  12736	    740	 941617	  e5e31	build/firmware-test.elf
+qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel build/firmware-test.elf > build/console.out
+Makefile.test:22: recipe for target 'test' failed
+make: *** [test] Error 1
+carl@twist:~/src/circuitpython/ports/qemu-arm$ for s in a b c do; echo $s;end
+
+
+3.
+micropython/ports/qemu-arm$ for s in "# starting" SKIPPED OK FAILED; do printf "$s\t"; grep "$s" build/console.out|wc --lines; done
+# starting  187
+SKIPPED 16
+OK  171
+FAILED  0
+
+4.
+circuitpython/ports/qemu-arm $ for s in "# starting" SKIPPED OK FAILED; do printf "$s\t "; grep "$s" build/console.out|wc --lines; done
+# starting   185
+SKIPPED  12
+OK   3
+FAILED   171
+>>> 12 + 3 + 171
+186
+
+
+
