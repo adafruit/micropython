@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-06 17:04-0800\n"
+"POT-Creation-Date: 2018-12-26 11:45-0500\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -347,12 +347,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "octets > 8 bits non supporté"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:83
+#: ports/nrf/common-hal/busio/UART.c:106
 msgid "tx and rx cannot both be None"
 msgstr "TX et RX ne peuvent être None tous les deux"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:116
+#: ports/nrf/common-hal/busio/UART.c:140
 msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
 
@@ -361,12 +361,12 @@ msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:157
+#: ports/nrf/common-hal/busio/UART.c:185
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:207
+#: ports/nrf/common-hal/busio/UART.c:220
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
@@ -786,21 +786,21 @@ msgstr "Tous les timers sont utilisés"
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:87
+#: ports/nrf/common-hal/busio/UART.c:110
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "longueur de tampon invalide"
 
-#: ports/nrf/common-hal/busio/UART.c:91
+#: ports/nrf/common-hal/busio/UART.c:114
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "octets > 8 bits non supporté"
 
-#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
-#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
-#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
-#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
-#: ports/nrf/common-hal/busio/UART.c:376
+#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
+#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
+#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
+#: ports/nrf/common-hal/busio/UART.c:388
 #, fuzzy
 msgid "busio.UART not available"
 msgstr "busio.UART n'est pas disponible"
@@ -2618,29 +2618,22 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "palettre doit être displayio.Palette"
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size est une puissance de deux"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2649,19 +2642,26 @@ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
 
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size est une puissance de deux"
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "palettre doit être displayio.Palette"
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
