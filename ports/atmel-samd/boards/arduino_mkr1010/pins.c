@@ -27,16 +27,25 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA09) },
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PB23) },
     { MP_ROM_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_PB22) },
-    { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_PTR(&pin_PB09) },
+
+    //I2C
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA08) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA09) },
-    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA13) },
+    
+    // SPI
+    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA15) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA12) },
-    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA15) },
-    { MP_ROM_QSTR(MP_QSTR_RFM9X_RST), MP_ROM_PTR(&pin_PA27) },
-    { MP_ROM_QSTR(MP_QSTR_RFM9X_CS), MP_ROM_PTR(&pin_PA14) },
-    { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PB08) },
-    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB08) },
+    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA13) },
+
+    // ESP control
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_CS), MP_ROM_PTR(&pin_PA14) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_GPIO0), MP_ROM_PTR(&pin_PA27) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_BUSY), MP_ROM_PTR(&pin_PA28) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RESET), MP_ROM_PTR(&pin_PB08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RTS), MP_ROM_PTR(&pin_PA14) },
+
+    { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PB09) },
+    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB09) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
