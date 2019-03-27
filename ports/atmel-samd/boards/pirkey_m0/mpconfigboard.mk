@@ -11,6 +11,7 @@ LONGINT_IMPL = NONE
 # Many I/O functions are not available.
 # math is very large and is also removed.
 CIRCUITPY_ANALOGIO = 0
+CIRCUITPY_AUDIOIO = 0
 CIRCUITPY_MATH = 0
 CIRCUITPY_NEOPIXEL_WRITE = 0
 CIRCUITPY_RTC = 0
@@ -22,7 +23,7 @@ CIRCUITPY_FREQUENCYIO = 0
 CHIP_VARIANT = SAMD21E18A
 CHIP_FAMILY = samd21
 
-CFLAGS_INLINE_LIMIT = 45
+CFLAGS_INLINE_LIMIT = 35
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
