@@ -9,11 +9,16 @@ EXTERNAL_FLASH_DEVICE_COUNT = 2
 EXTERNAL_FLASH_DEVICES = "W25Q64JV_IQ, GD25Q64C"
 LONGINT_IMPL = MPZ
 
+# To keep the build small
+CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_FREQUENCYIO = 0
+
+CFLAGS_INLINE_LIMIT = 55
+
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel

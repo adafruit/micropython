@@ -27,24 +27,36 @@
 
 #include "audio_dma.h"
 #include "tick.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
 
-#include "shared-module/displayio/__init__.h"
+#include "py/runtime.h"
 #include "shared-module/network/__init__.h"
+#include "supervisor/shared/stack.h"
+
+#ifdef CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 volatile uint64_t last_finished_tick = 0;
 
+bool stack_ok_so_far = true;
+
 void run_background_tasks(void) {
+    assert_heap_ok();
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     audio_dma_background();
     #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_display();
+    #if CIRCUITPY_DISPLAYIO
+    displayio_refresh_displays();
     #endif
-    #if MICROPY_PY_NETWORK
+
+    #if CIRCUITPY_NETWORK
     network_module_background();
     #endif
+    filesystem_background();
     usb_background();
+    assert_heap_ok();
 
     last_finished_tick = ticks_ms;
 }

@@ -28,7 +28,7 @@ ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/lib/axtls/config
-LDFLAGS_MOD += -Lbuild -laxtls
+LDFLAGS_MOD += -L$(BUILD) -laxtls
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 # Can be overridden by ports which have "builtin" mbedTLS
 MICROPY_SSL_MBEDTLS_INCLUDE ?= $(TOP)/lib/mbedtls/include
@@ -233,12 +233,6 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduhashlib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
-	extmod/machine_mem.o \
-	extmod/machine_pinbase.o \
-	extmod/machine_signal.o \
-	extmod/machine_pulse.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \

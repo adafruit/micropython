@@ -78,6 +78,8 @@ endif
 SRC_C = \
 	main.c \
 	gccollect.c \
+	supervisor/stub/safe_mode.c \
+	supervisor/stub/stack.c \
 	supervisor/shared/translate.c
 
 # Add fmode when compiling with mingw gcc

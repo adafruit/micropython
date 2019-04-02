@@ -2,6 +2,8 @@
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 // Rev B - Black
+#define MICROPY_HW_LED_STATUS   (&pin_PA10)
+
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
@@ -9,9 +11,9 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+#define CIRCUITPY_INTERNAL_NVM_SIZE 256
 
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
+#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define IGNORE_PIN_PA03     1
 #define IGNORE_PIN_PA04     1

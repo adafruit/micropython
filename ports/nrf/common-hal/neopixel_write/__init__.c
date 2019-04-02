@@ -28,6 +28,8 @@
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "nrf_pwm.h"
 
+#include "tick.h"
+
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
 //                                    by the Hackerspace San Salvador]]]
@@ -63,7 +65,7 @@
 //
 // If there is no device available an alternative cycle-counter
 // implementation is tried.
-// The nRF52832 runs with a fixed clock of 64Mhz. The alternative
+// The nRF52840 runs with a fixed clock of 64Mhz. The alternative
 // implementation is the same as the one used for the Teensy 3.0/1/2 but
 // with the Nordic SDK HAL & registers syntax.
 // The number of cycles was hand picked and is guaranteed to be 100%
@@ -84,7 +86,7 @@ static NRF_PWM_Type* find_free_pwm (void) {
 #endif
     };
 
-    for ( int device = 0; device < ARRAY_SIZE(PWM); device++ ) {
+    for ( size_t device = 0; device < ARRAY_SIZE(PWM); device++ ) {
         if ( (PWM[device]->ENABLE == 0) &&
              (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
              (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
@@ -94,6 +96,9 @@ static NRF_PWM_Type* find_free_pwm (void) {
 
     return NULL;
 }
+
+uint64_t next_start_tick_ms = 0;
+uint32_t next_start_tick_us = 1000;
 
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
@@ -117,13 +122,16 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (numBytes == 4) {
+        if (pattern_size <= sizeof(one_pixel) * sizeof(uint32_t)) {
             pixels_pattern = (uint16_t *) one_pixel;
         } else {
             pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
             pattern_on_heap = true;
         }
     }
+
+    // Wait to make sure we don't append onto the last transmission.
+    wait_until(next_start_tick_ms, next_start_tick_us);
 
     // Use the identified device to choose the implementation
     // If a PWM device is available use DMA
@@ -133,15 +141,15 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         for ( uint16_t n = 0; n < numBytes; n++ ) {
             uint8_t pix = pixels[n];
 
-            for ( uint8_t mask = 0x80, i = 0; mask > 0; mask >>= 1, i++ ) {
+            for ( uint8_t mask = 0x80; mask > 0; mask >>= 1 ) {
                 pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
                 pos++;
             }
         }
 
         // Zero padding to indicate the end of sequence
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
 
         // Set the wave mode to count UP
         // Set the PWM to use the 16MHz clock
@@ -273,5 +281,14 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // Enable interrupts again
         __enable_irq();
+    }
+
+    // Update the next start.
+    current_tick(&next_start_tick_ms, &next_start_tick_us);
+    if (next_start_tick_us < 100) {
+        next_start_tick_ms += 1;
+        next_start_tick_us = 100 - next_start_tick_us;
+    } else {
+        next_start_tick_us -= 100;
     }
 }

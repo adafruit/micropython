@@ -70,6 +70,7 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
+    bool pyserial_compatibility: 1;  // adjust API to match pyserial more closely
 } mp_stream_p_t;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
@@ -112,6 +113,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
+mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures

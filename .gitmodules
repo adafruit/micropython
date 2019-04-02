@@ -5,9 +5,6 @@
 [submodule "lib/libffi"]
 	path = lib/libffi
 	url = https://github.com/atgreen/libffi
-[submodule "lib/lwip"]
-	path = lib/lwip
-	url = https://git.savannah.gnu.org/r/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
@@ -78,8 +75,23 @@
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/tannewt/tinyusb.git
+	url = https://github.com/hathach/tinyusb.git
 	branch = develop
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
+[submodule "tools/adabot"]
+	path = tools/adabot
+	url = https://github.com/adafruit/adabot.git
+[submodule "tools/bitmap_font"]
+	path = tools/bitmap_font
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BitmapFont.git
+[submodule "tools/Tecate-bitmap-fonts"]
+	path = tools/Tecate-bitmap-fonts
+	url = https://github.com/Tecate/bitmap-fonts.git
+[submodule "frozen/pew-pewpew-standalone-10.x"]
+	path = frozen/pew-pewpew-standalone-10.x
+	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git
+[submodule "frozen/circuitpython-stage"]
+	path = frozen/circuitpython-stage
+	url = https://github.com/python-ugame/circuitpython-stage.git

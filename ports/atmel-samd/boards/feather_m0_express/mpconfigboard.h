@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
+
 #define MICROPY_HW_NEOPIXEL (&pin_PA06)
 
 #define SPI_FLASH_MOSI_PIN          &pin_PA08
@@ -35,5 +37,3 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
-
-#define CIRCUITPY_I2CSLAVE
