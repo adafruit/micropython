@@ -129,8 +129,84 @@ STATIC mp_obj_t displayio_fourwire_obj_send(mp_obj_t self, mp_obj_t command_obj,
 }
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_fourwire_send_obj, displayio_fourwire_obj_send);
 
+//|   .. attribute:: spi
+//|
+//|	The SPI bus being used
+//|
+//|
+STATIC mp_obj_t displayio_fourwire_obj_get_spi(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return self->bus;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_get_spi_obj, displayio_fourwire_obj_get_spi);
+
+const mp_obj_property_t displayio_fourwire_spi_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_fourwire_get_spi_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: command_pin
+//|
+//|	The data/command pin being used
+//|
+//|
+STATIC mp_obj_t displayio_fourwire_obj_get_command(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return (mp_obj_t)&(self->command);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_get_command_obj, displayio_fourwire_obj_get_command);
+
+const mp_obj_property_t displayio_fourwire_command_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_fourwire_get_command_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: chip_select_pin
+//|
+//|	The chip select pin being used
+//|
+//|
+STATIC mp_obj_t displayio_fourwire_obj_get_chip_select(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return (mp_obj_t)&(self->chip_select);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_get_chip_select_obj, displayio_fourwire_obj_get_chip_select);
+
+const mp_obj_property_t displayio_fourwire_chip_select_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_fourwire_get_chip_select_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: reset_pin
+//|
+//|	The reset pin being used
+//|
+//|
+STATIC mp_obj_t displayio_fourwire_obj_get_reset(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return (mp_obj_t)&(self->reset);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_get_reset_obj, displayio_fourwire_obj_get_reset);
+
+const mp_obj_property_t displayio_fourwire_reset_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_fourwire_get_reset_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_fourwire_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_spi), MP_ROM_PTR(&displayio_fourwire_spi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_command_pin), MP_ROM_PTR(&displayio_fourwire_command_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chip_select_pin), MP_ROM_PTR(&displayio_fourwire_chip_select_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_pin), MP_ROM_PTR(&displayio_fourwire_reset_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);
 
