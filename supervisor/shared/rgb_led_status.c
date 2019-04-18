@@ -50,7 +50,8 @@ busio_spi_obj_t status_apa102;
 #endif
 #endif
 
-#ifdef CIRCUITPY_RGB_STATUS
+#if defined(CIRCUITPY_RGB_STATUS_R) && defined(CIRCUITPY_RGB_STATUS_G) && defined(CIRCUITPY_RGB_STATUS_B)
+#define CIRCUITPY_RGB_STATUS
 #include "shared-bindings/pulseio/PWMOut.h"
 pulseio_pmwout_obj_t rgb_status_r;
 pulseio_pmwout_obj_t rgb_status_g;
