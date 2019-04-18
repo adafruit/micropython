@@ -50,6 +50,13 @@ busio_spi_obj_t status_apa102;
 #endif
 #endif
 
+#ifdef CIRCUITPY_RGB_STATUS
+#include "shared-bindings/pulseio/PWMOut.h"
+pulseio_pmwout_obj_t rgb_status_r;
+pulseio_pmwout_obj_t rgb_status_g;
+pulseio_pmwout_obj_t rgb_status_b;
+#endif
+
 #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
 static uint32_t current_status_color = 0;
 #endif
@@ -98,6 +105,16 @@ void rgb_led_status_init() {
     uint32_t rgb = current_status_color;
     current_status_color = 0x1000000; // Not a valid color
     new_status_color(rgb);
+    #endif
+
+    #if defined CIRCUITPY_RGB_STATUS
+    common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
+                                        50 /* duty cycle*/, 50000 /* freq */,
+                                        false);
+    common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
+                                        50, 50000, false);
+    common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
+                                        50, 50000, false);
     #endif
 }
 
