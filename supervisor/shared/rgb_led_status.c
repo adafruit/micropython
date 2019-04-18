@@ -108,13 +108,22 @@ void rgb_led_status_init() {
     #endif
 
     #if defined CIRCUITPY_RGB_STATUS
-    common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
-                                        50 /* duty cycle*/, 50000 /* freq */,
+    pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
+                                        0 /* duty cycle*/, 50000 /* freq */,
                                         false);
-    common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
-                                        50, 50000, false);
-    common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
-                                        50, 50000, false);
+    pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
+                                        0, 50000, false);
+    pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
+                                        0, 50000, false);
+
+    if ((red_result != PWMOUT_OK) && (green_result != PWMOUT_OK) && (blue_result != PWMOUT_OK)) {
+        /* TODO */
+    } else {
+        common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
+        common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
+        common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+    }
+
     #endif
 }
 
