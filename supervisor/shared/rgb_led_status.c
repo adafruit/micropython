@@ -109,22 +109,32 @@ void rgb_led_status_init() {
     #endif
 
     #if defined CIRCUITPY_RGB_STATUS
-    pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
-                                        0 /* duty cycle*/, 50000 /* freq */,
-                                        false);
-    pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
-                                        0, 50000, false);
-    pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
-                                        0, 50000, false);
+    if (NULL != CIRCUITPY_RGB_STATUS_R && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_R)) {
+        pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
+            0 /* duty cycle*/, 50000 /* freq */, false);
 
-    if ((red_result != PWMOUT_OK) && (green_result != PWMOUT_OK) && (blue_result != PWMOUT_OK)) {
-        /* TODO */
-    } else {
-        common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
-        common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
-        common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+        if (PWMOUT_OK == red_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
+        }
     }
+    
+    if (NULL != CIRCUITPY_RGB_STATUS_G && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_G)) {
+        pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
+            0 /* duty cycle*/, 50000 /* freq */, false);
 
+        if (PWMOUT_OK == green_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
+        }
+    }
+    
+    if (NULL != CIRCUITPY_RGB_STATUS_B && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_B)) {
+        pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
+            0 /* duty cycle*/, 50000 /* freq */, false);
+
+        if (PWMOUT_OK == blue_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+        }
+    }
     #endif
 }
 
