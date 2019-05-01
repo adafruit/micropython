@@ -216,6 +216,11 @@ void temp_status_color(uint32_t rgb) {
         common_hal_busio_spi_write(&status_apa102, colors, 12);
         #endif
     #endif
+    #if defined CIRCUITPY_RGB_STATUS
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, rgb >> 24);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, (rgb >> 8) && 0xff);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, rgb && 0xff);
+    #endif
 }
 
 void clear_temp_status() {
