@@ -58,6 +58,10 @@ pulseio_pmwout_obj_t rgb_status_g;
 pulseio_pmwout_obj_t rgb_status_b;
 // status_rgb_color[0] = red, status_rgb_color[1] = green, status_rgb_color[2] = blue
 static uint8_t status_rgb_color[3];
+// Keep track of the RGB brightness (PWM duty cycle for now)
+static uint8_t status_rgb_brightness;
+// PWM frequency, keep it above human ear frequency spectrum
+static uint32_t status_rgb_freq = 50000;
 #endif
 
 #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
@@ -111,9 +115,10 @@ void rgb_led_status_init() {
     #endif
 
     #if defined CIRCUITPY_RGB_STATUS
+    status_rgb_brigthness = 0;
     if (NULL != CIRCUITPY_RGB_STATUS_R && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_R)) {
         pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R,
-            0 /* duty cycle*/, 50000 /* freq */, false);
+            status_rgb_brightness, status_rgb_freq, false);
 
         if (PWMOUT_OK == red_result) {
             common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
@@ -122,7 +127,7 @@ void rgb_led_status_init() {
     
     if (NULL != CIRCUITPY_RGB_STATUS_G && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_G)) {
         pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G,
-            0 /* duty cycle*/, 50000 /* freq */, false);
+            status_rgb_brigthness, status_rgb_freq, false);
 
         if (PWMOUT_OK == green_result) {
             common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
@@ -131,7 +136,7 @@ void rgb_led_status_init() {
     
     if (NULL != CIRCUITPY_RGB_STATUS_B && common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_B)) {
         pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B,
-            0 /* duty cycle*/, 50000 /* freq */, false);
+            status_rgb_brigthness, status_rgb_freq, false);
 
         if (PWMOUT_OK == blue_result) {
             common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
@@ -189,7 +194,7 @@ void new_status_color(uint32_t rgb) {
     #endif
 
     #if defined(CIRCUITPY_RGB_STATUS)
-    status_rgb_color[0] = rgb >> 24;
+    status_rgb_color[0] = (rgb >> 16) & 0xff;
     status_rgb_color[1] = (rgb >> 8) && 0xff;
     status_rgb_color[2] = rgb && 0xff;
     common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
@@ -222,9 +227,14 @@ void temp_status_color(uint32_t rgb) {
         #endif
     #endif
     #if defined CIRCUITPY_RGB_STATUS
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, rgb >> 24);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, (rgb >> 8) && 0xff);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, rgb && 0xff);
+        uint32_t rgb_adjusted = rgb;
+        rgb_adjusted = color_brightness(rgb, status_rgb_brightness);
+        status_rgb_color[0] = (rgb >> 16) & 0xff;
+        status_rgb_color[1] = (rgb >> 8) && 0xff;
+        status_rgb_color[2] = rgb && 0xff;
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
@@ -251,6 +261,9 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
     uint32_t result = ((color & 0xff0000) * brightness / 255) & 0xff0000;
     result += ((color & 0xff00) * brightness / 255) & 0xff00;
     result += ((color & 0xff) * brightness / 255) & 0xff;
+    #elif defined CIRCUITPY_RGB_STATUS
+    status_rgb_brigthness = brightness;
+    #endif
     return result;
     #else
     return color;
@@ -265,6 +278,15 @@ void set_rgb_status_brightness(uint8_t level){
     // LED. Usually duplicate calls of the same color are ignored without regard to brightness
     // changes.
     current_status_color = 0;
+    new_status_color(current_color);
+    #endif
+    #if defined CIRCUITPY_RGB_STATUS
+    status_rgb_brigthness = level;
+    uint32_t current_color = status_rgb_color[0] << 16 | status_rgb_color[1] << 8 | status_rgb_color[2];
+    // See above
+    status_rgb_color[0] = 0;
+    status_rgb_color[1] = 0;
+    status_rgb_color[2] = 0;
     new_status_color(current_color);
     #endif
 }
