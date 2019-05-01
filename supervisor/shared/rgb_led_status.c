@@ -146,6 +146,11 @@ void reset_status_led() {
         reset_pin_number(MICROPY_HW_APA102_MOSI->number);
         reset_pin_number(MICROPY_HW_APA102_SCK->number);
     #endif
+    #if defined CIRCUITPY_RGB_STATUS
+        reset_pin_number(CIRCUITPY_RGB_STATUS_R);
+        reset_pin_number(CIRCUITPY_RGB_STATUS_G);
+        reset_pin_number(CIRCUITPY_RGB_STATUS_B);
+    #endif
 }
 
 void new_status_color(uint32_t rgb) {
