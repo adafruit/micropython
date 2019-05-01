@@ -56,6 +56,8 @@ busio_spi_obj_t status_apa102;
 pulseio_pmwout_obj_t rgb_status_r;
 pulseio_pmwout_obj_t rgb_status_g;
 pulseio_pmwout_obj_t rgb_status_b;
+// status_rgb_color[0] = red, status_rgb_color[1] = green, status_rgb_color[2] = blue
+static uint8_t status_rgb_color[3];
 #endif
 
 #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
@@ -187,9 +189,12 @@ void new_status_color(uint32_t rgb) {
     #endif
 
     #if defined(CIRCUITPY_RGB_STATUS)
-    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, rgb >> 24);
-    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, (rgb >> 8) && 0xff);
-    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, rgb && 0xff);
+    status_rgb_color[0] = rgb >> 24;
+    status_rgb_color[1] = (rgb >> 8) && 0xff;
+    status_rgb_color[2] = rgb && 0xff;
+    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1];
+    common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
@@ -233,6 +238,11 @@ void clear_temp_status() {
         #else
         common_hal_busio_spi_write(&status_apa102, status_apa102_color, 8);
         #endif
+    #endif
+    #if defined CIRCUITPY_RGB_STATUS
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
