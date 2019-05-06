@@ -1419,7 +1419,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "buf is too small. need %d bytes"
-msgstr ""
+msgstr "buf es demasiado pequeño. necesita %d bytes."
 
 #: shared-bindings/audioio/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -1432,7 +1432,7 @@ msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "cortes del buffer necesitan ser de tamaño igual"
 
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
@@ -1445,7 +1445,7 @@ msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "botones deben ser digitalio.DigitalInOut"
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -1454,7 +1454,7 @@ msgstr "codigo byte no implementado"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr ""
+msgstr "byteorder no es instancia de ByteOrder (encontramos un %s)"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1585,8 +1585,7 @@ msgstr "no se puede colgar al generador recién iniciado"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
-msgstr ""
-"no se puede enviar un valor que no sea None a un generador recién iniciado"
+msgstr "no se puede enviar un valor que no sea None a un generador recién iniciado"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -1636,11 +1635,11 @@ msgstr "no se puedo realizar importación relativa"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr ""
+msgstr "mandando (casting)"
 
 #: shared-bindings/bleio/Service.c
 msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
+msgstr "charactericas incluye un objeto que no es Characteristica"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
