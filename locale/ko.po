@@ -44,15 +44,15 @@ msgstr "%%c int 또는 char 필요합니다"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr "%q (가) 사용 중입니다"
+msgstr "%q 사용 중입니다"
 
 #: py/obj.c
 msgid "%q index out of range"
-msgstr "%q (가) 인덱스 범위를 벗어났습니다"
+msgstr "%q 인덱스 범위를 벗어났습니다"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr "%q인덱스는 %s 가 아닌 정수 여야합니다"
+msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
