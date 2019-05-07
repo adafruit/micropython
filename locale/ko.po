@@ -40,7 +40,7 @@ msgstr " 산출:\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c int 또는 char 필요합니다"
+msgstr "%%c int또는 char필요합니다"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
