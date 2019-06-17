@@ -22,4 +22,4 @@ CIRCUITPY_GAMEPAD = 1
 CIRCUITPY_DISPLAYIO = 1
 CIRCUITPY_AUDIOIO = 1
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pybadge
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pygamer
