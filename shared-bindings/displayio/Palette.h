@@ -37,4 +37,6 @@ void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index);
 void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index);
 
+bool displayio_palette_get_color(displayio_palette_t *self, uint32_t palette_index, uint16_t* color);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_PALETTE_H

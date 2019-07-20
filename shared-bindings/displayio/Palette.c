@@ -70,7 +70,7 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 //|
 //|     Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
 //|
-//|     The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value). 
+//|     The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value).
 //|     Value can be an int, bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte)), or bytearray.
 //|
 //|     This allows you to::
@@ -89,12 +89,19 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
         return MP_OBJ_NULL;
     }
-    // index read is not supported
-    if (value == MP_OBJ_SENTINEL) {
-        return MP_OBJ_NULL;
-    }
+
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     size_t index = mp_get_index(&displayio_palette_type, self->color_count, index_in, false);
+
+
+    if (value == MP_OBJ_SENTINEL) {
+        uint16_t color;
+        if (displayio_palette_get_color(self, index, &color)) {
+            return MP_OBJ_NEW_SMALL_INT(color);
+        } else {
+            return MP_OBJ_NULL;
+        }
+    }
 
     uint32_t color;
     mp_int_t int_value;
