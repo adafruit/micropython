@@ -115,8 +115,66 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         self->stride = (bit_stride / 8);
     }
 
+    self->dither = false;
+
+    // Dither defaults for 565 display
+    self->dither_mask_r = 7;
+    self->dither_mask_g = 3;
+    self->dither_mask_b = 7;
 }
 
+// Perlin Noise code use to generate dithering from:
+// https://gist.github.com/nowl/828013
+
+float lerp(float a0, float a1, float w) {
+    return (1.0f - w)*a0 + w*a1;
+}
+
+static int SEED = 0;
+
+static int hash[] = {208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
+                     185,248,251,245,28,124,204,204,76,36,1,107,28,234,163,202,224,245,128,167,204,
+                     9,92,217,54,239,174,173,102,193,189,190,121,100,108,167,44,43,77,180,204,8,81,
+                     70,223,11,38,24,254,210,210,177,32,81,195,243,125,8,169,112,32,97,53,195,13,
+                     203,9,47,104,125,117,114,124,165,203,181,235,193,206,70,180,174,0,167,181,41,
+                     164,30,116,127,198,245,146,87,224,149,206,57,4,192,210,65,210,129,240,178,105,
+                     228,108,245,148,140,40,35,195,38,58,65,207,215,253,65,85,208,76,62,3,237,55,89,
+                     232,50,217,64,244,157,199,121,252,90,17,212,203,149,152,140,187,234,177,73,174,
+                     193,100,192,143,97,53,145,135,19,103,13,90,135,151,199,91,239,247,33,39,145,
+                     101,120,99,3,186,86,99,41,237,203,111,79,220,135,158,42,30,154,120,67,87,167,
+                     135,176,183,191,253,115,184,21,233,58,129,233,142,39,128,211,118,137,139,255,
+                     114,20,218,113,154,27,127,246,250,1,8,198,250,209,92,222,173,21,88,102,219};
+
+static int noise2(int x, int y)
+{
+    int tmp = hash[(y + SEED) % 256];
+    return hash[(tmp + x) % 256];
+}
+
+static float lin_inter(float x, float y, float s)
+{
+    return x + s * (y-x);
+}
+
+static float smooth_inter(float x, float y, float s)
+{
+    return lin_inter(x, y, s * s * (3-2*s));
+}
+
+static float noise2d(float x, float y)
+{
+    int x_int = x;
+    int y_int = y;
+    float x_frac = x - x_int;
+    float y_frac = y - y_int;
+    int s = noise2(x_int, y_int);
+    int t = noise2(x_int+1, y_int);
+    int u = noise2(x_int, y_int+1);
+    int v = noise2(x_int+1, y_int+1);
+    float low = smooth_inter(s, t, x_frac);
+    float high = smooth_inter(u, v, x_frac);
+    return smooth_inter(low, high, y_frac);
+}
 
 uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *self,
         int16_t x, int16_t y) {
@@ -133,6 +191,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
     }
     // We don't cache here because the underlying FS caches sectors.
     f_lseek(&self->file->fp, location);
+
     UINT bytes_read;
     uint32_t pixel_data = 0;
     uint32_t result = f_read(&self->file->fp, &pixel_data, bytes_per_pixel, &bytes_read);
@@ -141,7 +200,54 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
         uint8_t red;
         uint8_t green;
         uint8_t blue;
-        if (self->bits_per_pixel == 1) {
+
+        if (self->dither) {
+            uint8_t noise =  noise2d(x,y) * 255;
+            uint8_t randr  = noise & self->dither_mask_r;
+            uint8_t randg  = (noise >> 3) & self->dither_mask_g;
+            uint8_t randb  = (noise >> 6) & self->dither_mask_b;
+
+            if (self->bits_per_pixel == 1) {
+                uint8_t bit_offset = x%8;
+                tmp = ( pixel_data & (0x80 >> (bit_offset))) >> (7 - bit_offset);
+                if (tmp == 1) {
+                    return 0x00FFFFFF;
+                } else {
+                    return 0x00000000;
+                }
+            } else if (bytes_per_pixel == 1) {
+                blue = MIN(255,((self->palette_data[pixel_data] & 0xFF) >> 0) + randb);
+                red = MIN(255,((self->palette_data[pixel_data] & 0xFF0000) >> 16) + randr);
+                green = MIN(255,((self->palette_data[pixel_data] & 0xFF00) >> 8) + randg);
+                tmp = (red << 16 | green << 8 | blue );
+                return tmp;
+            } else if (bytes_per_pixel == 2) {
+                if (self->g_bitmask == 0x07e0) { // 565
+                    red =((pixel_data & self->r_bitmask) >>11);
+                    green = ((pixel_data & self->g_bitmask) >>5);
+                    blue = ((pixel_data & self->b_bitmask) >> 0);
+                } else { // 555
+                    red =((pixel_data & self->r_bitmask) >>10);
+                    green = ((pixel_data & self->g_bitmask) >>4);
+                    blue = ((pixel_data & self->b_bitmask) >> 0);
+                }
+                tmp = (red << 19 | green << 10 | blue << 3);
+                return tmp;
+            } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
+                blue = MIN(255, (pixel_data & 0xFF) + randb);
+                green = MIN(255, ((pixel_data >> 8) & 0xFF) + randg);
+                red = MIN(255,((pixel_data >> 16) & 0xFF)  + randr);
+
+                return (red << 16 | green << 8 | blue );
+            } else {
+                blue = MIN(255, (pixel_data & 0xFF) + randb);
+                green = MIN(255, ((pixel_data >> 8) & 0xFF) + randg);
+                red = MIN(255,((pixel_data >> 16) & 0xFF)  + randr);
+
+                return (red << 16 | green << 8 | blue );
+            }
+        } else { // No dither
+             if (self->bits_per_pixel == 1) {
             uint8_t bit_offset = x%8;
             tmp = ( pixel_data & (0x80 >> (bit_offset))) >> (7 - bit_offset);
             if (tmp == 1) {
@@ -149,30 +255,32 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
             } else {
                 return 0x00000000;
             }
-        } else if (bytes_per_pixel == 1) {
-            blue = ((self->palette_data[pixel_data] & 0xFF) >> 0);
-            red = ((self->palette_data[pixel_data] & 0xFF0000) >> 16);
-            green = ((self->palette_data[pixel_data] & 0xFF00) >> 8);
-            tmp = (red << 16 | green << 8 | blue );
-            return tmp;
-        } else if (bytes_per_pixel == 2) {
-            if (self->g_bitmask == 0x07e0) { // 565
-                red =((pixel_data & self->r_bitmask) >>11);
-                green = ((pixel_data & self->g_bitmask) >>5);
-                blue = ((pixel_data & self->b_bitmask) >> 0);
-            } else { // 555
-                red =((pixel_data & self->r_bitmask) >>10);
-                green = ((pixel_data & self->g_bitmask) >>4);
-                blue = ((pixel_data & self->b_bitmask) >> 0);
+            } else if (bytes_per_pixel == 1) {
+                blue = ((self->palette_data[pixel_data] & 0xFF) >> 0);
+                red = ((self->palette_data[pixel_data] & 0xFF0000) >> 16);
+                green = ((self->palette_data[pixel_data] & 0xFF00) >> 8);
+                tmp = (red << 16 | green << 8 | blue );
+                return tmp;
+            } else if (bytes_per_pixel == 2) {
+                if (self->g_bitmask == 0x07e0) { // 565
+                    red =((pixel_data & self->r_bitmask) >>11);
+                    green = ((pixel_data & self->g_bitmask) >>5);
+                    blue = ((pixel_data & self->b_bitmask) >> 0);
+                } else { // 555
+                    red =((pixel_data & self->r_bitmask) >>10);
+                    green = ((pixel_data & self->g_bitmask) >>4);
+                    blue = ((pixel_data & self->b_bitmask) >> 0);
+                }
+                tmp = (red << 19 | green << 10 | blue << 3);
+                return tmp;
+            } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
+                return pixel_data & 0x00FFFFFF;
+            } else {
+                return pixel_data;
             }
-            tmp = (red << 19 | green << 10 | blue << 3);
-            return tmp;
-        } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
-            return pixel_data & 0x00FFFFFF;
-        } else {
-            return pixel_data;
         }
     }
+
     return 0;
 }
 

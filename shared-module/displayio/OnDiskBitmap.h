@@ -47,6 +47,10 @@ typedef struct {
     pyb_file_obj_t* file;
     uint8_t bits_per_pixel;
     uint32_t* palette_data;
+    bool dither;
+    uint8_t dither_mask_r;
+    uint8_t dither_mask_g;
+    uint8_t dither_mask_b;
 } displayio_ondiskbitmap_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H

@@ -80,7 +80,7 @@
 //|   :param file file: The open bitmap file
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 5, false);
 
     if (!MP_OBJ_IS_TYPE(pos_args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
@@ -88,7 +88,13 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
 
     displayio_ondiskbitmap_t *self = m_new_obj(displayio_ondiskbitmap_t);
     self->base.type = &displayio_ondiskbitmap_type;
+
     common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(pos_args[0]));
+
+    self->dither = (n_args<2) ? false : mp_obj_is_true(pos_args[1]);
+    self->dither_mask_r = (n_args<3) ? 0x07 : mp_obj_get_int(pos_args[2]);
+    self->dither_mask_g = (n_args<4) ? 0x03 : mp_obj_get_int(pos_args[3]);
+    self->dither_mask_g = (n_args<5) ? 0x07 : mp_obj_get_int(pos_args[4]);
 
     return MP_OBJ_FROM_PTR(self);
 }
