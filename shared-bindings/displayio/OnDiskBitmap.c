@@ -78,6 +78,10 @@
 //|   Create an OnDiskBitmap object with the given file.
 //|
 //|   :param file file: The open bitmap file
+//|   :param bool dither: If the image should be dithered when rendered (Default false)
+//|   :param int dither_mask_r: The mask to use for the dither of red channel (Default 0x07 for 16bit 565)
+//|   :param int dither_mask_g: The mask to use for the dither of green channel (Default 0x03 for 16 bit 565)
+//|   :param int dither_mask_b: The mask to use for the dither of blue channel (Default 0x07 for 16 bit 565)
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 5, false);
