@@ -115,14 +115,20 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         self->stride = (bit_stride / 8);
     }
 
-    self->dither = false;
+    #if CIRCUITPY_DISPLAYIO_DITHER
+        // Dither defaults for 565 display
+        //self->dither_mask_r = 7;
+        //self->dither_mask_g = 3;
+        //self->dither_mask_b = 7;
 
-    // Dither defaults for 565 display
-    self->dither_mask_r = 7;
-    self->dither_mask_g = 3;
-    self->dither_mask_b = 7;
+        // Dither Off
+        self->dither_mask_r = 0;
+        self->dither_mask_g = 0;
+        self->dither_mask_b = 0;
+    #endif
 }
 
+#if CIRCUITPY_DISPLAYIO_DITHER
 // Perlin Noise code use to generate dithering from:
 // https://gist.github.com/nowl/828013
 static uint8_t hash[] = {208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
@@ -143,6 +149,8 @@ static int noise2(int x, int y)
      int tmp = hash[(y) % 256];
      return hash[(tmp + x) % 256];
 }
+
+#endif
 
 uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *self,
         int16_t x, int16_t y) {
@@ -169,7 +177,8 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
         uint8_t green;
         uint8_t blue;
 
-        if (self->dither) {
+        #if CIRCUITPY_DISPLAYIO_DITHER
+        if (self->dither_mask_r > 0 || self->dither_mask_g > 0 || self->dither_mask_b > 0 ) {
             uint8_t randr  = (noise2(x,y) * 255) & self->dither_mask_r;
             uint8_t randg  = (noise2(x+33,y) * 255) & self->dither_mask_g;
             uint8_t randb  = (noise2(x,y+33) * 255) & self->dither_mask_b;
@@ -189,6 +198,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
                 tmp = (red << 16 | green << 8 | blue );
                 return tmp;
             } else if (bytes_per_pixel == 2) {
+                // No Dithering done because assuming it as already been done
                 if (self->g_bitmask == 0x07e0) { // 565
                     red =((pixel_data & self->r_bitmask) >>11);
                     green = ((pixel_data & self->g_bitmask) >>5);
@@ -200,7 +210,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
                 }
                 tmp = (red << 19 | green << 10 | blue << 3);
                 return tmp;
-            } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
+            } else  if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
                 blue = MIN(255, (pixel_data & 0xFF) + randb);
                 green = MIN(255, ((pixel_data >> 8) & 0xFF) + randg);
                 red = MIN(255,((pixel_data >> 16) & 0xFF)  + randr);
@@ -213,8 +223,10 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
 
                 return (red << 16 | green << 8 | blue );
             }
-        } else { // No dither
-             if (self->bits_per_pixel == 1) {
+        } 
+        #endif // CIRCUITPY_DISPLAYIO_DITHER
+        
+        if (self->bits_per_pixel == 1) {
             uint8_t bit_offset = x%8;
             tmp = ( pixel_data & (0x80 >> (bit_offset))) >> (7 - bit_offset);
             if (tmp == 1) {
@@ -222,29 +234,28 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
             } else {
                 return 0x00000000;
             }
-            } else if (bytes_per_pixel == 1) {
-                blue = ((self->palette_data[pixel_data] & 0xFF) >> 0);
-                red = ((self->palette_data[pixel_data] & 0xFF0000) >> 16);
-                green = ((self->palette_data[pixel_data] & 0xFF00) >> 8);
-                tmp = (red << 16 | green << 8 | blue );
-                return tmp;
-            } else if (bytes_per_pixel == 2) {
-                if (self->g_bitmask == 0x07e0) { // 565
-                    red =((pixel_data & self->r_bitmask) >>11);
-                    green = ((pixel_data & self->g_bitmask) >>5);
-                    blue = ((pixel_data & self->b_bitmask) >> 0);
-                } else { // 555
-                    red =((pixel_data & self->r_bitmask) >>10);
-                    green = ((pixel_data & self->g_bitmask) >>4);
-                    blue = ((pixel_data & self->b_bitmask) >> 0);
-                }
-                tmp = (red << 19 | green << 10 | blue << 3);
-                return tmp;
-            } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
-                return pixel_data & 0x00FFFFFF;
-            } else {
-                return pixel_data;
+        } else if (bytes_per_pixel == 1) {
+            blue = ((self->palette_data[pixel_data] & 0xFF) >> 0);
+            red = ((self->palette_data[pixel_data] & 0xFF0000) >> 16);
+            green = ((self->palette_data[pixel_data] & 0xFF00) >> 8);
+            tmp = (red << 16 | green << 8 | blue );
+            return tmp;
+        } else if (bytes_per_pixel == 2) {
+            if (self->g_bitmask == 0x07e0) { // 565
+                red =((pixel_data & self->r_bitmask) >>11);
+                green = ((pixel_data & self->g_bitmask) >>5);
+                blue = ((pixel_data & self->b_bitmask) >> 0);
+            } else { // 555
+                red =((pixel_data & self->r_bitmask) >>10);
+                green = ((pixel_data & self->g_bitmask) >>4);
+                blue = ((pixel_data & self->b_bitmask) >> 0);
             }
+            tmp = (red << 19 | green << 10 | blue << 3);
+            return tmp;
+        } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
+            return pixel_data & 0x00FFFFFF;
+        } else {
+            return pixel_data;
         }
     }
 

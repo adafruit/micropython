@@ -95,10 +95,19 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
 
     common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(pos_args[0]));
 
-    self->dither = (n_args<2) ? false : mp_obj_is_true(pos_args[1]);
-    self->dither_mask_r = (n_args<3) ? 0x07 : mp_obj_get_int(pos_args[2]);
-    self->dither_mask_g = (n_args<4) ? 0x03 : mp_obj_get_int(pos_args[3]);
-    self->dither_mask_g = (n_args<5) ? 0x07 : mp_obj_get_int(pos_args[4]);
+    #if CIRCUITPY_DISPLAYIO_DITHER
+    bool dither = (n_args<2) ? false : mp_obj_is_true(pos_args[1]);
+
+    if (dither) {
+        self->dither_mask_r = (n_args<3) ? 0x07 : mp_obj_get_int(pos_args[2]);
+        self->dither_mask_g = (n_args<4) ? 0x03 : mp_obj_get_int(pos_args[3]);
+        self->dither_mask_b = (n_args<5) ? 0x07 : mp_obj_get_int(pos_args[4]);
+    } else {
+        self->dither_mask_r = 0;
+        self->dither_mask_g = 0;
+        self->dither_mask_b = 0;
+    }
+    #endif //CIRCUITPY_DISPLAYIO_DITHER
 
     return MP_OBJ_FROM_PTR(self);
 }
