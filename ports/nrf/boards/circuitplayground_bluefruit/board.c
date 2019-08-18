@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#include "boards/board.h"
 
-#include "py/objlist.h"
-#include "common-hal/bleio/UUID.h"
+void board_init(void) {
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    // Handle for this service.
-    uint16_t handle;
-    // True if created during discovery.
-    bool is_remote;
-    bool is_secondary;
-    bleio_uuid_obj_t *uuid;
-    // May be a Peripheral, Central, etc.
-    mp_obj_t device;
-    mp_obj_list_t *characteristic_list;
-    // Range of attribute handles of this service.
-    uint16_t start_handle;
-    uint16_t end_handle;
-} bleio_service_obj_t;
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+void reset_board(void) {
+
+}
