@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,19 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME "SPRESENSE"
-#define MICROPY_HW_MCU_NAME "CXD5602"
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
 
-#define DEFAULT_I2C_BUS_SCL (&pin_I2C0_BCK)
-#define DEFAULT_I2C_BUS_SDA (&pin_I2C0_BDT)
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pulseio/PWMOut.h"
 
-#define DEFAULT_SPI_BUS_SCK (&pin_SPI4_SCK)
-#define DEFAULT_SPI_BUS_MISO (&pin_SPI4_MISO)
-#define DEFAULT_SPI_BUS_MOSI (&pin_SPI4_MOSI)
+#include "py/obj.h"
 
-#define DEFAULT_UART_BUS_RX (&pin_UART2_RXD)
-#define DEFAULT_UART_BUS_TX (&pin_UART2_TXD)
+typedef struct {
+    mp_obj_base_t base;
+    const pulseio_pwmout_obj_t *pwmout;
+} pulseio_pulseout_obj_t;
+
+void pulseout_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
