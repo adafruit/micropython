@@ -36,6 +36,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 STATIC bool reserved_i2c[3];
+STATIC bool never_reset[3];
 
 void i2c_reset(void) {
     //Note: I2Cs are also forcibly reset in construct, due to silicon error
@@ -51,6 +52,18 @@ void i2c_reset(void) {
         reserved_i2c[3] = false;
         __HAL_RCC_I2C3_CLK_DISABLE(); 
     #endif
+}
+
+void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
+        if (self->handle.Instance == mcu_i2c_banks[i]) {
+            never_reset[i] = true;
+
+            never_reset_pin_number(self->scl->pin->port, self->scl->pin->number);
+            never_reset_pin_number(self->sda->pin->port, self->scl->pin->number);
+            break;
+        }
+    }
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,

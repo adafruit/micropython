@@ -109,6 +109,14 @@ void never_reset_pin_number(uint8_t pin_number) {
     never_reset_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
 }
 
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+    never_reset_pin_number(pin->number);
+}
+
+void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    reset_pin_number(pin->number);
+}
+
 void reset_pin_number(uint8_t pin_number) {
     never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
 
