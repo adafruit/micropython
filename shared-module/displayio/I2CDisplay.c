@@ -43,12 +43,22 @@
 void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
     busio_i2c_obj_t* i2c, uint16_t device_address, const mcu_pin_obj_t* reset) {
 
+    // Reset the display before probing
+    self->reset.base.type = &mp_type_NoneType;
+    if (reset != NULL) {
+        self->reset.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->reset, reset);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
+        never_reset_pin_number(reset->number);
+        common_hal_displayio_i2cdisplay_reset(self);
+    }
+
     // Probe the bus to see if a device acknowledges the given address.
     if (!common_hal_busio_i2c_probe(i2c, device_address)) {
         mp_raise_ValueError_varg(translate("Unable to find I2C Display at %x"), device_address);
     }
 
-        // Write to the device and return 0 on success or an appropriate error code from mperrno.h
+    // Write to the device and return 0 on success or an appropriate error code from mperrno.h
     self->bus = i2c;
     common_hal_busio_i2c_never_reset(self->bus);
     // Our object is statically allocated off the heap so make sure the bus object lives to the end
