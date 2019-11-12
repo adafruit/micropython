@@ -236,36 +236,42 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     #ifdef SPI1
     if(self->handle.Instance==SPI1) {
         reserved_spi[0] = false;
+        never_reset_spi[0] = false;
         __HAL_RCC_SPI1_CLK_DISABLE(); 
     }
     #endif
     #ifdef SPI2
     if(self->handle.Instance==SPI2) {
         reserved_spi[1] = false;
+        never_reset_spi[1] = false;
         __HAL_RCC_SPI2_CLK_DISABLE(); 
     }
     #endif
     #ifdef SPI3
     if(self->handle.Instance==SPI3) {
         reserved_spi[2] = false;
+        never_reset_spi[2] = false;
         __HAL_RCC_SPI3_CLK_DISABLE(); 
     }
     #endif
     #ifdef SPI4
     if(self->handle.Instance==SPI4) {
         reserved_spi[3] = false;
+        never_reset_spi[3] = false;
         __HAL_RCC_SPI4_CLK_DISABLE(); 
     }
     #endif
     #ifdef SPI5
     if(self->handle.Instance==SPI5) {
         reserved_spi[4] = false;
+        never_reset_spi[4] = false;
         __HAL_RCC_SPI5_CLK_DISABLE(); 
     }
     #endif
     #ifdef SPI6
     if(self->handle.Instance==SPI6) {
         reserved_spi[5] = false;
+        never_reset_spi[5] = false;
         __HAL_RCC_SPI6_CLK_DISABLE(); 
     }
     #endif
