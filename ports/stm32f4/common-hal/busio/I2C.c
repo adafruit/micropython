@@ -49,7 +49,7 @@ void i2c_reset(void) {
         __HAL_RCC_I2C2_CLK_DISABLE(); 
     #endif
     #ifdef I2C3
-        reserved_i2c[3] = false;
+        reserved_i2c[2] = false;
         __HAL_RCC_I2C3_CLK_DISABLE(); 
     #endif
 }
@@ -180,18 +180,21 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     #ifdef I2C1
     if(self->handle.Instance==I2C1) {
         reserved_i2c[0] = 0;
+        never_reset[0] = false;
         __HAL_RCC_I2C1_CLK_DISABLE(); 
     }
     #endif
     #ifdef I2C2
     if(self->handle.Instance==I2C2) {
         reserved_i2c[1] = 0;
+        never_reset[1] = false;
         __HAL_RCC_I2C2_CLK_DISABLE(); 
     }
     #endif
     #ifdef I2C3
     if(self->handle.Instance==I2C3) {
-        reserved_i2c[3] = 0;
+        reserved_i2c[2] = 0;
+        never_reset[2] = false;
         __HAL_RCC_I2C3_CLK_DISABLE(); 
     }
     #endif
