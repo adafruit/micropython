@@ -200,7 +200,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // But we have to wait for the flag to be set.
         while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
-            RUN_BACKGROUND_TASKS;
+            if (pattern_size > sizeof(one_pixel)) {
+                RUN_BACKGROUND_TASKS;
+            }
         }
 
         // Before leave we clear the flag for the event.
