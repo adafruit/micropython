@@ -50,7 +50,7 @@
 //|
 //| A single tile grid is also known as a Sprite.
 //|
-//| .. class:: TileGrid(bitmap, *, pixel_shader, width=1, height=1, tile_width=None, tile_height=None, default_tile=0, x=0, y=0)
+//| .. class:: TileGrid(bitmap, pixel_shader, width=1, height=1, tile_width=None, tile_height=None, default_tile=0, x=0, y=0)
 //|
 //|   Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
 //|   convert the value and its location to a display native pixel color. This may be a simple color
