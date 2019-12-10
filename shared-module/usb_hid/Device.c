@@ -41,6 +41,10 @@ uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
     return self->usage;
 }
 
+uint8_t common_hal_usb_hid_device_get_leds(usb_hid_device_obj_t *self) {
+    return self->leds;
+}
+
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
     if (len != self->report_length) {
         mp_raise_ValueError_varg(translate("Buffer incorrect size. Should be %d bytes."), self->report_length);
@@ -86,12 +90,15 @@ uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type,
 void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     usb_hid_device_obj_t* hid_device = get_hid_device(report_id);
 
-    if ( report_type == HID_REPORT_TYPE_OUTPUT ) {
+    if ( report_type == HID_REPORT_TYPE_INVALID ) {
         // Check if it is Keyboard device
         if (hid_device->usage_page == HID_USAGE_PAGE_DESKTOP &&
                 hid_device->usage == HID_USAGE_DESKTOP_KEYBOARD) {
             // This is LED indicator (CapsLock, NumLock)
             // TODO Light up some LED here
+            if (bufsize) {
+                hid_device->leds = buffer[0];
+            }
         }
     }
 }
