@@ -36,6 +36,7 @@
  extern "C" {
 #endif
 
+
 typedef struct  {
     mp_obj_base_t base;
     uint8_t* report_buffer;
@@ -43,7 +44,8 @@ typedef struct  {
     uint8_t report_length;
     uint8_t usage_page;
     uint8_t usage;
-    uint8_t leds;
+    uint8_t out_report_count;
+    uint8_t out_report_buffer[1];
 } usb_hid_device_obj_t;
 
 

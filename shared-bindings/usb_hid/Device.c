@@ -98,26 +98,30 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: leds
+//|   .. method:: get_report(self)
 //|
-STATIC mp_obj_t usb_hid_device_obj_get_leds(mp_obj_t self_in) {
-    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_leds(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_leds_obj,
-                          usb_hid_device_obj_get_leds);
+//|     Get the next out report from the queue, or ``None`` when no reports.
+//|
+STATIC mp_obj_t usb_hid_device_obj_get_report(mp_obj_t self_in) {
+    uint8_t *data;
 
-const mp_obj_property_t usb_hid_device_leds_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_leds_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->out_report_count) {
+        self->out_report_count = 0;
+        data = (uint8_t *)m_malloc(1, false);
+        data[0] = self->out_report_buffer[0];
+        return mp_obj_new_bytes(data, 1);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_report_obj,
+                          usb_hid_device_obj_get_report);
+
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),    MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),     MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
     { MP_ROM_QSTR(MP_QSTR_usage),          MP_ROM_PTR(&usb_hid_device_usage_obj)},
-    { MP_ROM_QSTR(MP_QSTR_leds),          MP_ROM_PTR(&usb_hid_device_leds_obj)},
+    { MP_ROM_QSTR(MP_QSTR_get_report),          MP_ROM_PTR(&usb_hid_device_get_report_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
