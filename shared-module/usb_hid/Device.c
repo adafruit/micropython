@@ -86,12 +86,13 @@ uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type,
 void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     usb_hid_device_obj_t* hid_device = get_hid_device(report_id);
 
+    // should be HID_REPORT_TYPE_OUTPUT when tinyusb is fixed
     if ( report_type == HID_REPORT_TYPE_INVALID ) {
         // Check if it is Keyboard device
         if (hid_device->usage_page == HID_USAGE_PAGE_DESKTOP &&
                 hid_device->usage == HID_USAGE_DESKTOP_KEYBOARD) {
             // This is LED indicator (CapsLock, NumLock)
-            if (bufsize == 1) {
+            if (bufsize > 0) {
                 // For now we only store at most one single-byte report.
                 hid_device->out_report_buffer[0] = buffer[0];
                 hid_device->out_report_count = 1;

@@ -25,7 +25,11 @@
  */
 
 #include "py/objproperty.h"
+#include "lib/utils/buffer_helper.h"
+#include "py/runtime.h"
+
 #include "shared-bindings/usb_hid/Device.h"
+
 
 //| .. currentmodule:: usb_hid
 //|
@@ -98,30 +102,48 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: get_report(self)
+//|   .. method:: read_report_into(self, buffer, start=0, end=None)
 //|
-//|     Get the next out report from the queue, or ``None`` when no reports.
+//|     Read the next out-report from the queue into a buffer.
+//|     Return the number of bytes read.
 //|
-STATIC mp_obj_t usb_hid_device_obj_get_report(mp_obj_t self_in) {
-    uint8_t *data;
-
-    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t usb_hid_device_read_report_into(
+        size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    size_t length = bufinfo.len;
+    int32_t start = args[ARG_start].u_int;
+    int32_t end = args[ARG_end].u_int;
+    uint8_t *buffer = bufinfo.buf;
+    normalize_buffer_bounds(&start, end, &length);
+    if (length == 0) {
+        mp_raise_ValueError(translate("Buffer must be at least length 1"));
+    }
+    size_t count = self->out_report_count;
     if (self->out_report_count) {
         self->out_report_count = 0;
-        data = (uint8_t *)m_malloc(1, false);
-        data[0] = self->out_report_buffer[0];
-        return mp_obj_new_bytes(data, 1);
+        buffer[start] = self->out_report_buffer[0];
     }
-    return mp_const_none;
+    return mp_obj_new_int(count);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_report_obj,
-                          usb_hid_device_obj_get_report);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_read_report_into_obj, 2,
+                           usb_hid_device_read_report_into);
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),    MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),     MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
     { MP_ROM_QSTR(MP_QSTR_usage),          MP_ROM_PTR(&usb_hid_device_usage_obj)},
-    { MP_ROM_QSTR(MP_QSTR_get_report),          MP_ROM_PTR(&usb_hid_device_get_report_obj)},
+    { MP_ROM_QSTR(MP_QSTR_read_report_into),          MP_ROM_PTR(&usb_hid_device_read_report_into_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
