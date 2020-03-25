@@ -34,6 +34,7 @@ jobs:
         submodules: true
         fetch-depth: 0
     - run: git fetch origin --recurse-submodules=no +refs/tags/*:refs/tags/*
+    - run: git submodule foreach git remote -v
     - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
