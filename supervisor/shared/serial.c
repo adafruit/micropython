@@ -56,10 +56,15 @@ void serial_write_substring(const char* text, uint32_t length) {
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
 #endif
-
+// split into chunks to avoid buffer overflows
     uint32_t count = 0;
+    uint32_t chunk = 0;
     while (count < length && tud_cdc_connected()) {
-        count += tud_cdc_write(text + count, length - count);
+         if ((length - count) > CFG_TUD_CDC_EPSIZE)
+           chunk = CFG_TUD_CDC_EPSIZE;
+         else
+           chunk = length - count;
+        count += tud_cdc_write(text + count, chunk);
         usb_background();
     }
 }
