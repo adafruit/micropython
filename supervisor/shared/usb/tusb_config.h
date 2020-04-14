@@ -88,6 +88,7 @@
  * CFG_TUD_TASK_QUEUE_SZ with large value
  */
 #define CFG_TUD_CDC_FLUSH_ON_SOF    0
+#define CFG_TUD_CDC_EPSIZE          128
 
 
 /*------------- MSC -------------*/
