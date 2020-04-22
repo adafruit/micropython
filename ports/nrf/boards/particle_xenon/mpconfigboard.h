@@ -32,10 +32,6 @@
 
 #define MICROPY_HW_LED_STATUS          (&pin_P1_12)
 
-#define CP_RGB_STATUS_R        (&pin_P0_13)
-#define CP_RGB_STATUS_G        (&pin_P0_14)
-#define CP_RGB_STATUS_B        (&pin_P0_15)
-
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 21)
