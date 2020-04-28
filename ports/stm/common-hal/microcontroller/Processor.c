@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#if defined(STM32F4)
+#include "stm32f4xx_hal.h"
 
 #define STM32_UUID ((uint32_t *)0x1FFF7A10)
 
@@ -58,10 +58,7 @@ STATIC void set_adc_params(ADC_HandleTypeDef *AdcHandle) {
     AdcHandle->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 }
 
-#endif
-
 float common_hal_mcu_processor_get_temperature(void) {
-    #if defined(STM32F4)
     __HAL_RCC_ADC1_CLK_ENABLE();
 
     //HAL Implementation
@@ -88,13 +85,9 @@ float common_hal_mcu_processor_get_temperature(void) {
     //There's no F4 specific appnote for this but it works the same as the L1 in AN3964
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
     return (((float)value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
-    #else
-    return false;
-    #endif
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-    #if defined(STM32F4)
     __HAL_RCC_ADC1_CLK_ENABLE();
 
     //HAL Implementation
@@ -121,9 +114,6 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_refcor = ((float)(*VREFIN_CAL)) / ((float)value);
 
     return adc_refcor * 3.3f;
-    #else
-    return false;
-    #endif
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
@@ -131,9 +121,7 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-    #if defined(STM32F4)
     for (int i=0; i<3; i++) {
         ((uint32_t*) raw_id)[i] = STM32_UUID[i];
     }
-    #endif
 }

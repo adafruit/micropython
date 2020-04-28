@@ -24,10 +24,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+#include "stm32f4xx_hal.h"
 #include "py/mpconfig.h"
 
-void stm32_peripherals_clocks_init(void) {
+void stm32f4_peripherals_clocks_init(void) {
+    //TODO: All parameters must be moved to board level, due to relationship with HSE Osc. 
+
     //System clock init
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
