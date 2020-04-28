@@ -122,6 +122,3 @@
 [submodule "lib/protomatter"]
 	path = lib/protomatter
 	url = https://github.com/adafruit/Adafruit_Protomatter
-[submodule "frozen/TG-Techie_CircuitPython_RGB_Display"]
-	path = frozen/TG-Techie_CircuitPython_RGB_Display
-	url = https://github.com/TG-Techie/TG-Techie_CircuitPython_RGB_Display
