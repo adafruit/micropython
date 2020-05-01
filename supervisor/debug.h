@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  * Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,25 +24,21 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_SUPERVISOR_DEBUG_H
+#define MICROPY_INCLUDED_SUPERVISOR_DEBUG_H
 
-#define MICROPY_HW_BOARD_NAME       "NUCLEO STM32F746"
-#define MICROPY_HW_MCU_NAME         "STM32F746"
+#include <stdbool.h>
+#include <stdint.h>
 
-#define FLASH_SIZE                  (0x100000)
-#define FLASH_PAGE_SIZE             (0x4000)
+#include "py/mpconfig.h"
 
-#define BOARD_OSC_DIV (8)
+void debug_init(void);
+// Only writes up to given length. Does not check for null termination at all.
+void debug_write_substring(const char* text, uint32_t length);
+char debug_read(void);
+bool debug_bytes_available(void);
+void debug_irq_handler(void);
+void debug_enable_interrupt(void);
+void debug_disable_interrupt(void);
 
-#define DEBUG_UART USART3
-#define DEBUG_UART_TX_CLK_ENABLE __HAL_RCC_GPIOD_CLK_ENABLE
-#define DEBUG_UART_TX_PORT GPIOD
-#define DEBUG_UART_TX_PIN GPIO_PIN_8
-#define DEBUG_UART_TX_AF GPIO_AF7_USART3
-#define DEBUG_UART_RX_CLK_ENABLE __HAL_RCC_GPIOD_CLK_ENABLE
-#define DEBUG_UART_RX_PORT GPIOD
-#define DEBUG_UART_RX_PIN GPIO_PIN_9
-#define DEBUG_UART_RX_AF GPIO_AF7_USART3
-#define DEBUG_UART_IRQn USART3_IRQn
-#define DEBUG_UART_CLK_ENABLE __HAL_RCC_USART3_CLK_ENABLE
-
+#endif // MICROPY_INCLUDED_SUPERVISOR_DEBUG_H

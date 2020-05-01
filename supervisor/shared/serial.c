@@ -30,6 +30,9 @@
 
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
+#ifdef DEBUG_UART
+#include "supervisor/debug.h"
+#endif
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 
@@ -37,19 +40,38 @@
 
 void serial_init(void) {
     usb_init();
+#ifdef DEBUG_UART
+    debug_init();
+#endif
 }
 
 bool serial_connected(void) {
+#ifdef DEBUG_UART
+    return true;
+#else
     return tud_cdc_connected();
+#endif
 }
 
 char serial_read(void) {
+#ifdef DEBUG_UART
+    if (tud_cdc_connected() && tud_cdc_available() > 0) {
+        return (char) tud_cdc_read_char();
+    }
+    return debug_read();
+#else
     return (char) tud_cdc_read_char();
+#endif
 }
 
 bool serial_bytes_available(void) {
+#ifdef DEBUG_UART
+    return debug_bytes_available() || (tud_cdc_available() > 0);
+#else
     return tud_cdc_available() > 0;
+#endif
 }
+
 
 void serial_write_substring(const char* text, uint32_t length) {
 #if CIRCUITPY_DISPLAYIO
@@ -62,6 +84,10 @@ void serial_write_substring(const char* text, uint32_t length) {
         count += tud_cdc_write(text + count, length - count);
         usb_background();
     }
+
+#ifdef DEBUG_UART
+    debug_write_substring(text, length);
+#endif
 }
 
 void serial_write(const char* text) {

@@ -55,6 +55,7 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/debug.h"
 #include "supervisor/serial.h"
 
 #include "boards/board.h"
@@ -218,6 +219,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         }
     }
     #endif
+
+    debug_enable_interrupt();
 
     pyexec_result_t result;
 

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/debug.h"
 
 #define ALL_UARTS 0xFFFF
 
@@ -66,6 +67,24 @@ void uart_reset(void) {
         MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
     }
     uart_clock_disable(ALL_UARTS);
+}
+
+void uart_rxcpltcallback(UART_HandleTypeDef *handle)
+{
+    for (int i = 0; i < 7; i++) {
+        //get context pointer and cast it as struct pointer
+        busio_uart_obj_t * context = (busio_uart_obj_t*)MP_STATE_PORT(cpy_uart_obj_all)[i];
+        if (handle == &context->handle) {
+            //check if transaction is ongoing
+            if ((HAL_UART_GetState(handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
+                return;
+            }
+            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
+            errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
+
+            return;
+        }
+    }
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -232,6 +251,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
     HAL_NVIC_EnableIRQ(self->irq);
 
+    HAL_UART_RegisterCallback(&self->handle,
+        HAL_UART_RX_COMPLETE_CB_ID, uart_rxcpltcallback);
+
+
     errflag = HAL_OK;
 }
 
@@ -307,24 +330,6 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         mp_raise_ValueError(translate("UART write error"));
     }
     return len;
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
-{
-    for (int i = 0; i < 7; i++) {
-        //get context pointer and cast it as struct pointer
-        busio_uart_obj_t * context = (busio_uart_obj_t*)MP_STATE_PORT(cpy_uart_obj_all)[i];
-        if (handle == &context->handle) {
-            //check if transaction is ongoing
-            if ((HAL_UART_GetState(handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
-                return;
-            }
-            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
-            errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
-
-            return;
-        }
-    }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
@@ -411,7 +416,11 @@ void USART2_IRQHandler(void) {
 }
 
 void USART3_IRQHandler(void) {
+#ifdef DEBUG_UART // TODO Make generic
+    debug_irq_handler();
+#else
     call_hal_irq(3);
+#endif
 }
 
 void UART4_IRQHandler(void) {
@@ -441,12 +450,14 @@ STATIC void uart_clock_enable(uint16_t mask) {
         __HAL_RCC_USART2_CLK_ENABLE();
     }
     #endif
-    #ifdef USART3
+    #ifdef USART3 // TODO Make generic
+        #ifndef DEBUG_UART
     if (mask & (1 << 2)) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_ENABLE();
     }
+        #endif
     #endif
     #ifdef UART4
     if (mask & (1 << 3)) {
@@ -514,12 +525,14 @@ STATIC void uart_clock_disable(uint16_t mask) {
         __HAL_RCC_USART2_CLK_DISABLE();
     }
     #endif
-    #ifdef USART3
+    #if defined(USART3) // TODO Make generic
+        #ifndef DEBUG_UART
     if (mask & (1 << 2)) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE();
     }
+        #endif
     #endif
     #ifdef UART4
     if (mask & (1 << 3)) {
