@@ -1,7 +1,5 @@
 #include "shared-bindings/displayio/Rectangle.h"
 
-#include <string.h>
-
 #include "py/runtime.h"
 
 void common_hal_displayio_rectangle_construct(displayio_rectangle_t *self, uint32_t width, uint32_t height) {

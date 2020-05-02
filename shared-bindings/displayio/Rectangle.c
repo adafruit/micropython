@@ -2,13 +2,9 @@
 #include "shared-bindings/displayio/Rectangle.h"
 
 #include <stdint.h>
-#include <float.h>
 
-#include "py/binary.h"
-#include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
 

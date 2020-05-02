@@ -2,7 +2,6 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_RECTANGLE_H
 
 #include <stdint.h>
-#include <float.h>
 
 #include "py/obj.h"
 
