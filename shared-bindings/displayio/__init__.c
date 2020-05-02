@@ -40,6 +40,7 @@
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/displayio/Rectangle.h"
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
@@ -69,6 +70,7 @@
 //|     Palette
 //|     ParallelBus
 //|     Shape
+//|     Rectangle
 //|     TileGrid
 //|
 
@@ -97,6 +99,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
+    { MP_ROM_QSTR(MP_QSTR_Rectangle), MP_ROM_PTR(&displayio_rectangle_type) },
     { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
     { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
 

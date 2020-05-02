@@ -37,6 +37,7 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/Rectangle.h"
 #include "shared-bindings/displayio/Shape.h"
 #include "supervisor/shared/translate.h"
 
@@ -93,6 +94,10 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         displayio_shape_t* bmp = MP_OBJ_TO_PTR(native);
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
+    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_rectangle_type)) {
+        displayio_rectangle_t* rectangle = MP_OBJ_TO_PTR(bitmap);
+        bitmap_width = rectangle->width;
+	bitmap_height = rectangle->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;

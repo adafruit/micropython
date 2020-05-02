@@ -350,6 +350,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
+	displayio/Rectangle.c\
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
