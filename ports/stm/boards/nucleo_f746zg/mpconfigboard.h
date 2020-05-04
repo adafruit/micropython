@@ -25,12 +25,12 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "devicetree.h"
 
 #define MICROPY_HW_BOARD_NAME       "NUCLEO STM32F746"
 #define MICROPY_HW_MCU_NAME         "STM32F746"
 
-#define FLASH_SIZE                  (0x100000)
+#define FLASH_SIZE                  1024 * DT_REG_SIZE(DT_INST(0, st_stm32_flash_controller))
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)

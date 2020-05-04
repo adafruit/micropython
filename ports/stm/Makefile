@@ -75,13 +75,14 @@ INC += -I./boards/$(BOARD)
 INC += -I./hal_conf
 INC += -I./peripherals
 INC += -I./packages
+INC += -I../../lib/devicetree
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb -save-temps=obj
 	# You may want to enable these flags to make setting breakpoints easier.
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
@@ -291,6 +292,11 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
 	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
+
+generate-board-header:
+	$(ECHO) "Generating board header"
+	$(Q)$(PYTHON3) $(TOP)/lib/devicetree/parse_dts.py --dtc-flags '' --bindings-dirs $(TOP)/lib/devicetree/bindings --dts boards/$(BOARD)/board.dts --header-out $(BUILD)/board.dts.h --dts-out $(BUILD)/board.dts
+	$(Q)$(PYTHON3) $(TOP)/lib/devicetree/parse_dts_legacy.py --dtc-flags '' --bindings-dirs $(TOP)/lib/devicetree/bindings --dts boards/$(BOARD)/board.dts --header-out $(BUILD)/board.dts-legacy.h
 
 flash: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
