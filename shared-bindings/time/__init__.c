@@ -188,6 +188,31 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     tm->tm_yday = mp_obj_get_int(elems[7]);
     // elems[8] tm_isdst is not supported
 }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+STATIC mp_obj_t time_not_implemented(void) {
+ mp_raise_NotImplementedError(translate("No long integer support"));
+}
+//
+// Four stub functions to raise a NotImplementedError for platforms
+// that don't support long ints
+//
+STATIC mp_obj_t time_time(void) {
+     return (time_not_implemented());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
+STATIC mp_obj_t time_monotonic_ns(void) {
+    return (time_not_implemented());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
+STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+    return (time_not_implemented());
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
+STATIC mp_obj_t time_mktime(mp_obj_t t) {
+    return (time_not_implemented());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
+#endif
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
@@ -296,17 +321,13 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_monotonic), MP_ROM_PTR(&time_monotonic_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&time_sleep_obj) },
-    #if MICROPY_PY_COLLECTIONS
-    { MP_ROM_QSTR(MP_QSTR_struct_time), MP_ROM_PTR(&struct_time_type_obj) },
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
-    #endif // MICROPY_LONGINT_IMPL
-    #endif // MICROPY_PY_COLLECTIONS
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
     { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_monotonic_ns_obj) },
-    #endif
+    #if MICROPY_PY_COLLECTIONS
+    { MP_ROM_QSTR(MP_QSTR_struct_time), MP_ROM_PTR(&struct_time_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
+    #endif // MICROPY_PY_COLLECTIONS
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
