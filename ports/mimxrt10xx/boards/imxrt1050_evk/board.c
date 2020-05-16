@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2019 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,26 +25,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "py/smallint.h"
+#include "boards/board.h"
+#include "mpconfigboard.h"
 
-#include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/tick.h"
-
-#include "fsl_common.h"
-
-void mp_hal_delay_us(mp_uint_t delay) {
-#if defined(MIMXRT1011_SERIES) || defined(MIMXRT1021_SERIES) || defined(MIMXRT1052_SERIES)
-    SDK_DelayAtLeastUs(delay, SystemCoreClock);
-#else
-    SDK_DelayAtLeastUs(delay);
-#endif
+void board_init(void) {
 }
 
-void mp_hal_disable_all_interrupts(void) {
-    common_hal_mcu_disable_interrupts();
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void mp_hal_enable_all_interrupts(void) {
-    common_hal_mcu_enable_interrupts();
+void reset_board(void) {
 }

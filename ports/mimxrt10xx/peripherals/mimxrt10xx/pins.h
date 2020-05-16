@@ -70,6 +70,8 @@ typedef struct {
 #include "MIMXRT1011/pins.h"
 #elif defined(MIMXRT1021_SERIES)
 #include "MIMXRT1021/pins.h"
+#elif defined(MIMXRT1052_SERIES)
+#include "MIMXRT1052/pins.h"
 #elif defined(MIMXRT1062_SERIES)
 #include "MIMXRT1062/pins.h"
 #endif

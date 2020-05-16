@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
  * Copyright (c) 2019 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,26 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "py/smallint.h"
+#ifndef MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1052_PERIPH_H
+#define MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1052_PERIPH_H
 
-#include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/tick.h"
+extern const mcu_periph_obj_t mcu_i2c_sda_list[9];
+extern const mcu_periph_obj_t mcu_i2c_scl_list[9];
 
-#include "fsl_common.h"
+extern const mcu_periph_obj_t mcu_spi_sck_list[8];
+extern const mcu_periph_obj_t mcu_spi_mosi_list[8];
+extern const mcu_periph_obj_t mcu_spi_miso_list[8];
 
-void mp_hal_delay_us(mp_uint_t delay) {
-#if defined(MIMXRT1011_SERIES) || defined(MIMXRT1021_SERIES) || defined(MIMXRT1052_SERIES)
-    SDK_DelayAtLeastUs(delay, SystemCoreClock);
-#else
-    SDK_DelayAtLeastUs(delay);
-#endif
-}
+extern const mcu_periph_obj_t mcu_uart_rx_list[18];
+extern const mcu_periph_obj_t mcu_uart_tx_list[18];
+extern const mcu_periph_obj_t mcu_uart_rts_list[9];
+extern const mcu_periph_obj_t mcu_uart_cts_list[9];
 
-void mp_hal_disable_all_interrupts(void) {
-    common_hal_mcu_disable_interrupts();
-}
+extern const mcu_pwm_obj_t mcu_pwm_list[67];
 
-void mp_hal_enable_all_interrupts(void) {
-    common_hal_mcu_enable_interrupts();
-}
+#endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1052_PERIPH_H
