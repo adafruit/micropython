@@ -16,3 +16,6 @@ CFLAGS_BOARD = --param max-inline-insns-auto=15
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 35
 endif
+
+MICROPY_PY_ASYNC_AWAIT = 0
+
