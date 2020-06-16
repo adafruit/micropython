@@ -50,8 +50,12 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
+
+#include "lib/tinyusb/src/device/usbd.h"
 
 #ifdef CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/I2SOut.h"
@@ -74,13 +78,19 @@ const nrfx_rtc_config_t rtc_config = {
     .interrupt_priority = 6
 };
 
-static volatile uint64_t overflowed_ticks = 0;
+#define OVERFLOW_CHECK_PREFIX 0x2cad564f
+#define OVERFLOW_CHECK_SUFFIX 0x11343ef7
+static volatile struct {
+    uint32_t prefix;
+    uint64_t overflowed_ticks;
+    uint32_t suffix;
+} overflow_tracker __attribute__((section(".uninitialized")));
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
-        overflowed_ticks += (1L<< (24 - 5));
+        overflow_tracker.overflowed_ticks += (1L<< (24 - 5));
     } else if (int_type == NRFX_RTC_INT_TICK && nrfx_rtc_counter_get(&rtc_instance) % 32 == 0) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();
@@ -97,6 +107,17 @@ void tick_init(void) {
     nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);
     nrfx_rtc_enable(&rtc_instance);
     nrfx_rtc_overflow_enable(&rtc_instance, true);
+
+    // If the check prefix and suffix aren't correct, then the structure
+    // in memory isn't correct and the clock will be wildly wrong. Initialize
+    // the prefix and suffix so that we know the value is correct, and reset
+    // the time to 0.
+    if (overflow_tracker.prefix != OVERFLOW_CHECK_PREFIX ||
+        overflow_tracker.suffix != OVERFLOW_CHECK_SUFFIX) {
+        overflow_tracker.prefix = OVERFLOW_CHECK_PREFIX;
+        overflow_tracker.suffix = OVERFLOW_CHECK_SUFFIX;
+        overflow_tracker.overflowed_ticks = 0;
+    }
 }
 
 safe_mode_t port_init(void) {
@@ -120,9 +141,28 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_RTC
+    common_hal_rtc_init();
+#endif
+
 #if CIRCUITPY_ANALOGIO
     analogin_init();
 #endif
+
+    // If the board was reset by the WatchDogTimer, we may
+    // need to boot into safe mode. Reset the RESETREAS bit
+    // for the WatchDogTimer so we don't encounter this the
+    // next time we reboot.
+    if (NRF_POWER->RESETREAS & POWER_RESETREAS_DOG_Msk) {
+        NRF_POWER->RESETREAS = POWER_RESETREAS_DOG_Msk;
+        uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
+
+        // If USB is connected, then the user might be editing `code.py`,
+        // in which case we should reboot into Safe Mode.
+        if (usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk) {
+            return WATCHDOG_RESET;
+        }
+    }
 
     return NO_SAFE_MODE;
 }
@@ -157,10 +197,18 @@ void reset_port(void) {
     pulsein_reset();
 #endif
 
+#if CIRCUITPY_RTC
+    rtc_reset();
+#endif
+
     timers_reset();
 
 #if CIRCUITPY_BLEIO
     bleio_reset();
+#endif
+
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
 #endif
 
     reset_all_pins();
@@ -174,33 +222,46 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    // We're getting ready to reset, so save the counter off.
+    // This counter will get reset to zero during the reboot.
+    uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
+    overflow_tracker.overflowed_ticks += ticks / 32;
     NVIC_SystemReset();
 }
 
+// The uninitialized data section is placed directly after BSS, under the theory
+// that Circuit Python has a lot more .data and .bss than the bootloader.  As a
+// result, this section is less likely to be tampered with by the bootloader.
+extern uint32_t _euninitialized;
+
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_euninitialized;
 }
 
 uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
+}
+
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    return &_euninitialized;
 }
 
 uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word in the uninitialized section so it won't get overwritten.
+__attribute__((section(".uninitialized"))) uint32_t _saved_word;
 void port_set_saved_word(uint32_t value) {
-    _ebss = value;
+    _saved_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return _ebss;
+    return _saved_word;
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
@@ -208,7 +269,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
     if (subticks != NULL) {
         *subticks = (rtc % 32);
     }
-    return overflowed_ticks + rtc / 32;
+    return overflow_tracker.overflowed_ticks + rtc / 32;
 }
 
 // Enable 1/1024 second tick.
@@ -247,7 +308,17 @@ void port_sleep_until_interrupt(void) {
         sd_app_evt_wait();
     } else {
         // Call wait for interrupt ourselves if the SD isn't enabled.
-        __WFI();
+        // Note that `wfi` should be called with interrupts disabled,
+        // to ensure that the queue is properly drained.  The `wfi`
+        // instruction will returned as long as an interrupt is
+        // available, even though the actual handler won't fire until
+        // we re-enable interrupts.
+        common_hal_mcu_disable_interrupts();
+        if (!tud_task_event_ready()) {
+            __DSB();
+            __WFI();
+        }
+        common_hal_mcu_enable_interrupts();
     }
 }
 

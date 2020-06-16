@@ -68,7 +68,6 @@ safe_mode_t port_init(void) {
     irq_setmask(0);
     irq_setie(1);
     tick_init();
-    board_init();
     return NO_SAFE_MODE;
 }
 
@@ -89,6 +88,10 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+}
+
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
 }
 
 uint32_t *port_heap_get_bottom(void) {

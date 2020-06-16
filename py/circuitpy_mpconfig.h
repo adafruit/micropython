@@ -121,7 +121,9 @@
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
+#ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF      (1)
+#endif
 
 // fatfs configuration used in ffconf.h
 //
@@ -214,6 +216,10 @@ typedef long mp_off_t;
 #ifdef LONGINT_IMPL_LONGLONG
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MP_SSIZE_MAX (0x7fffffff)
+#endif
+
+#ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_FULL_BUILD)
 #endif
 
 #if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
@@ -610,15 +616,28 @@ extern const struct _mp_obj_module_t ustack_module;
 #endif
 
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
+// ulab requires reverse special methods
+#if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
+#error "ulab requires MICROPY_PY_REVERSE_SPECIAL_METHODS"
+#endif
 #define ULAB_MODULE \
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
 #define ULAB_MODULE
 #endif
+
 #if MICROPY_PY_URE
 #define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
 #else
 #define RE_MODULE
+#endif
+
+// This is not a top-level module; it's microcontroller.watchdog.
+#if CIRCUITPY_WATCHDOG
+extern const struct _mp_obj_module_t watchdog_module;
+#define WATCHDOG_MODULE { MP_ROM_QSTR(MP_QSTR_watchdog), MP_ROM_PTR(&watchdog_module) },
+#else
+#define WATCHDOG_MODULE
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -691,6 +710,7 @@ extern const struct _mp_obj_module_t ustack_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    WATCHDOG_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
