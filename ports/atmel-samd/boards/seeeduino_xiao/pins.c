@@ -45,6 +45,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // LED pins
     { MP_ROM_QSTR(MP_QSTR_LED),   MP_ROM_PTR(&pin_PA17) }, // status
     { MP_ROM_QSTR(MP_QSTR_BLUE_LED),   MP_ROM_PTR(&pin_PA17) },
+    { MP_ROM_QSTR(MP_QSTR_RX_LED),   MP_ROM_PTR(&pin_PA18) },
+    { MP_ROM_QSTR(MP_QSTR_TX_LED),   MP_ROM_PTR(&pin_PA19) },
 
     // Comm objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
