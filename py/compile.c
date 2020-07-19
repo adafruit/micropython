@@ -853,7 +853,7 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns_body->nodes[0];
         body_name = compile_funcdef_helper(comp, pns0, emit_options);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC;
+        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC | MP_SCOPE_FLAG_GENERATOR;
     #endif
     } else {
         assert(MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef); // should be
@@ -1890,7 +1890,7 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // async def
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC;
+        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC | MP_SCOPE_FLAG_GENERATOR;
     } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
         // async for
         compile_async_for_stmt(comp, pns0);
