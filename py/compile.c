@@ -853,7 +853,7 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns_body->nodes[0];
         body_name = compile_funcdef_helper(comp, pns0, emit_options);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
+        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC;
     #endif
     } else {
         assert(MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef); // should be
@@ -1713,11 +1713,11 @@ STATIC void compile_yield_from(compiler_t *comp) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int scope_flags = comp->scope_cur->scope_flags;
-    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+    if(scope_flags & MP_SCOPE_FLAG_ASYNC) {
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns,
-        translate("'async for' or 'async with' outside async function"));
+        translate("'await', 'async for' or 'async with' outside async function"));
     return false;
 }
 
@@ -1890,7 +1890,7 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // async def
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
+        fscope->scope_flags |= MP_SCOPE_FLAG_ASYNC;
     } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
         // async for
         compile_async_for_stmt(comp, pns0);
@@ -2643,6 +2643,9 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION && comp->scope_cur->kind != SCOPE_LAMBDA) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'await' outside function"));
+        return;
+    }
+    if(!compile_require_async_context(comp, pns)) {
         return;
     }
     compile_atom_expr_normal(comp, pns);
