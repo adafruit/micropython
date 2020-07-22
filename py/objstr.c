@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#define MICROPY_INSIDE_PY_OBJSTR_C
+
 #include <string.h>
 #include <assert.h>
 
