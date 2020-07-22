@@ -168,9 +168,15 @@ safe_mode_t port_init(void) {
 
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
-
-    // RTC oscillator selection is handled in peripherals/<family>/<line>/clocks.c
     __HAL_RCC_RTC_ENABLE();
+  
+    //stm32
+    #if (CPY_STM32F1)
+    _hrtc.Instance = RTC;
+    _hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
+    _hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+    #else   
+    // RTC oscillator selection is handled in peripherals/<family>/<line>/clocks.c
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
     // Divide async as little as possible so that we have rtc_clock_frequency count in subseconds.
@@ -178,13 +184,12 @@ safe_mode_t port_init(void) {
     _hrtc.Init.AsynchPrediv = 0x0;
     _hrtc.Init.SynchPrediv = rtc_clock_frequency - 1;
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-
+    #endif
     HAL_RTC_Init(&_hrtc);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
     // Turn off SysTick
-    SysTick->CTRL = 0;
-
+    SysTick->CTRL = 0;  
     return NO_SAFE_MODE;
 }
 
