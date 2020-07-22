@@ -103,6 +103,7 @@ CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align
 CFLAGS += -mthumb -mabi=aapcs-linux
 
 # Arm core selection
+MCU_FLAGS_F1 = -mcpu=cortex-m3
 MCU_FLAGS_F4 = -mcpu=cortex-m4
 MCU_FLAGS_F7 = -mcpu=cortex-m7
 MCU_FLAGS_H7 = -mcpu=cortex-m7
@@ -114,11 +115,12 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 CFLAGS += -DSTM32_SERIES_LOWER='"stm32$(MCU_SERIES_LOWER)"'
 
 # Floating point settings
-ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
-CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard
-else
-CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-endif
+# ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
+# CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard
+# else
+# CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+# endif
+CFLAGS += $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 
 # Need both command and valid file to use uf2 bootloader
 ifndef LD_FILE

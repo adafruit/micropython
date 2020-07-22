@@ -65,6 +65,16 @@ typedef struct {
     .pin = tim_pin, \
 }
 
+// F1 Series
+// Access Lines
+
+#ifdef STM32F103xE
+#define HAS_DAC 0
+#define HAS_TRNG 0
+#define HAS_BASIC_TIM 0
+#include "stm32f1/stm32f103xe/periph.h"
+#endif
+
 // F4 Series
 // Access Lines
 

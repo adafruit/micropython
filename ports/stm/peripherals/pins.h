@@ -75,6 +75,10 @@ extern const mp_obj_type_t mcu_pin_type;
 // Use illegal pin value to mark unassigned pins.
 #define NO_PIN 0xff
 
+// F1 Series
+#ifdef STM32F103xE
+#include "stm32f1/stm32f103xe/pins.h"
+#endif
 // F4 Series
 #ifdef STM32F401xE
 #include "stm32f4/stm32f401xe/pins.h"
