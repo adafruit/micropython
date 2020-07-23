@@ -46,7 +46,9 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     SysTick->LOAD = delay;
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
     while ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) == 0) {}
+    #if !(CPY_STM32F1)
     SysTick->CTRL = 0;
+    #endif
 }
 
 volatile uint32_t nesting_count = 0;

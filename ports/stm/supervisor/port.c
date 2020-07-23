@@ -150,12 +150,14 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 
 // Low power clock variables
 static volatile uint32_t systick_ms;
-static RTC_HandleTypeDef _hrtc;
 
+#if !(CPY_STM32F1)
+static RTC_HandleTypeDef _hrtc;
 #if BOARD_HAS_LOW_SPEED_CRYSTAL
 static uint32_t rtc_clock_frequency = LSE_VALUE;
 #else
 static uint32_t rtc_clock_frequency = LSI_VALUE;
+#endif
 #endif
 
 safe_mode_t port_init(void) {
@@ -168,14 +170,10 @@ safe_mode_t port_init(void) {
 
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
+
+    #if !(CPY_STM32F1)
     __HAL_RCC_RTC_ENABLE();
-  
-    //stm32
-    #if (CPY_STM32F1)
-    _hrtc.Instance = RTC;
-    _hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
-    _hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
-    #else   
+
     // RTC oscillator selection is handled in peripherals/<family>/<line>/clocks.c
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -184,12 +182,13 @@ safe_mode_t port_init(void) {
     _hrtc.Init.AsynchPrediv = 0x0;
     _hrtc.Init.SynchPrediv = rtc_clock_frequency - 1;
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-    #endif
     HAL_RTC_Init(&_hrtc);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
     // Turn off SysTick
-    SysTick->CTRL = 0;  
+    SysTick->CTRL = 0;
+    #endif
+
     return NO_SAFE_MODE;
 }
 
@@ -315,6 +314,7 @@ volatile uint32_t cached_date = 0;
 volatile uint32_t seconds_to_minute = 0;
 volatile uint32_t cached_hours_minutes = 0;
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    #if !(CPY_STM32F1)
     uint32_t subseconds = rtc_clock_frequency - (uint32_t)(RTC->SSR);
     uint32_t time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
     uint32_t date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
@@ -345,37 +345,49 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
 
     uint64_t raw_ticks = ((uint64_t) 1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
     return raw_ticks;
+    #else
+    return 0;
+    #endif
 }
 
 void RTC_WKUP_IRQHandler(void) {
+    #if !(CPY_STM32F1)
     supervisor_tick();
     __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&_hrtc, RTC_FLAG_WUTF);
     __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
+    #endif
 }
 
 volatile bool alarmed_already = false;
 void RTC_Alarm_IRQHandler(void) {
+    #if !(CPY_STM32F1)
     HAL_RTC_DeactivateAlarm(&_hrtc, RTC_ALARM_A);
     __HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
     __HAL_RTC_ALARM_CLEAR_FLAG(&_hrtc, RTC_FLAG_ALRAF);
     alarmed_already = true;
+    #endif
 }
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
+    #if !(CPY_STM32F1)
     HAL_RTCEx_SetWakeUpTimer_IT(&_hrtc, rtc_clock_frequency / 1024 / 2, RTC_WAKEUPCLOCK_RTCCLK_DIV2);
     HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 1, 0U);
     HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
+    #endif
 }
 extern volatile uint32_t autoreload_delay_ms;
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
+    #if !(CPY_STM32F1)
     HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
     HAL_RTCEx_DeactivateWakeUpTimer(&_hrtc);
+    #endif
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
+    #if !(CPY_STM32F1)
     uint64_t raw_ticks = port_get_raw_ticks(NULL) + ticks;
 
     RTC_AlarmTypeDef alarm;
@@ -405,9 +417,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
     HAL_RTC_SetAlarm_IT(&_hrtc, &alarm, RTC_FORMAT_BIN);
     alarmed_already = false;
+    #endif
 }
 
 void port_sleep_until_interrupt(void) {
+    #if !(CPY_STM32F1)
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
@@ -417,6 +431,7 @@ void port_sleep_until_interrupt(void) {
         return;
     }
     __WFI();
+    #endif
 }
 
 // Required by __libc_init_array in startup code if we are compiling using
