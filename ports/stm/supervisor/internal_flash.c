@@ -93,7 +93,12 @@ typedef struct {
         { 0x08000000, 0x20000, 16 },
     };
     STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
+#elif defined(STM32F1)
 
+    STATIC const flash_layout_t flash_layout[] = {
+        { 0x08000000, 0x20000, 16 },
+    };
+    STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
 #else
     #error Unsupported processor
 #endif
@@ -166,6 +171,7 @@ void port_internal_flash_flush(void) {
 
     #if defined(STM32H7)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
+    #elif defined(STM32F1)
     #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
@@ -181,6 +187,7 @@ void port_internal_flash_flush(void) {
     #if defined(STM32H7)
     EraseInitStruct.Banks = get_bank(_cache_flash_addr);
     #endif
+   
     EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
     EraseInitStruct.NbSectors = 1;
     if (sector_size > sizeof(_flash_cache)) {

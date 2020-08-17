@@ -32,6 +32,11 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#ifdef STM32F103xE
+#define STM32_FLASH_SIZE 0x80000 //512KiB
+#define INTERNAL_FLASH_FILESYSTEM_SIZE 0x20000000 //64KiB
+#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
+#endif
 
 #ifdef STM32F401xE
 #define STM32_FLASH_SIZE 0x80000 //512KiB
