@@ -473,6 +473,9 @@ void readline_init(vstr_t *line, const char *prompt) {
     #if MICROPY_REPL_AUTO_INDENT
     readline_auto_indent();
     #endif
+// make sure pending exceptions are cleared
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+
 }
 
 int readline(vstr_t *line, const char *prompt) {
