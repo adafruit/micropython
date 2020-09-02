@@ -241,8 +241,13 @@ check-translate:
 stubs:
 	@mkdir -p circuitpython-stubs
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
+
+.PHONY: check-stubs
+check-stubs: stubs
+	MYPYPATH=$(STUBDIR) mypy --strict $(STUBDIR)
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."

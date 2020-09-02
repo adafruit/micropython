@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "boards/board.h"
 #include "supervisor/shared/translate.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 // Note that any bugs introduced in this file can cause crashes at startup
 // for chips using external SPI flash.
@@ -169,7 +169,7 @@ STATIC int check_pins(busio_spi_obj_t *self,
     if (spi_taken) {
         mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
     } else {
-        mp_raise_ValueError(translate("Invalid SPI pin selection"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_SPI);
     }
 }
 
@@ -233,12 +233,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->phase = 0;
     self->bits = 8;
 
-    claim_pin(sck);
+    common_hal_mcu_pin_claim(sck);
     if (self->mosi != NULL) {
-        claim_pin(mosi);
+        common_hal_mcu_pin_claim(mosi);
     }
     if (self->miso != NULL) {
-        claim_pin(miso);
+        common_hal_mcu_pin_claim(miso);
     }
 }
 

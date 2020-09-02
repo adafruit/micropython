@@ -7,33 +7,23 @@
 //| class SatelliteSystem:
 //|     """Satellite system type"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the satellite system type."""
 //|
-//|     GPS: Any = ...
-//|     """Global Positioning System.
+//|     GPS: SatelliteSystem
+//|     """Global Positioning System."""
 //|
-//|     :type gnss.SatelliteSystem:"""
+//|     GLONASS: SatelliteSystem
+//|     """GLObal NAvigation Satellite System."""
 //|
-//|     GLONASS: Any = ...
-//|     """GLObal NAvigation Satellite System.
+//|     SBAS: SatelliteSystem
+//|     """Satellite Based Augmentation System."""
 //|
-//|     :type gnss.SatelliteSystem:"""
+//|     QZSS_L1CA: SatelliteSystem
+//|     """Quasi-Zenith Satellite System L1C/A."""
 //|
-//|     SBAS: Any = ...
-//|     """Satellite Based Augmentation System.
-//|
-//|     :type gnss.SatelliteSystem:"""
-//|
-//|     QZSS_L1CA: Any = ...
-//|     """Quasi-Zenith Satellite System L1C/A.
-//|
-//|     :type gnss.SatelliteSystem:"""
-//|
-//|     QZSS_L1S: Any = ...
-//|     """Quasi-Zenith Satellite System L1S.
-//|
-//|     :type gnss.SatelliteSystem:"""
+//|     QZSS_L1S: SatelliteSystem
+//|     """Quasi-Zenith Satellite System L1S."""
 //|
 const mp_obj_type_t gnss_satellitesystem_type;
 

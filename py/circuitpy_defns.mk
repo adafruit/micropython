@@ -145,7 +145,7 @@ ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/% fontio/%
+SRC_PATTERNS += displayio/%
 endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
@@ -174,6 +174,9 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
+SRC_PATTERNS += memorymonitor/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -195,11 +198,14 @@ endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
+endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
 endif
-ifeq ($(CIRCUITPY_PS2IO),1)
-SRC_PATTERNS += ps2io/%
+ifeq ($(CIRCUITPY_PWMIO),1)
+SRC_PATTERNS += pwmio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -219,6 +225,9 @@ endif
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_PATTERNS += sdioio/%
 endif
+ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
+SRC_PATTERNS += sharpdisplay/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -230,6 +239,9 @@ SRC_PATTERNS += struct/%
 endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
+endif
+ifeq ($(CIRCUITPY_TERMINALIO),1)
+SRC_PATTERNS += terminalio/% fontio/%
 endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
@@ -307,10 +319,11 @@ SRC_COMMON_HAL_ALL = \
 	os/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
-	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	pwmio/PWMOut.c \
+	pwmio/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
 	rotaryio/IncrementalEncoder.c \
@@ -324,6 +337,15 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+# Helper code for _bleio HCI.
+SRC_C += \
+	common-hal/_bleio/att.c \
+	common-hal/_bleio/hci.c \
+
+endif
+
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
@@ -398,11 +420,16 @@ SRC_SHARED_MODULE_ALL = \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
+	memorymonitor/__init__.c \
+	memorymonitor/AllocationAlarm.c \
+	memorymonitor/AllocationSize.c \
 	network/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	sharpdisplay/SharpMemoryFramebuffer.c \
+	sharpdisplay/__init__.c \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
@@ -421,7 +448,7 @@ SRC_SHARED_MODULE_ALL = \
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
 
 # Use the native touchio if requested. This flag is set conditionally in, say, mpconfigport.h.
-# The presence of common-hal/touchio/* # does not imply it's available for all chips in a port,
+# The presence of common-hal/touchio/* does not imply it's available for all chips in a port,
 # so there is an explicit flag. For example, SAMD21 touchio is native, but SAMD51 is not.
 ifeq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),1)
 SRC_COMMON_HAL_ALL += \
@@ -432,6 +459,14 @@ SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
 endif
+
+# If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
+# and use C source files in devices/ble_hci/common-hal.
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+INC += -I$(TOP)/devices/ble_hci
+DEVICES_MODULES += $(TOP)/devices/ble_hci
+endif
+
 ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_MOD += $(addprefix lib/mp3/src/, \
 	bitstream.c \
@@ -463,6 +498,11 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+)
+
+SRC_COMMON_HAL_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	_bleio/ \
 )
 
 ifeq ($(INTERNAL_LIBM),1)

@@ -36,8 +36,8 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli
     - name: Versions
       run: |
         gcc --version
@@ -73,12 +73,19 @@ jobs:
       with:
         name: stubs
         path: circuitpython-stubs*
-    - name: Docs
+    - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
     - uses: actions/upload-artifact@v2
       with:
         name: docs
         path: _build/html
+    - name: Test Documentation Build (LaTeX/PDF)
+      run: |
+        make latexpdf
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/latex
     - name: Translations
       run: make check-translate
     - name: New boards check
@@ -86,24 +93,32 @@ jobs:
       working-directory: tools
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: mpy-cross.static-raspbian
         path: mpy-cross/mpy-cross.static-raspbian
-
     - name: Build mpy-cross.static
       run: make -C mpy-cross -j2 -f Makefile.static
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: mpy-cross.static-amd64-linux
         path: mpy-cross/mpy-cross.static
-
     - name: Build mpy-cross.static-mingw
       run: make -C mpy-cross -j2 -f Makefile.static-mingw
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
+    - name: Upload mpy-cross builds to S3
+      run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
   mpy-cross-mac:
     runs-on: macos-10.15
@@ -112,9 +127,9 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Make gettext programs available
+    - name: Install dependencies
       run: |
-        brew install gettext
+        brew install gettext awscli
         echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
@@ -127,13 +142,23 @@ jobs:
         fetch-depth: 0
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        git describe --dirty --tags
+        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: mpy-cross-macos-catalina
         path: mpy-cross/mpy-cross
+    - name: Upload mpy-cross build to S3
+      run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
   build-arm:
     runs-on: ubuntu-18.04
@@ -154,6 +179,7 @@ jobs:
         - "bast_pro_mini_m0"
         - "bdmicro_vina_m0"
         - "bless_dev_board_multi_sensor"
+        - "blm_badge"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -195,6 +221,7 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
+        - "ikigaisense_vita"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
         - "imxrt1060_evk"
@@ -207,6 +234,7 @@ jobs:
         - "makerdiary_nrf52840_m2_devkit"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
+        - "matrixportal_m4"
         - "meowbit_v121"
         - "meowmeow"
         - "metro_m0_express"
@@ -216,6 +244,7 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "ndgarage_ndbit6_v2"
         - "nfc_copy_cat"
         - "nice_nano"
         - "nucleo_f746zg"
@@ -232,6 +261,7 @@ jobs:
         - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
+        - "picoplanet"
         - "pirkey_m0"
         - "pitaya_go"
         - "pyb_nano_v2"
@@ -314,7 +344,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -362,7 +392,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -379,8 +409,11 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "electroniccats_bastwifi"
+        - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "microdev_micro_s2"
         - "unexpectedmaker_feathers2"
 
     steps:
@@ -400,7 +433,12 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200523
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
+    - name: Clone IDF submodules
+      run: |
+        (cd $IDF_PATH && git submodule update --init)
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
     - name: Install IDF tools
       run: |
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
@@ -442,7 +480,7 @@ jobs:
         IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v1.0.0
+    - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}

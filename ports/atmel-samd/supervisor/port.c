@@ -59,7 +59,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
 
@@ -322,8 +322,10 @@ void reset_port(void) {
     audioout_reset();
 #endif
 #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
     //pdmin_reset();
+#endif
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    i2sout_reset();
 #endif
 
 #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
@@ -333,6 +335,8 @@ void reset_port(void) {
 #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 

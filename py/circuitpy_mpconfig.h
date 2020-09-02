@@ -347,16 +347,20 @@ extern const struct _mp_obj_module_t displayio_module;
 extern const struct _mp_obj_module_t fontio_module;
 extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
-#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
-#define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
 #else
 #define DISPLAYIO_MODULE
+#define CIRCUITPY_DISPLAY_LIMIT (0)
+#endif
+
+#if CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO
+#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
+#define TERMINALIO_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
+#else
 #define FONTIO_MODULE
 #define TERMINALIO_MODULE
-#define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
 #if CIRCUITPY_FRAMEBUFFERIO
@@ -430,6 +434,16 @@ extern const struct _mp_obj_module_t _eve_module;
 #define _EVE_MODULE
 #endif
 
+#if CIRCUITPY_MEMORYMONITOR
+extern const struct _mp_obj_module_t memorymonitor_module;
+#define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
+#define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
+                                    mp_obj_t active_allocationalarms;
+#else
+#define MEMORYMONITOR_MODULE
+#define MEMORYMONITOR_ROOT_POINTERS
+#endif
+
 #if CIRCUITPY_MICROCONTROLLER
 extern const struct _mp_obj_module_t microcontroller_module;
 #define MICROCONTROLLER_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module },
@@ -489,11 +503,11 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE
 #endif
 
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#if CIRCUITPY_PS2IO
+extern const struct _mp_obj_module_t ps2io_module;
+#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
 #else
-#define RGBMATRIX_MODULE
+#define PS2IO_MODULE
 #endif
 
 #if CIRCUITPY_PULSEIO
@@ -503,11 +517,18 @@ extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE
 #endif
 
-#if CIRCUITPY_PS2IO
-extern const struct _mp_obj_module_t ps2io_module;
-#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
+#if CIRCUITPY_PWMIO
+extern const struct _mp_obj_module_t pwmio_module;
+#define PWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pwmio), (mp_obj_t)&pwmio_module },
 #else
-#define PS2IO_MODULE
+#define PWMIO_MODULE
+#endif
+
+#if CIRCUITPY_RGBMATRIX
+extern const struct _mp_obj_module_t rgbmatrix_module;
+#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#else
+#define RGBMATRIX_MODULE
 #endif
 
 #if CIRCUITPY_RANDOM
@@ -550,6 +571,13 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdioio), (mp_obj_t)&sdioio_module },
 #else
 #define SDIOIO_MODULE
+#endif
+
+#if CIRCUITPY_SHARPDISPLAY
+extern const struct _mp_obj_module_t sharpdisplay_module;
+#define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
+#else
+#define SHARPDISPLAY_MODULE
 #endif
 
 #if CIRCUITPY_STAGE
@@ -709,6 +737,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
+    MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
@@ -718,6 +747,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     PIXELBUF_MODULE \
     PS2IO_MODULE \
     PULSEIO_MODULE \
+    PWMIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     RGBMATRIX_MODULE \
@@ -726,6 +756,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     SAMD_MODULE \
     SDCARDIO_MODULE \
     SDIOIO_MODULE \
+    SHARPDISPLAY_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
@@ -766,6 +797,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     mp_obj_t terminal_tilegrid_tiles; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
+    MEMORYMONITOR_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
 void supervisor_run_background_tasks_if_tick(void);
@@ -787,7 +819,7 @@ void supervisor_run_background_tasks_if_tick(void);
 #endif
 
 #ifndef CIRCUITPY_PYSTACK_SIZE
-#define CIRCUITPY_PYSTACK_SIZE 1024
+#define CIRCUITPY_PYSTACK_SIZE 1536
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
