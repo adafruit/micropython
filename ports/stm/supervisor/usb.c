@@ -35,8 +35,8 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#if !CPY_STM32F1
 STATIC void init_usb_vbus_sense(void) {
-
 #if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
@@ -61,6 +61,7 @@ STATIC void init_usb_vbus_sense(void) {
     #endif
 #endif
 }
+#endif
 
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management.
@@ -75,7 +76,7 @@ void init_usb_hardware(void) {
 
       /* Configure DM DP Pins */
     GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     #if CPY_STM32H7
@@ -88,6 +89,9 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 12);
     claim_pin(0, 11);
     claim_pin(0, 12);
+
+    // Only OTG uses VBUS and ID
+    #if !CPY_STM32F1
 
     /* Configure VBUS Pin */
     #if  !(BOARD_NO_VBUS_SENSE)
@@ -103,7 +107,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     #if CPY_STM32H7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
     #elif CPY_STM32F4 || CPY_STM32F7
@@ -123,15 +127,21 @@ void init_usb_hardware(void) {
     claim_pin(0, 8);
     #endif
 
-    #if CPY_STM32H7
+    // End OTG Pins
+    #endif
+
+    #if CPY_STM32F1
+    __HAL_RCC_USB_CLK_ENABLE();
+    // FS USB only does not do voltage sensing.
+    #elif CPY_STM32H7
     HAL_PWREx_EnableUSBVoltageDetector();
     __HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
+    init_usb_vbus_sense();
     #else
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
-    #endif
-
     init_usb_vbus_sense();
+    #endif
 }
 
 void OTG_FS_IRQHandler(void) {

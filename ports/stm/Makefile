@@ -167,19 +167,14 @@ SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal_dac.c \
 	hal_dac_ex.c \
 	hal_dma.c \
-	hal_dma_ex.c \
 	hal_exti.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
-	hal_i2c_ex.c \
 	hal_pwr.c \
-	hal_pwr_ex.c \
-	hal_qspi.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
-	hal_rng.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
 	hal_sd.c \
@@ -198,6 +193,17 @@ SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	ll_usart.c \
 	ll_utils.c \
 )
+
+# The F103 lacks some modules we normally make use of
+ifeq ($(MCU_SERIES_LOWER),$(filter $(MCU_SERIES_LOWER),f4 f7 h7))
+SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
+	hal_dma_ex.c \
+	hal_i2c_ex.c \
+	hal_pwr_ex.c \
+	hal_qspi.c \
+	hal_rng.c \
+)
+endif
 
 # Need this to avoid UART linker problems. TODO: rewrite to use registered callbacks.
 # Does not exist for F4 and lower
@@ -234,6 +240,7 @@ SRC_C += \
 
 ifneq ($(USB),FALSE)
 SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
+SRC_C += lib/tinyusb/src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c
 endif
 
 SRC_S = \

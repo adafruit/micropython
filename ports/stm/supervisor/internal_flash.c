@@ -49,9 +49,14 @@ typedef struct {
 /*------------------------------------------------------------------*/
 /* Internal Flash API
  *------------------------------------------------------------------*/
+#if defined(STM32F1)
+    STATIC const flash_layout_t flash_layout[] = {
+        // F103: 0x8000000, 0x800 (2kb), 255
+        { FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE },
+    };
+    STATIC uint8_t  _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
 
-#if defined(STM32F4)
-
+#elif defined(STM32F4)
     STATIC const flash_layout_t flash_layout[] = {
         { 0x08000000, 0x04000, 4 },
         { 0x08010000, 0x10000, 1 },
@@ -68,7 +73,6 @@ typedef struct {
     STATIC uint8_t  _flash_cache[0x4000] __attribute__((aligned(4)));
 
 #elif defined(STM32F7)
-
     // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
     // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
     #define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
@@ -87,18 +91,13 @@ typedef struct {
     };
     STATIC uint8_t  _flash_cache[0x8000] __attribute__((aligned(4)));
     #endif
+
 #elif defined(STM32H7)
-
     STATIC const flash_layout_t flash_layout[] = {
         { 0x08000000, 0x20000, 16 },
     };
     STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
-#elif defined(STM32F1)
 
-    STATIC const flash_layout_t flash_layout[] = {
-        { 0x08000000, 0x20000, 16 },
-    };
-    STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
 #else
     #error Unsupported processor
 #endif
@@ -167,29 +166,39 @@ uint32_t supervisor_flash_get_block_count(void) {
 }
 
 void port_internal_flash_flush(void) {
+
     if (_cache_flash_addr == NO_CACHE) return;
 
-    #if defined(STM32H7)
+    #if defined(STM32F1)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR);
+    #elif defined(STM32H7)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
-    #elif defined(STM32F1)
     #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
     #endif
 
-    // set up for erase
+    // Set parameters for erase
     FLASH_EraseInitTypeDef EraseInitStruct;
-    EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
-    EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    // get the sector information
     uint32_t sector_size;
     uint32_t sector_start_addr = 0xffffffff;
-    #if defined(STM32H7)
-    EraseInitStruct.Banks = get_bank(_cache_flash_addr);
+
+    #if defined(STM32F1)
+        // F1 pages are referred to as sectors outside this section for simplicity
+        EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
+        flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
+        EraseInitStruct.PageAddress = sector_start_addr;
+        EraseInitStruct.NbPages     = 1;
+    #else
+        EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
+        EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+        #if defined(STM32H7)
+        EraseInitStruct.Banks = get_bank(_cache_flash_addr);
+        #endif
+        EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
+        EraseInitStruct.NbSectors = 1;
     #endif
-   
-    EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
-    EraseInitStruct.NbSectors = 1;
+
     if (sector_size > sizeof(_flash_cache) || sector_start_addr == 0xffffffff) {
         reset_into_safe_mode(FLASH_WRITE_FAIL);
     }
@@ -210,32 +219,32 @@ void port_internal_flash_flush(void) {
         uint32_t * cache_addr = (uint32_t*)_flash_cache;
 
         #if defined(STM32H7)
-        for (uint32_t i = 0; i < (sector_size / 32); i++) {
-            // Note that the STM32H7 HAL interface differs by taking an address, not 64 bit data
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, sector_start_addr,
-                                  (uint32_t)cache_addr) != HAL_OK) {
-                // error occurred during flash write
-                HAL_FLASH_Lock(); // lock the flash
-                reset_into_safe_mode(FLASH_WRITE_FAIL);
+            // Program in 256 bit flash words
+            for (uint32_t i = 0; i < (sector_size / 32); i++) {
+                // Note that the STM32H7 HAL interface differs by taking an address, not 64 bit data
+                if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, sector_start_addr,
+                                      (uint32_t)cache_addr) != HAL_OK) {
+                    // error occurred during flash write
+                    HAL_FLASH_Lock(); // lock the flash
+                    reset_into_safe_mode(FLASH_WRITE_FAIL);
+                }
+                // RAM memory is by word (4 byte), but flash memory is by byte
+                cache_addr += 8;
+                sector_start_addr += 32;
             }
-            // RAM memory is by word (4 byte), but flash memory is by byte
-            cache_addr += 8;
-            sector_start_addr += 32;
-        }
-
-        #else // STM32F4
-        // program the flash word by word
-        for (uint32_t i = 0; i < sector_size / 4; i++) {
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, sector_start_addr,
-                                  (uint64_t)*cache_addr) != HAL_OK) {
-                // error occurred during flash write
-                HAL_FLASH_Lock(); // lock the flash
-                reset_into_safe_mode(FLASH_WRITE_FAIL);
+        #else // STM32 F1, F4, F7
+            // Program in 32 bit words
+            for (uint32_t i = 0; i < sector_size / 4; i++) {
+                if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, sector_start_addr,
+                                      (uint64_t)*cache_addr) != HAL_OK) {
+                    // error occurred during flash write
+                    HAL_FLASH_Lock(); // lock the flash
+                    reset_into_safe_mode(FLASH_WRITE_FAIL);
+                }
+                // RAM memory is by word (4 byte), but flash memory is by byte
+                cache_addr += 1;
+                sector_start_addr += 4;
             }
-            // RAM memory is by word (4 byte), but flash memory is by byte
-            cache_addr += 1;
-            sector_start_addr += 4;
-        }
         #endif
 
         // lock the flash
@@ -282,6 +291,7 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     while (num_blocks) {
+
         int32_t dest = convert_block_to_flash_addr(block_num);
         if (dest == -1) {
             // bad block number
@@ -300,17 +310,15 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
             reset_into_safe_mode(FLASH_WRITE_FAIL);
         }
 
-        // Find how many blocks are left in the sector
+        // If our list of blocks goes over a sector boundary, we do this while loop again,
+        // so only count up to the end of the sector at maximum
         uint32_t count = (sector_size - (dest - sector_start_addr))/FILESYSTEM_BLOCK_SIZE;
         count = MIN(num_blocks, count);
 
+        // if the cache points at the wrong sector, flush it and copy the new one
         if (_cache_flash_addr != sector_start_addr) {
-            // Write out anything in cache before overwriting it.
             supervisor_flash_flush();
-
             _cache_flash_addr = sector_start_addr;
-
-            // Copy the current contents of the entire page into the cache.
             memcpy(_flash_cache, (void *)sector_start_addr, sector_size);
         }
 

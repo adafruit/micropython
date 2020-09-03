@@ -38,7 +38,6 @@ void stm32_peripherals_clocks_init(void) {
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
-    bool lse_failure = false;
 
     // Set voltage scaling in accordance with system clock speed
     __HAL_RCC_PWR_CLK_ENABLE();
@@ -57,18 +56,12 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;  //++++> HSE 一分频
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLMUL = CPY_CLK_MUL;            //++++> HSE X倍频 
+    RCC_OscInitStruct.PLL.PLLMUL = CPY_CLK_MUL;            //++++> HSE X倍频
 
     if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        // Failure likely means a LSE issue - attempt to swap to LSI, and set to crash
-        RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-        RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_LSI;
-        RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-        if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-            // No HSE means no USB, so just fail forever
-            while(1);
-        }
-        lse_failure = true;
+        // Clock issues are too problematic to even attempt recovery.
+        // If you end up here, check whether your LSE settings match your board.
+        while(1);
     }
 
     // Configure bus clock sources and divisors
@@ -87,16 +80,7 @@ void stm32_peripherals_clocks_init(void) {
     #else
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
     #endif
-    #if (CPY_CLK_USB_USES_AUDIOPLL)
-    // Not supported by all lines. Should always result in 48M.
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
-    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_CK48;
-    PeriphClkInitStruct.Clk48ClockSelection = RCC_CK48CLKSOURCE_PLLI2SQ;
-    #endif
-
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-
-    if (lse_failure) {
-        reset_into_safe_mode(HARD_CRASH); //TODO: make safe mode category CLOCK_FAULT?
-    }
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct); 
 }

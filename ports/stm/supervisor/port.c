@@ -362,7 +362,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
     uint64_t raw_ticks = ((uint64_t) 1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
     return raw_ticks;
     #else
-    return 0;
+    return systick_ms;
     #endif
 }
 

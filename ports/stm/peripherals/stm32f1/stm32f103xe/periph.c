@@ -84,7 +84,7 @@ const mcu_periph_obj_t mcu_spi_nss_list[6] = {
     PERIPH(3, 6, &pin_PA15),
 };
 
-USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, USART6};
+USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, NULL};
 bool mcu_uart_has_usart[MAX_UART] = {true, true, true, false, false, true};
 
 const mcu_periph_obj_t mcu_uart_tx_list[12] = {
@@ -119,8 +119,8 @@ const mcu_periph_obj_t mcu_uart_rx_list[12] = {
 
 //Timers
 //TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
-TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
-                                    TIM11, TIM12, TIM13, TIM14};
+TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, NULL, NULL,
+                                    NULL, NULL, NULL, NULL};
 
 const mcu_tim_pin_obj_t mcu_tim_pin_list[56] = {
     TIM(2,1,1,&pin_PA00),
