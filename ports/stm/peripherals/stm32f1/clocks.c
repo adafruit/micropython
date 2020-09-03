@@ -82,5 +82,5 @@ void stm32_peripherals_clocks_init(void) {
     #endif
     PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_USB;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct); 
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 }
