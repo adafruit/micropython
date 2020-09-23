@@ -420,6 +420,7 @@ jobs:
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
         - "unexpectedmaker_feathers2"
+        - "lolin_d32_s2"
 
     steps:
     - name: Set up Python 3.8
