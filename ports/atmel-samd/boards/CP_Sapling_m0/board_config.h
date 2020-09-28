@@ -9,8 +9,8 @@
 #define INDEX_URL ""
 #define BOARD_ID "SAMD21E18A-CP-SAPLING-v0"
 
-#define USB_VID 0x0000
-#define USB_PID 0x0000
+#define USB_VID 0x1209
+#define USB_PID 0x4DDD
 
 #define BOARD_NEOPIXEL_PIN PIN_PA15
 #define BOARD_NEOPIXEL_COUNT 1
