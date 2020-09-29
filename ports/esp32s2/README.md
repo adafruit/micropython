@@ -30,17 +30,26 @@ Connect these pins using a [USB adapter](https://www.adafruit.com/product/4090) 
 
 ## Building and flashing ##
 
-Before building or flashing the ESP32-S2, you must install the patched version of the `esp-idf` included with CircuitPython. This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
+Before building or flashing the ESP32-S2 version of CircuitPython, you must install a version of the [ESP32-S2 esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/) that is compatible with it. Please note that the esp-idf must be re-installed everytime the compatible version is updated. It does not have to be re-installed every time you build.
+
+The latest known-compatible version of the ESP32-S2 esp-idf can be found in `ports/esp32s2`. Whenever possible this is a direct reference to a version of the esp-idf. However if there are changes to the esp-idf required to compile CircuitPython, this will instead point to a branch with these changes.
+
+In short: the version of esp-idf in `ports/esp32s2` is expected to work, the official version of esp-idf should work, but may have issues. (Please let the CircuitPython team know if you discover any issues using the latest up-stream esp-idf so they can investigate any potential upcoming compatibility issues.)
+
+To install the known compatible version of esp-idf:
 
 ```
+cd ports/esp32s2
 ./esp-idf/install.sh
 ```
 
-Additionally, any time you open a new bash environment for building or flashing, you must add the esp-idf tools to your path:
+To activate the esp-idf after installation, and everytime you open a new shell environment, you must add the esp-idf tools to your path:
 
 ```
 . esp-idf/export.sh
 ```
+
+(or the equivalent script for your shell of choice.)
 
 Building boards such as the Saola is typically done through `make flash`. The default port is `tty.SLAB_USBtoUART`, which will only work on certain Mac setups. On most machines, both Mac and Linux, you will need to set the port yourself by running `ls /dev/tty.usb*` and selecting the one that only appears when your development board is plugged in. An example make command with the port setting is as follows:
 
