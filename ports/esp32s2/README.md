@@ -30,7 +30,7 @@ Connect these pins using a [USB adapter](https://www.adafruit.com/product/4090) 
 
 ## Building and flashing ##
 
-Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html). This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
+Before building or flashing the ESP32-S2, you must install the patched version of the `esp-idf` included with CircuitPython. This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
 
 ```
 ./esp-idf/install.sh
@@ -47,6 +47,9 @@ Building boards such as the Saola is typically done through `make flash`. The de
 ```
 make BOARD=espressif_saola_1_wrover flash PORT=/dev/tty.usbserial-1421120
 ```
+
+More information about the `esp-idf` can be found [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/).
+
 
 ## Debugging ##
 
