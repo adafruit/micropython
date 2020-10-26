@@ -1,0 +1,1 @@
+// No spiperipheral module functions.

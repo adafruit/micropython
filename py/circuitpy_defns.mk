@@ -238,6 +238,9 @@ endif
 ifeq ($(CIRCUITPY_SOCKETPOOL),1)
 SRC_PATTERNS += socketpool/%
 endif
+ifeq ($(CIRCUITPY_SPIPERIPHERAL),1)
+SRC_PATTERNS += spiperipheral/%
+endif
 ifeq ($(CIRCUITPY_SSL),1)
 SRC_PATTERNS += ssl/%
 endif
@@ -356,6 +359,8 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
+	spiperipheral/__init__.c \
+	spiperipheral/SPIPeripheral.c \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
 	supervisor/Runtime.c \

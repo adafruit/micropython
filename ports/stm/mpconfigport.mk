@@ -13,6 +13,8 @@ endif
 
 ifeq ($(MCU_SERIES),F4)
 	# Not yet implemented common-hal modules:
+	CIRCUITPY_SPIPERIPHERAL ?= 1
+
 	CIRCUITPY_AUDIOBUSIO ?= 0
 	CIRCUITPY_AUDIOIO ?= 0
 	CIRCUITPY_COUNTIO ?= 0

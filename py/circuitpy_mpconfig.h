@@ -619,6 +619,13 @@ extern const struct _mp_obj_module_t socketpool_module;
 #define SOCKETPOOL_MODULE
 #endif
 
+#if CIRCUITPY_SPIPERIPHERAL
+extern const struct _mp_obj_module_t spiperipheral_module;
+#define SPIPERIPHERAL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_spiperipheral), (mp_obj_t)&spiperipheral_module },
+#else
+#define SPIPERIPHERAL_MODULE
+#endif
+
 #if CIRCUITPY_SSL
 extern const struct _mp_obj_module_t ssl_module;
 #define SSL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&ssl_module },
@@ -815,6 +822,7 @@ extern const struct _mp_obj_module_t wifi_module;
     SDIOIO_MODULE \
     SHARPDISPLAY_MODULE \
     SOCKETPOOL_MODULE \
+    SPIPERIPHERAL_MODULE \
     SSL_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \

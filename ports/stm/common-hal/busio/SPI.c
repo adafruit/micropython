@@ -39,16 +39,6 @@
 // Note that any bugs introduced in this file can cause crashes at startup
 // for chips using external SPI flash.
 
-//arrays use 0 based numbering: SPI1 is stored at index 0
-#define MAX_SPI 6
-
-STATIC bool reserved_spi[MAX_SPI];
-STATIC bool never_reset_spi[MAX_SPI];
-
-#define ALL_CLOCKS 0xFF
-STATIC void spi_clock_enable(uint8_t mask);
-STATIC void spi_clock_disable(uint8_t mask);
-
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     #if (CPY_STM32H7)
         if (instance == SPI1 || instance == SPI2 || instance == SPI3) {
@@ -108,7 +98,7 @@ void spi_reset(void) {
     spi_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
-STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
+const mcu_periph_obj_t *spi_find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
     for(size_t i = 0; i<sz; i++, table++) {
         if(periph_index == table->periph_index && pin == table->pin ) {
             return table;
@@ -118,7 +108,7 @@ STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, 
 }
 
 //match pins to SPI objects
-STATIC int check_pins(busio_spi_obj_t *self,
+int spi_check_pins(busio_spi_obj_t *self,
          const mcu_pin_obj_t * sck, const mcu_pin_obj_t * mosi,
          const mcu_pin_obj_t * miso) {
     bool spi_taken = false;
@@ -137,12 +127,12 @@ STATIC int check_pins(busio_spi_obj_t *self,
         int periph_index = mcu_spi_sck->periph_index;
 
         const mcu_periph_obj_t *mcu_spi_miso = NULL;
-        if (miso && !(mcu_spi_miso = find_pin_function(mcu_spi_miso_list, miso_len, miso, periph_index))) {
+        if (miso && !(mcu_spi_miso = spi_find_pin_function(mcu_spi_miso_list, miso_len, miso, periph_index))) {
             continue;
         }
 
         const mcu_periph_obj_t *mcu_spi_mosi = NULL;
-        if (mosi && !(mcu_spi_mosi = find_pin_function(mcu_spi_mosi_list, mosi_len, mosi, periph_index))) {
+        if (mosi && !(mcu_spi_mosi = spi_find_pin_function(mcu_spi_mosi_list, mosi_len, mosi, periph_index))) {
             continue;
         }
 
@@ -169,7 +159,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
          const mcu_pin_obj_t * sck, const mcu_pin_obj_t * mosi,
          const mcu_pin_obj_t * miso) {
 
-    int periph_index = check_pins(self, sck, mosi, miso);
+    int periph_index = spi_check_pins(self, sck, mosi, miso);
     SPI_TypeDef * SPIx = mcu_spi_banks[periph_index - 1];
 
     //Start GPIO for each pin
@@ -375,7 +365,7 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
     return self->polarity;
 }
 
-STATIC void spi_clock_enable(uint8_t mask) {
+void spi_clock_enable(uint8_t mask) {
     #ifdef SPI1
     if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_ENABLE();
@@ -408,7 +398,7 @@ STATIC void spi_clock_enable(uint8_t mask) {
     #endif
 }
 
-STATIC void spi_clock_disable(uint8_t mask) {
+void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
     if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_DISABLE();
