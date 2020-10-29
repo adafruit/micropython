@@ -42,7 +42,7 @@
 STATIC bool txrx_complete;
 STATIC bool txrx_error;
 
-spiperipheral_spi_peripheral_obj_t * handles[6];
+spiperipheral_spi_peripheral_obj_t * handles[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
 
 STATIC void spi_assign_irq(spiperipheral_spi_peripheral_obj_t *self, SPI_TypeDef * SPIx);
 
@@ -93,6 +93,7 @@ void common_hal_spiperipheral_spi_peripheral_construct(spiperipheral_spi_periphe
     spi_clock_enable(1 << (self->sck->periph_index - 1));
     reserved_spi[self->sck->periph_index - 1] = true;
     spi_assign_irq(self, SPIx);
+    handles[self->sck->periph_index - 1] = self;
 
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_SLAVE;
@@ -140,6 +141,7 @@ void common_hal_spiperipheral_spi_peripheral_deinit(spiperipheral_spi_peripheral
     spi_clock_disable(1<<(self->sck->periph_index - 1));
     reserved_spi[self->sck->periph_index - 1] = false;
     never_reset_spi[self->sck->periph_index - 1] = false;
+    handles[self->sck->periph_index - 1] = NULL;
 
     reset_pin_number(self->sck->pin->port,self->sck->pin->number);
     if (self->mosi != NULL) {
