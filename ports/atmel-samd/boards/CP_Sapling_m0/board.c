@@ -29,11 +29,7 @@
 #include "supervisor/shared/board.h"
 #include "hal/include/hal_gpio.h"
 
-void board_init(void) {
-    gpio_set_pin_function(PIN_PA14, GPIO_PIN_FUNCTION_OFF);
-    gpio_set_pin_direction(PIN_PA14, GPIO_DIRECTION_OUT);
-    gpio_set_pin_level(PIN_PA14, true);
-    never_reset_pin_number(PIN_PA14);    
+void board_init(void) {    
 }
 
 bool board_requests_safe_mode(void) {
