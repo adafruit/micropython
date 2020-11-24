@@ -74,63 +74,70 @@ void init_usb_hardware(void) {
     */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-      /* Configure DM DP Pins */
-    GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    #if CPY_STM32H7
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif CPY_STM32F4 || CPY_STM32F7
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    #endif
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    never_reset_pin_number(0, 11);
-    never_reset_pin_number(0, 12);
-    claim_pin(0, 11);
-    claim_pin(0, 12);
+    #if CPY_STM32F1
+        GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    #else
+          /* Configure DM DP Pins */
+        GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        #if CPY_STM32H7
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+        #elif CPY_STM32F4 || CPY_STM32F7
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+        #endif
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        never_reset_pin_number(0, 11);
+        never_reset_pin_number(0, 12);
+        claim_pin(0, 11);
+        claim_pin(0, 12);
 
-    // Only OTG uses VBUS and ID
-    #if !CPY_STM32F1
+        /* Configure VBUS Pin */
+        #if  !(BOARD_NO_VBUS_SENSE)
+        GPIO_InitStruct.Pin = GPIO_PIN_9;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        never_reset_pin_number(0, 9);
+        claim_pin(0, 9);
+        #endif
 
-    /* Configure VBUS Pin */
-    #if  !(BOARD_NO_VBUS_SENSE)
-    GPIO_InitStruct.Pin = GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    never_reset_pin_number(0, 9);
-    claim_pin(0, 9);
+        /* This for ID line debug */
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        #if CPY_STM32H7
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+        #elif CPY_STM32F4 || CPY_STM32F7
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+        #endif
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        never_reset_pin_number(0, 10);
+        claim_pin(0, 10);
+
+        #ifdef STM32F412Zx
+        /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
+        GPIO_InitStruct.Pin = GPIO_PIN_8;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+        never_reset_pin_number(0, 8);
+        claim_pin(0, 8);
+        #endif
+
     #endif
 
-    /* This for ID line debug */
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    #if CPY_STM32H7
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif CPY_STM32F4 || CPY_STM32F7
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    #endif
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    never_reset_pin_number(0, 10);
-    claim_pin(0, 10);
-
-    #ifdef STM32F412Zx
-    /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
-    GPIO_InitStruct.Pin = GPIO_PIN_8;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-    never_reset_pin_number(0, 8);
-    claim_pin(0, 8);
-    #endif
-
-    // End OTG Pins
-    #endif
 
     #if CPY_STM32F1
+    // NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 15);
+    // NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 15);
+    // NVIC_SetPriority(USBWakeUp_IRQn, 15);
     __HAL_RCC_USB_CLK_ENABLE();
     // FS USB only does not do voltage sensing.
     #elif CPY_STM32H7
@@ -146,4 +153,19 @@ void init_usb_hardware(void) {
 
 void OTG_FS_IRQHandler(void) {
   usb_irq_handler();
+}
+
+void USB_HP_IRQHandler(void)
+{
+  tud_int_handler(0);
+}
+
+void USB_LP_IRQHandler(void)
+{
+  tud_int_handler(0);
+}
+
+void USBWakeUp_IRQHandler(void)
+{
+  tud_int_handler(0);
 }

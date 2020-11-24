@@ -54,6 +54,8 @@ ifeq ($(MCU_SERIES),F1)
 	CIRCUITPY_REQUIRE_I2C_PULLUPS = 0
 	# No requirements, but takes extra flash
 	CIRCUITPY_ULAB = 0
+
+	CIRCUITPY_BLEIO_HCI = 0
 endif
 
 ifeq ($(MCU_SERIES),F4)

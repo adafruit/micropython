@@ -198,6 +198,8 @@ safe_mode_t port_init(void) {
 
     // Turn off SysTick
     SysTick->CTRL = 0;
+    #else
+    SysTick_Config(SystemCoreClock / 1000);
     #endif
 
     return NO_SAFE_MODE;
