@@ -31,6 +31,7 @@ BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wimplicit-fallthrough=2 \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
@@ -44,7 +45,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -65,7 +65,6 @@ ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
@@ -75,7 +74,6 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 
@@ -138,6 +136,12 @@ endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
+ifeq ($(CIRCUITPY_CAMERA),1)
+SRC_PATTERNS += camera/%
+endif
+ifeq ($(CIRCUITPY_CANIO),1)
+SRC_PATTERNS += canio/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -167,6 +171,9 @@ SRC_PATTERNS += gnss/%
 endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
+endif
+ifeq ($(CIRCUITPY_IPADDRESS),1)
+SRC_PATTERNS += ipaddress/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
@@ -228,6 +235,12 @@ endif
 ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
 SRC_PATTERNS += sharpdisplay/%
 endif
+ifeq ($(CIRCUITPY_SOCKETPOOL),1)
+SRC_PATTERNS += socketpool/%
+endif
+ifeq ($(CIRCUITPY_SSL),1)
+SRC_PATTERNS += ssl/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -264,6 +277,9 @@ endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
+ifeq ($(CIRCUITPY_WIFI),1)
+SRC_PATTERNS += wifi/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
@@ -297,6 +313,11 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	camera/__init__.c \
+	camera/Camera.c \
+	canio/CAN.c \
+	canio/Listener.c \
+	canio/__init__.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -332,11 +353,20 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	sdioio/SDCard.c \
 	sdioio/__init__.c \
+	socketpool/__init__.c \
+	socketpool/SocketPool.c \
+	socketpool/Socket.c \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+	wifi/Network.c \
+	wifi/Radio.c \
+	wifi/ScannedNetworks.c \
+	wifi/__init__.c \
 
 ifeq ($(CIRCUITPY_BLEIO_HCI),1)
 # Helper code for _bleio HCI.
@@ -357,7 +387,9 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
+	canio/Match.c \
 	_eve/__init__.c \
+	camera/ImageFormat.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -374,6 +406,9 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
+	canio/Match.c \
+	canio/Message.c \
+	canio/RemoteTransmissionRequest.c \
 	_eve/__init__.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
@@ -414,6 +449,8 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	ipaddress/IPv4Address.c \
+	ipaddress/__init__.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \
@@ -488,10 +525,10 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_MOD += $(addprefix lib/protomatter/, \
+SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
