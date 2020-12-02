@@ -67,6 +67,8 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         if (self->current_scan != NULL) {
             common_hal_wifi_radio_stop_scanning_networks(self);
         }
+	// esp_wifi_disconnect() needs to be called before stop according to espressif docs
+        ESP_ERROR_CHECK(esp_wifi_disconnect());
         ESP_ERROR_CHECK(esp_wifi_stop());
         self->started = false;
         return;

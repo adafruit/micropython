@@ -145,6 +145,8 @@ void wifi_reset(void) {
     esp_netif_destroy(radio->netif);
     ESP_ERROR_CHECK(esp_event_loop_delete_default());
     radio->netif = NULL;
+    // Ensure to set to false at the end to avoid hang on *next* wifi_reset
+    wifi_inited = false;
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {
