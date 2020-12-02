@@ -40,11 +40,15 @@ typedef struct {
     const mcu_periph_obj_t *mosi;
     const mcu_periph_obj_t *miso;
     const mcu_pin_obj_t *cs_pin;
+    DMA_HandleTypeDef dma_handle_tx;
+    DMA_HandleTypeDef dma_handle_rx;
     uint32_t baudrate;
     uint16_t prescaler;
     uint8_t polarity;
     uint8_t phase;
     uint8_t bits;
 } spiperipheral_spi_peripheral_obj_t;
+
+void spiperipheral_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32_COMMON_HAL_SPIPERIPHERAL_SPI_PERIPHERAL_H

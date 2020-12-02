@@ -50,6 +50,9 @@
 #if CIRCUITPY_SDIOIO
 #include "common-hal/sdioio/SDCard.h"
 #endif
+#if CIRCUITPY_SPIPERIPHERAL
+#include "common-hal/spiperipheral/SPIPeripheral.h"
+#endif
 
 #include "clocks.h"
 #include "gpio.h"
@@ -246,6 +249,9 @@ void reset_port(void) {
 #endif
 #if CIRCUITPY_PWMIO
     pwmout_reset();
+#endif
+#if CIRCUITPY_SPIPERIPHERAL
+    spiperipheral_reset();
 #endif
 }
 

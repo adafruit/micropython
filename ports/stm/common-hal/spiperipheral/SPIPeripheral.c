@@ -36,15 +36,40 @@
 #include "supervisor/shared/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "peripherals/dma.h"
+
 // This module is largely quite similar to busio/SPI, and borrows the same reservation and
 // pin location systems.
 
 STATIC bool txrx_complete;
 STATIC bool txrx_error;
 
+STATIC DMA_HandleTypeDef *g_dma_handle_rx;
+STATIC DMA_HandleTypeDef *g_dma_handle_tx;
+
 spiperipheral_spi_peripheral_obj_t * handles[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
 
 STATIC void spi_assign_irq(spiperipheral_spi_peripheral_obj_t *self, SPI_TypeDef * SPIx);
+
+void spiperipheral_reset(void) {
+    if (g_dma_handle_tx) {
+        HAL_DMA_DeInit(g_dma_handle_tx);
+    }
+    if (g_dma_handle_rx) {
+        HAL_DMA_DeInit(g_dma_handle_rx);
+    }
+    HAL_NVIC_DisableIRQ(DMA1_Stream4_IRQn);
+    HAL_NVIC_DisableIRQ(DMA1_Stream3_IRQn);
+    HAL_NVIC_DisableIRQ(SPI2_IRQn);
+
+    __HAL_RCC_DMA1_CLK_DISABLE();
+    __HAL_RCC_DMA2_CLK_DISABLE();
+    for (int i = 0; i < 6; i++) {
+        g_dma_handle_rx = NULL;
+        g_dma_handle_tx = NULL;
+        handles[i] = NULL;
+    }
+}
 
 void common_hal_spiperipheral_spi_peripheral_construct(spiperipheral_spi_peripheral_obj_t *self,
          const mcu_pin_obj_t * sck, const mcu_pin_obj_t * mosi,
@@ -85,7 +110,7 @@ void common_hal_spiperipheral_spi_peripheral_construct(spiperipheral_spi_periphe
         GPIO_InitStruct.Pin = pin_mask(miso->number);
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
         GPIO_InitStruct.Alternate = self->miso->altfn_index;
         HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
     }
@@ -125,8 +150,86 @@ void common_hal_spiperipheral_spi_peripheral_construct(spiperipheral_spi_periphe
         common_hal_mcu_pin_claim(miso);
     }
 
-    HAL_NVIC_SetPriority(self->irq, 0, 1);
-    HAL_NVIC_EnableIRQ(self->irq);
+    // ---------------------------
+    // DMA Peripheral module setup (not working)
+    // ---------------------------
+
+    // uint8_t dma_idx = 0;
+    // uint8_t dma_stream_idx = 0;
+    // uint32_t dma_channel = 0;
+
+    // // TX
+    // stm32_peripherals_dma_get_params(DMA_SPI_TX, periph_index, &dma_idx, &dma_stream_idx, &dma_channel);
+    // stm32_peripherals_dma_init(&self->dma_handle_tx, dma_idx, dma_stream_idx, dma_channel,
+    //                             DMA_MEMORY_TO_PERIPH, DMA_PRIORITY_LOW, 1);
+    // __HAL_LINKDMA(&self->handle, hdmatx, self->dma_handle_tx);
+
+    // // RX
+    // stm32_peripherals_dma_get_params(DMA_SPI_RX, periph_index, &dma_idx, &dma_stream_idx, &dma_channel);
+    // stm32_peripherals_dma_init(&self->dma_handle_rx, dma_idx, dma_stream_idx, dma_channel,
+    //                             DMA_PERIPH_TO_MEMORY, DMA_PRIORITY_HIGH, 0);
+    // __HAL_LINKDMA(&self->handle, hdmarx, self->dma_handle_rx);
+
+    // HAL_NVIC_SetPriority(SPI2_IRQn, 0, 2);
+    // HAL_NVIC_EnableIRQ(SPI2_IRQn);
+
+
+    // ---------------------------
+    // Manual DMA setup
+    // ---------------------------
+
+    __HAL_RCC_DMA1_CLK_ENABLE();
+
+    // TX
+    self->dma_handle_tx.Instance                 = DMA1_Stream4;
+    self->dma_handle_tx.Init.Channel             = DMA_CHANNEL_0;
+    self->dma_handle_tx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
+    self->dma_handle_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
+    self->dma_handle_tx.Init.MemInc              = DMA_MINC_ENABLE;
+    self->dma_handle_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    self->dma_handle_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
+    self->dma_handle_tx.Init.Mode                = DMA_NORMAL;
+    self->dma_handle_tx.Init.Priority            = DMA_PRIORITY_LOW;
+    self->dma_handle_tx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+    self->dma_handle_tx.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    self->dma_handle_tx.Init.MemBurst            = DMA_MBURST_INC4;
+    self->dma_handle_tx.Init.PeriphBurst         = DMA_PBURST_INC4;
+    HAL_DMA_Init(&self->dma_handle_tx);
+    __HAL_LINKDMA(&self->handle, hdmatx, self->dma_handle_tx);
+
+    //register global handle for interrupt
+    g_dma_handle_tx = &self->dma_handle_tx;
+
+    // RX
+    self->dma_handle_rx.Instance                 = DMA1_Stream3;
+    self->dma_handle_rx.Init.Channel             = DMA_CHANNEL_0;
+    self->dma_handle_rx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
+    self->dma_handle_rx.Init.PeriphInc           = DMA_PINC_DISABLE;
+    self->dma_handle_rx.Init.MemInc              = DMA_MINC_ENABLE;
+    self->dma_handle_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    self->dma_handle_rx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
+    self->dma_handle_rx.Init.Mode                = DMA_NORMAL;
+    self->dma_handle_rx.Init.Priority            = DMA_PRIORITY_HIGH;
+    self->dma_handle_rx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+    self->dma_handle_rx.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    self->dma_handle_rx.Init.MemBurst            = DMA_MBURST_INC4;
+    self->dma_handle_rx.Init.PeriphBurst         = DMA_PBURST_INC4;
+    HAL_DMA_Init(&self->dma_handle_rx);
+    __HAL_LINKDMA(&self->handle, hdmarx, self->dma_handle_rx);
+
+    //register global handle for interrupt
+    g_dma_handle_rx = &self->dma_handle_rx;
+
+    HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 1);
+    HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
+    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
+    HAL_NVIC_SetPriority(SPI2_IRQn, 0, 2);
+    HAL_NVIC_EnableIRQ(SPI2_IRQn);
+
+    // ---------------------------
+    // End of DMA
+    // ---------------------------
 }
 
 
@@ -167,29 +270,43 @@ bool common_hal_spiperipheral_spi_peripheral_transaction_error(spiperipheral_spi
     return txrx_error;
 }
 
+STATIC uint8_t incr_counter = 0;
+STATIC uint8_t redata_out[72];
+STATIC uint8_t redata_in[72];
+
 bool common_hal_spiperipheral_spi_peripheral_wait_for_transaction(spiperipheral_spi_peripheral_obj_t *self,
         const uint8_t *data_out, uint8_t *data_in, size_t len) {
-    if (!common_hal_spiperipheral_spi_peripheral_spi_ready(self)) {
-        mp_raise_RuntimeError(translate("SPI transaction not complete"));
-    }
-    if (common_hal_spiperipheral_spi_peripheral_transaction_error(self)) {
-        mp_raise_RuntimeError(translate("Error in last transaction"));
-    }
+    // if (!common_hal_spiperipheral_spi_peripheral_spi_ready(self)) {
+    //     txrx_complete = false;
+    //     mp_raise_RuntimeError(translate("SPI transaction not complete"));
+    // }
+    // if (common_hal_spiperipheral_spi_peripheral_transaction_error(self)) {
+    //     txrx_error = false;
+    //     mp_raise_RuntimeError(translate("Error in last transaction"));
+    // }
+
+    // txrx_complete = false;
+    // txrx_error = false;
+    __disable_irq();
+    HAL_SPI_DMAStop(&self->handle);
+
+    len = 72;
+    incr_counter++; // = redata_in[1] + 1;
+    redata_out[0] = 0x01;
+    redata_out[1] = incr_counter;
+    redata_out[2] = 0x03;
 
     // Wait until the CS pin has dropped before attempting a transaction.
-    while(HAL_GPIO_ReadPin(pin_port(self->cs_pin->port), pin_mask(self->cs_pin->number))) {
-        RUN_BACKGROUND_TASKS;
-        // Allow user to break out of a timeout with a KeyboardInterrupt.
-        if ( mp_hal_is_interrupted() ) {
-            return 0;
-        }
-    }
+    // while(HAL_GPIO_ReadPin(pin_port(self->cs_pin->port), pin_mask(self->cs_pin->number))) {
+    //     RUN_BACKGROUND_TASKS;
+    //     // Allow user to break out of a timeout with a KeyboardInterrupt.
+    //     if ( mp_hal_is_interrupted() ) {
+    //         return 0;
+    //     }
+    // }
 
-    txrx_complete = false;
-    txrx_error = false;
-
-    // Is there a compelling reason to use HAL_SPI_TransmitReceive_DMA here instead?
-    return HAL_SPI_TransmitReceive_IT(&self->handle, (uint8_t*)data_out, (uint8_t *)data_in, (uint16_t)len) == HAL_OK;
+    return HAL_SPI_TransmitReceive_DMA(&self->handle, (uint8_t*)redata_out, (uint8_t *)redata_in, (uint16_t)len) == HAL_OK;
+    __enable_irq();
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
@@ -201,6 +318,25 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
     txrx_error = true;
 }
+
+void DMA1_Stream3_IRQHandler(void)
+{
+    if (g_dma_handle_rx) {
+        HAL_DMA_IRQHandler(g_dma_handle_rx);
+    }
+}
+
+void DMA1_Stream4_IRQHandler(void)
+{
+    if (g_dma_handle_tx) {
+        HAL_DMA_IRQHandler(g_dma_handle_tx);
+    }
+}
+
+// void SPI2_IRQHandler(void)
+// {
+//     HAL_SPI_IRQHandler(&SpiHandle);
+// }
 
 void SPI1_IRQHandler(void) {
     if (handles[0]) {
