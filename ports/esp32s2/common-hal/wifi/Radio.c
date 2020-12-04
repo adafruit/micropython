@@ -39,6 +39,10 @@
 #include "components/esp_wifi/include/esp_wifi.h"
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
+#include "components/log/include/esp_log.h"
+
+static const char* TAG = "wifi";
+
 #define MAC_ADDRESS_LENGTH 6
 
 static void start_station(wifi_radio_obj_t *self) {
@@ -63,13 +67,20 @@ bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
+ESP_EARLY_LOGW(TAG, "Should START or STOP");
+ESP_EARLY_LOGW(TAG, "self->started %d", self->started);
+ESP_EARLY_LOGW(TAG, "enabled %d", enabled);
+
     if (self->started && !enabled) {
+	ESP_EARLY_LOGW(TAG, "scan? %d", self->current_scan);
         if (self->current_scan != NULL) {
             common_hal_wifi_radio_stop_scanning_networks(self);
         }
 	// esp_wifi_disconnect() needs to be called before stop according to espressif docs
-        ESP_ERROR_CHECK(esp_wifi_disconnect());
+	// only if connected
+        //ESP_ERROR_CHECK(esp_wifi_disconnect());
         ESP_ERROR_CHECK(esp_wifi_stop());
+	ESP_EARLY_LOGW(TAG, "esp_wifi_stop");
         self->started = false;
         return;
     }
@@ -77,6 +88,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
 	// esp_wifi_start() would default to soft-AP, thus setting it to station
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         ESP_ERROR_CHECK(esp_wifi_start());
+	ESP_EARLY_LOGW(TAG, "esp_wifi_start");
         self->started = true;
         return;
     }

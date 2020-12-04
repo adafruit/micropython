@@ -45,6 +45,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
     wifi_radio_obj_t* radio = arg;
     if (event_base == WIFI_EVENT) {
+        ESP_EARLY_LOGW(TAG, "event_id = %d", event_id);
         switch (event_id) {
             case WIFI_EVENT_SCAN_DONE:
                 xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
@@ -89,16 +90,25 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 }
 
 static bool wifi_inited;
+static bool netif_exists = 0;
 
 void common_hal_wifi_init(void) {
     wifi_inited = true;
     common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
+    ESP_EARLY_LOGW(TAG, "esp_netif_init() follows:");
     ESP_ERROR_CHECK(esp_netif_init());
+    ESP_EARLY_LOGW(TAG, "esp_event_loop_create_default() follows:");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
+    ESP_EARLY_LOGW(TAG, "esp_netif_create_default_wifi_sta() follows:");
     self->netif = esp_netif_create_default_wifi_sta();
+    // set default handlers
+    // esp_wifi_set_default_wifi_sta_handlers();
+
+    ESP_EARLY_LOGW(TAG, "self->netif: %d", self->netif);
+    
 
     // Even though we just called esp_netif_create_default_wifi_sta,
     //   station mode isn't actually ready for use until esp_wifi_set_mode()
@@ -106,6 +116,15 @@ void common_hal_wifi_init(void) {
     // Set both convienence flags to false so it's not forgotten.
     self->sta_mode = 0;
     self->ap_mode = 0;
+    
+    // the order may matter
+    /*wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+    esp_err_t result = esp_wifi_init(&config);
+    if (result == ESP_ERR_NO_MEM) {
+        mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+    } else if (result != ESP_OK) {
+        mp_raise_RuntimeError(translate("Failed to init wifi"));
+    }*/
 
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
@@ -118,7 +137,7 @@ void common_hal_wifi_init(void) {
                                                         &event_handler,
                                                         self,
                                                         &self->handler_instance_got_ip));
-
+    
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
     esp_err_t result = esp_wifi_init(&config);
     if (result == ESP_ERR_NO_MEM) {
@@ -126,27 +145,52 @@ void common_hal_wifi_init(void) {
     } else if (result != ESP_OK) {
         mp_raise_RuntimeError(translate("Failed to init wifi"));
     }
+
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
 void wifi_reset(void) {
+    
+    ESP_EARLY_LOGW(TAG, "before wifi_inited check");
     if (!wifi_inited) {
+    ESP_EARLY_LOGW(TAG, "inside wifi_inited is false");
         return;
     }
+
+    ESP_EARLY_LOGW(TAG, "after wifi_inited is true");
     wifi_radio_obj_t* radio = &common_hal_wifi_radio_obj;
-    common_hal_wifi_radio_set_enabled(radio, false);
+    ESP_EARLY_LOGW(TAG, "radio->netif: %d", radio->netif);
+    ESP_EARLY_LOGW(TAG, "wifi_netif_up, thus clear driver: %d", esp_netif_is_netif_up(radio->netif));
+    if (esp_netif_is_netif_up(radio->netif)) {
+        netif_exists=1;
+    }
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
                                                           ESP_EVENT_ANY_ID,
                                                           radio->handler_instance_all_wifi));
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT,
                                                           IP_EVENT_STA_GOT_IP,
                                                           radio->handler_instance_got_ip));
+    // need to deregister first, then disable the radio
+    common_hal_wifi_radio_set_enabled(radio, false);
     ESP_ERROR_CHECK(esp_wifi_deinit());
+    // check before driver clear, otherwise we hang on e.g. i2c ctrl-c
+    // should we do || radio->sta_mode == 1
+    //ESP_EARLY_LOGW(TAG, "wifi_netif_up, thus clear driver: %d", esp_netif_is_netif_up(radio->netif));
+    //if (esp_netif_is_netif_up(radio->netif)) {
+    if (netif_exists == 1) {
+        ESP_EARLY_LOGW(TAG, "wifi_netif_up, thus clear driver");
+        //ESP_EARLY_LOGW(TAG, "sta_mode == %d", radio->sta_mode);
+        ESP_ERROR_CHECK(esp_wifi_clear_default_wifi_driver_and_handlers(radio->netif));
+    }
     esp_netif_destroy(radio->netif);
     ESP_ERROR_CHECK(esp_event_loop_delete_default());
     radio->netif = NULL;
     // Ensure to set to false at the end to avoid hang on *next* wifi_reset
     wifi_inited = false;
+    if (netif_exists==1) {
+        netif_exists=0;
+    }
+    ESP_EARLY_LOGW(TAG, "just set wifi_inited to false");
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {
