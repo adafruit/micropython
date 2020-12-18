@@ -3093,8 +3093,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length doit être > 0"
+msgid "max_length must be >= 0"
+msgstr "max_length doit être >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
