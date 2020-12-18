@@ -33,8 +33,8 @@
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
-#define ADV_INTERVAL_MIN (0.0020f)
-#define ADV_INTERVAL_MIN_STRING "0.0020"
+#define ADV_INTERVAL_MIN (0.02001f)
+#define ADV_INTERVAL_MIN_STRING "0.02001"
 #define ADV_INTERVAL_MAX (10.24f)
 #define ADV_INTERVAL_MAX_STRING "10.24"
 // 20ms is recommended by Apple
