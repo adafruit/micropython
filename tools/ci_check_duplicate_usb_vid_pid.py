@@ -45,6 +45,7 @@ DEFAULT_IGNORELIST = [
     "feather_m0_supersized",
     "cp32-m4",
     "metro_m4_express",
+    "lilygo_ttgo_t8_esp32s2",
     "unexpectedmaker_feathers2",
     "unexpectedmaker_feathers2_prerelease"
 ]
