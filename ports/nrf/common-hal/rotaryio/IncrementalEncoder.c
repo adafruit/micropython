@@ -38,7 +38,14 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     rotaryio_incrementalencoder_obj_t *self = _objs[pin];
     if (!self) return;
 
-    // reads a state 0 .. 3 *in order*.
+    // pins a and b (in truth table) are in Gray code order
+    // a | b | a<<1 | a^b | a<<1 + a^b (decimal Gray code)
+    // --+---+------+-----+-----------
+    // 0 | 0 |    0 |   0 |     0
+    // 0 | 1 |    0 |   1 |     1
+    // 1 | 1 |    2 |   0 |     2
+    // 1 | 0 |    2 |   1 |     3
+    // new_state is a decimal Gray code 0 .. 3 *in order*.
     uint8_t new_state = nrf_gpio_pin_read(self->pin_a);
     new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
 
@@ -51,15 +58,17 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
 
     // logic from the atmel-samd port: provides some damping and scales movement
     // down by 4:1.
-    if (self->quarter >= 4) {
-        self->position++;
-        self->quarter = 0;
-    } else if (self->quarter <= -4) {
-        self->position--;
-        self->quarter = 0;
+    if (new_state == 2 && self->quarter != 0) {
+        if (self->quarter > 0) {
+            self->position++;
+            self->quarter = 0;
+        } 
+        else {
+            self->position--;
+            self->quarter = 0;
+        }
     }
 }
-
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
     const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
 

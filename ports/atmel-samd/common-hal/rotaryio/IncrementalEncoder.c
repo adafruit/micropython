@@ -161,11 +161,13 @@ void incrementalencoder_interrupt_handler(uint8_t channel) {
     }
 
     self->quarter_count += quarter_incr;
-    if (self->quarter_count >= 4) {
-        self->position += 1;
-        self->quarter_count = 0;
-    } else if (self->quarter_count <= -4) {
-        self->position -= 1;
-        self->quarter_count = 0;
+    if (self->last_state == 2 && self->quarter_count != 0)
+        if (self->quarter_count > 0) {
+            self->position += 1;
+            self->quarter_count = 0;
+        } else {
+            self->position -= 1;
+            self->quarter_count = 0;
+        }
     }
 }
