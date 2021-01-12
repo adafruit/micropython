@@ -432,6 +432,7 @@ jobs:
       matrix:
         board:
         - "adafruit_magtag_2.9_grayscale"
+        - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
