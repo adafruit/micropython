@@ -33,6 +33,7 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
+#include "supervisor/usb.h"
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
@@ -77,6 +78,8 @@ void supervisor_background_tasks(void *unused) {
 
     assert_heap_ok();
 
+    usb_background();
+
     #if CIRCUITPY_DISPLAYIO
     displayio_background();
     #endif
@@ -105,6 +108,10 @@ bool supervisor_background_tasks_ok(void) {
 }
 
 void supervisor_tick(void) {
+    // For debugging ticks.
+    // REG_PORT_DIRSET1 = (1<<2); //PB02, A5 on Metro M0 Express.
+    // REG_PORT_OUTSET1 = (1<<2);
+
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
 #endif
@@ -121,6 +128,7 @@ void supervisor_tick(void) {
         #endif
     }
 #endif
+    // REG_PORT_OUTCLR1 = (1<<2);
     background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 

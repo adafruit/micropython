@@ -36,10 +36,13 @@
 
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/tick.h"
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
 static bool ejected[1] = {true};
+
+static bool write_in_progress = false;
 
 void usb_msc_mount(void) {
     // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
@@ -148,11 +151,19 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
+
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and return number of written bytes
+// This may be called many times before tud_msc_write10_complete_cb() is called.
 int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) {
     (void) lun;
     (void) offset;
+
+    // Run tud_task() during writes on background ticks, because we don't get an interrupt for every write.
+    if (!write_in_progress) {
+        supervisor_enable_tick();
+        write_in_progress = true;
+    }
 
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
@@ -182,6 +193,10 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t*
 void tud_msc_write10_complete_cb (uint8_t lun) {
     (void) lun;
 
+    if (write_in_progress) {
+        supervisor_disable_tick();
+        write_in_progress = false;
+    }
     // This write is complete, start the autoreload clock.
     autoreload_start();
 }
