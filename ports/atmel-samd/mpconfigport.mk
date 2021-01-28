@@ -18,6 +18,8 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
+CIRCUITPY_WATCHDOG ?= 1
+
 # Put samd21-only choices here.
 ifeq ($(CHIP_FAMILY),samd21)
 
