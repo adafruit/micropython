@@ -65,6 +65,7 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
@@ -360,6 +361,9 @@ void reset_port(void) {
 #endif
 #if CIRCUITPY_PEW
     pew_reset();
+#endif
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
 #endif
 
     reset_event_system();
