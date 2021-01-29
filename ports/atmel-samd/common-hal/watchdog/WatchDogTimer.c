@@ -109,7 +109,7 @@ STATIC void _watchdog_samd_initialize_wdt(void) {
   _watchdog_samd_initialized = true;
 }
 
-STATIC int _watchdog_samd_enable(int maxPeriodMS) {
+STATIC int _watchdog_samd_enable(int maxPeriodMS, bool earlyWarning) {
   // Enable the watchdog with a period up to the specified max period in
   // milliseconds.
 
@@ -194,9 +194,24 @@ STATIC int _watchdog_samd_enable(int maxPeriodMS) {
   // occurs) follows this and is always just set to the max, since the
   // interrupt will trigger first.  In the enable case, windowed mode
   // is not used, the WDT period is set and that's that.
+  // The 'earlyWarning' argument determines which behavior is used;
+  // this isn't present in the AVR code, just here.  It defaults to
+  // 'false' so existing Arduino code works as normal, while the sleep()
+  // function (later in this file) explicitly passes 'true' to get the
+  // alternate behavior.
 
 #ifdef SAMD51
-  {
+  if (earlyWarning) {
+    WDT->INTFLAG.reg |= WDT_INTFLAG_EW; // Clear interrupt flag
+    // WDT->INTFLAG.bit.EW = 1;        // Clear interrupt flag
+    WDT->INTENSET.bit.EW = 1;       // Enable early warning interrupt
+    WDT->CONFIG.bit.PER = 0xB;      // Period = max
+    WDT->CONFIG.bit.WINDOW = bits;  // Set time of interrupt
+    WDT->EWCTRL.bit.EWOFFSET = 0x0; // Early warning offset
+    WDT->CTRLA.bit.WEN = 1;         // Enable window mode
+    while (WDT->SYNCBUSY.reg)
+      ; // Sync CTRL write
+  } else {
     WDT->INTENCLR.bit.EW = 1;   // Disable early warning interrupt
     WDT->CONFIG.bit.PER = bits; // Set period for chip reset
     WDT->CTRLA.bit.WEN = 0;     // Disable window mode
@@ -209,21 +224,47 @@ STATIC int _watchdog_samd_enable(int maxPeriodMS) {
   while (WDT->SYNCBUSY.reg)
     ;
 #else
-  {
+  if (earlyWarning) {
+    WDT->INTENSET.bit.EW = 1;      // Enable early warning interrupt
+    WDT->CONFIG.bit.PER = 0xB;     // Period = max
+    WDT->CONFIG.bit.WINDOW = bits; // Set time of interrupt
+    WDT->CTRL.bit.WEN = 1;         // Enable window mode
+    while (WDT->STATUS.bit.SYNCBUSY)
+      ; // Sync CTRL write
+  } else {
     WDT->INTENCLR.bit.EW = 1;   // Disable early warning interrupt
     WDT->CONFIG.bit.PER = bits; // Set period for chip reset
     WDT->CTRL.bit.WEN = 0;      // Disable window mode
     while (WDT->STATUS.bit.SYNCBUSY)
       ; // Sync CTRL write
   }
-
-  _watchdog_samd_reset();   // Clear watchdog interval
-  WDT->CTRL.bit.ENABLE = 1; // Start watchdog now!
-  while (WDT->STATUS.bit.SYNCBUSY)
-    ;
 #endif
 
   return (cycles * 1000L + 512) / 1024; // WDT cycles -> ms
+}
+
+void WDT_Handler(void) {
+  // ISR for watchdog early warning, DO NOT RENAME!
+#ifdef SAMD51
+  WDT->CTRLA.bit.ENABLE = 0; // Disable watchdog
+  while (WDT->SYNCBUSY.reg)
+    ;
+#else
+  WDT->CTRL.bit.ENABLE = 0; // Disable watchdog
+  while (WDT->STATUS.bit.SYNCBUSY)
+    ; // Sync CTRL write
+#endif
+  WDT->INTFLAG.reg |= WDT_INTFLAG_EW; // Clear interrupt flag
+  // WDT->INTFLAG.bit.EW = 1;        // Clear interrupt flag
+
+  common_hal_mcu_watchdogtimer_obj.mode = WATCHDOGMODE_NONE;
+  mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
+  MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
+#if MICROPY_ENABLE_SCHEDULER
+  if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+    MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+  }
+#endif
 }
 
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
@@ -239,7 +280,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_w
     if (self->mode == WATCHDOGMODE_NONE) {
         _watchdog_samd_disable();
     } else {
-        _watchdog_samd_enable(self->timeout * 1000);
+        _watchdog_samd_enable(self->timeout * 1000, self->mode == WATCHDOGMODE_RAISE);
     }
 }
 watchdog_watchdogmode_t common_hal_watchdog_get_mode(watchdog_watchdogtimer_obj_t *self) {
@@ -252,7 +293,7 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_floa
     if (self->mode == WATCHDOGMODE_NONE) {
         _watchdog_samd_disable();
     } else {
-        _watchdog_samd_enable(self->timeout * 1000);
+        _watchdog_samd_enable(self->timeout * 1000, self->mode == WATCHDOGMODE_RAISE);
     }
 }
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
