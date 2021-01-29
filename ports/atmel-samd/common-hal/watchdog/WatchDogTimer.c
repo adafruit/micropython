@@ -38,7 +38,7 @@ STATIC bool _watchdog_samd_initialized;
 STATIC void _watchdog_samd_reset(void) {
   // Write the watchdog clear key value (0xA5) to the watchdog
   // clear register to clear the watchdog timer and reset it.
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   while (WDT->SYNCBUSY.reg)
     ;
 #else
@@ -49,7 +49,7 @@ STATIC void _watchdog_samd_reset(void) {
 }
 
 STATIC void _watchdog_samd_disable(void) {
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   WDT->CTRLA.bit.ENABLE = 0;
   while (WDT->SYNCBUSY.reg)
     ;
@@ -64,7 +64,7 @@ STATIC void _watchdog_samd_initialize_wdt(void) {
   // One-time initialization of watchdog timer.
   // Insights from rickrlh and rbrucemtl in Arduino forum!
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   // SAMD51 WDT uses OSCULP32k as input clock now
   // section: 20.5.3
   OSC32KCTRL->OSCULP32K.bit.EN1K = 1;  // Enable out 1K (for WDT)
@@ -122,7 +122,7 @@ STATIC int _watchdog_samd_enable(int maxPeriodMS, bool earlyWarning) {
   if (!_watchdog_samd_initialized)
     _watchdog_samd_initialize_wdt();
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   WDT->CTRLA.reg = 0; // Disable watchdog for config
   while (WDT->SYNCBUSY.reg)
     ;
@@ -200,7 +200,7 @@ STATIC int _watchdog_samd_enable(int maxPeriodMS, bool earlyWarning) {
   // function (later in this file) explicitly passes 'true' to get the
   // alternate behavior.
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   if (earlyWarning) {
     WDT->INTFLAG.reg |= WDT_INTFLAG_EW; // Clear interrupt flag
     // WDT->INTFLAG.bit.EW = 1;        // Clear interrupt flag
@@ -245,7 +245,7 @@ STATIC int _watchdog_samd_enable(int maxPeriodMS, bool earlyWarning) {
 
 void WDT_Handler(void) {
   // ISR for watchdog early warning, DO NOT RENAME!
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
   WDT->CTRLA.bit.ENABLE = 0; // Disable watchdog
   while (WDT->SYNCBUSY.reg)
     ;
