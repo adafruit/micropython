@@ -33,6 +33,8 @@
 
 #include <sam.h>
 
+// Top _watchdog_samd_* content is ported from https://github.com/adafruit/Adafruit_SleepyDog/
+
 STATIC bool _watchdog_samd_initialized;
 
 STATIC void _watchdog_samd_reset(void) {
