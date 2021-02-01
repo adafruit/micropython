@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#define MICROPY_PY_SYS_PLATFORM                     "RP2040"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+    // Debug UART
+#ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+#endif /* DEBUG */
+}
 
-#define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define MICROPY_USE_INTERNAL_PRINTF         (1)
+void reset_board(void) {
 
-#define CIRCUITPY_PROCESSOR_COUNT (2)
+}
 
-// This also includes mpconfigboard.h.
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS;
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+void board_deinit(void) {
+}
