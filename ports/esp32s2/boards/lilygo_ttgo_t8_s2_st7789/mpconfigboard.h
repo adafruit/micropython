@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+//Micropython setup
 
-#define MICROPY_PY_SYS_PLATFORM                     "RP2040"
+#define MICROPY_HW_BOARD_NAME       "LILYGO TTGO T8 ESP32-S2 w/Display"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-#define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-#define MICROPY_USE_INTERNAL_PRINTF         (1)
-
-#define CIRCUITPY_PROCESSOR_COUNT (2)
-
-// This also includes mpconfigboard.h.
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS;
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#define AUTORESET_DELAY_MS 500
