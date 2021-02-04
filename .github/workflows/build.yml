@@ -446,6 +446,7 @@ jobs:
         - "espressif_saola_1_wrover"
         - "gravitech_cucumber_m"
         - "gravitech_cucumber_r"
+        - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
         - "targett_module_clip_wroom"
