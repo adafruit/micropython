@@ -538,15 +538,6 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
-    // Turn on LEDs
-    init_status_leds();
-    rgb_led_status_init();
-
-    // Wait briefly to give a reset window where we'll enter safe mode after the reset.
-    if (safe_mode == NO_SAFE_MODE) {
-        safe_mode = wait_for_safe_mode_reset();
-    }
-
     stack_init();
 
     // Create a new filesystem only if we're not in a safe mode.
@@ -556,6 +547,15 @@ int __attribute__((used)) main(void) {
 
     // displays init after filesystem, since they could share the flash SPI
     board_init();
+
+    // Turn on LEDs
+    init_status_leds();
+    rgb_led_status_init();
+
+    // Wait briefly to give a reset window where we'll enter safe mode after the reset.
+    if (safe_mode == NO_SAFE_MODE) {
+        safe_mode = wait_for_safe_mode_reset();
+    }
 
     // Start the debug serial
     serial_early_init();
