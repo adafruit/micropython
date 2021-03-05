@@ -79,15 +79,6 @@ jobs:
     - name: Test all
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
       working-directory: tests
-    - name: Print failure info
-      run: |
-        for exp in *.exp;
-        do testbase=$(basename $exp .exp);
-        echo -e "\nFAILURE $testbase";
-        diff -u $testbase.exp $testbase.out;
-        done
-      working-directory: tests
-      if: failure()
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
