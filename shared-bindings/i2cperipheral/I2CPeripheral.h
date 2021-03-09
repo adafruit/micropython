@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Noralf Trønnes
+ * Copyright (c) 2021 Jose David Montoya
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,31 +30,24 @@
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/i2cperipheral/I2CPeripheral.h"
+#include "common-hal/i2cperipheral/i2cperipheral.h"
 
 typedef struct {
     mp_obj_base_t base;
     i2cperipheral_i2c_peripheral_obj_t *peripheral;
-    uint16_t address;
-    bool is_read;
-    bool is_restart;
+    uint8_t address;
 } i2cperipheral_i2c_peripheral_request_obj_t;
 
 extern const mp_obj_type_t i2cperipheral_i2c_peripheral_request_type;
 
-extern const mp_obj_type_t i2cperipheral_i2c_peripheral_type;
+// extern const mp_obj_type_t i2cperipheral_i2c_peripheral_type;
 
 extern void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
-        uint8_t *addresses, unsigned int num_addresses, bool smbus);
+        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda);
 extern void common_hal_i2cperipheral_i2c_peripheral_deinit(i2cperipheral_i2c_peripheral_obj_t *self);
 extern bool common_hal_i2cperipheral_i2c_peripheral_deinited(i2cperipheral_i2c_peripheral_obj_t *self);
+// extern int common_hal_i2cperipheral_i2c_peripheral_write(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data, uint8_t lenght);
 
-extern int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self,
-        uint8_t *address, bool *is_read, bool *is_restart);
-extern int common_hal_i2cperipheral_i2c_peripheral_read_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *data);
-extern int common_hal_i2cperipheral_i2c_peripheral_write_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data);
-extern void common_hal_i2cperipheral_i2c_peripheral_ack(i2cperipheral_i2c_peripheral_obj_t *self, bool ack);
-extern void common_hal_i2cperipheral_i2c_peripheral_close(i2cperipheral_i2c_peripheral_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_SLAVE_H
+

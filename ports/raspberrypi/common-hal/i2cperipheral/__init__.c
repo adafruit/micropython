@@ -1,0 +1,1 @@
+// No i2cpheripheral module functions.

@@ -24,26 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+
+#include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
-#include "py/runtime.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
-//#include "shared-bindings/i2cperipheral/__init__.h"
-#include "shared-bindings/i2cperipheral/I2CPeripheral.h"
+#include "src/rp2_common/hardware_i2c/include/hardware/i2c.h"
 
-#include "py/runtime.h"
+typedef struct {
+    mp_obj_base_t base;
+    i2c_inst_t * peripheral;
+    uint8_t scl_pin;
+    uint8_t sda_pin;
+} i2cperipheral_i2c_peripheral_obj_t;
 
 
-STATIC const mp_rom_map_elem_t i2cperipheral_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2cperipheral) },
-    // { MP_ROM_QSTR(MP_QSTR_I2CPeripheral), MP_ROM_PTR(&i2cperipheral_i2c_peripheral_type; },
-};
-
-STATIC MP_DEFINE_CONST_DICT(i2cperipheral_module_globals, i2cperipheral_module_globals_table);
-
-const mp_obj_module_t i2cperipheral_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&i2cperipheral_module_globals,
-};
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
