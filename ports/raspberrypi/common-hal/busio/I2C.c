@@ -108,8 +108,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // set up as GPIO by the bitbangio.I2C object.
     //
     // Sets pins to open drain, high, and input.
+#ifndef CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS
     shared_module_bitbangio_i2c_construct(&self->bitbangio_i2c, scl, sda,
-        frequency, timeout);
+                                          frequency, timeout);
+#endif
 
     self->baudrate = i2c_init(self->peripheral, frequency);
 
@@ -120,6 +122,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     gpio_set_function(self->scl_pin, GPIO_FUNC_I2C);
     gpio_set_function(self->sda_pin, GPIO_FUNC_I2C);
+
+#if CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS
+    gpio_set_pulls(self->scl_pin, true, false);
+    gpio_set_pulls(self->sda_pin, true, false);
+#endif
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
@@ -163,6 +170,8 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
+
+#ifndef CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS
     if (len == 0) {
         // The RP2040 I2C peripheral will not perform 0 byte writes.
         // So use bitbangio.I2C to do the write.
@@ -184,6 +193,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 
         return status;
     }
+#endif
 
     int result = i2c_write_timeout_us(self->peripheral, addr, data, len, !transmit_stop_bit, BUS_TIMEOUT_US);
     if (result == len) {

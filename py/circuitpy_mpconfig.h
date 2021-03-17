@@ -314,6 +314,11 @@ extern const struct _mp_obj_module_t bitmaptools_module;
 #define BITMAPTOOLS_MODULE
 #endif
 
+#if CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS && !CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS_AVAILABLE
+#error "CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS requires onboard pullups." \
+       "Ensure board supports these and set CIRCUITPY_BUSIO_I2C_INTERNAL_PULLUPS_AVAILABLE = 1"
+#endif
+
 #if CIRCUITPY_BITOPS
 extern const struct _mp_obj_module_t bitops_module;
 #define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
