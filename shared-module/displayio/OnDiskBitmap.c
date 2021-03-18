@@ -62,6 +62,8 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     self->bits_per_pixel = bits_per_pixel;
     self->width = read_word(bmp_header, 9);
     self->height = read_word(bmp_header, 11);
+    self->palette_size = 0;
+    self->full_refresh = true;
 
     if (bits_per_pixel == 16) {
         if (((header_size >= 56)) || (self->bitfield_compressed)) {
@@ -78,19 +80,19 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         if (number_of_colors == 0) {
             number_of_colors = 1 << bits_per_pixel;
         }
-        uint16_t palette_size = number_of_colors * sizeof(uint32_t);
+        self->palette_size = number_of_colors * sizeof(uint32_t);
         uint16_t palette_offset = 0xe + header_size;
 
-        self->palette_data = m_malloc(palette_size, false);
+        self->palette_data = (uint32_t *)m_malloc(self->palette_size, false);
 
         f_rewind(&self->file->fp);
         f_lseek(&self->file->fp, palette_offset);
 
         UINT palette_bytes_read;
-        if (f_read(&self->file->fp, self->palette_data, palette_size, &palette_bytes_read) != FR_OK) {
+        if (f_read(&self->file->fp, self->palette_data, self->palette_size, &palette_bytes_read) != FR_OK) {
             mp_raise_OSError(MP_EIO);
         }
-        if (palette_bytes_read != palette_size) {
+        if (palette_bytes_read != self->palette_size) {
             mp_raise_ValueError(translate("Unable to read color palette data"));
         }
     } else if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124)) {
@@ -184,4 +186,38 @@ uint16_t common_hal_displayio_ondiskbitmap_get_height(displayio_ondiskbitmap_t *
 
 uint16_t common_hal_displayio_ondiskbitmap_get_width(displayio_ondiskbitmap_t *self) {
     return self->width;
+}
+
+uint16_t common_hal_displayio_ondiskbitmap_palette_size(displayio_ondiskbitmap_t *self) {
+    return self->palette_size / sizeof(uint32_t);
+}
+
+uint32_t common_hal_displayio_ondiskbitmap_get_palette(displayio_ondiskbitmap_t *self, uint32_t palette_index) {
+    if (self->palette_size == 0) {
+        mp_raise_ValueError(translate("this OnDiskBitmap is raw color, not indexed"));
+    }
+    if (self->palette_size <= (palette_index * sizeof(uint32_t))) {
+        mp_raise_ValueError(translate("index is outside OnDiskBitmap palette size"));
+    }
+
+    return self->palette_data[palette_index];
+}
+
+void common_hal_displayio_ondiskbitmap_set_palette(displayio_ondiskbitmap_t *self, uint32_t palette_index, uint32_t palette_value) {
+    if (self->palette_size == 0) {
+        mp_raise_ValueError(translate("OnDiskBitmap is raw color, not indexed"));
+    }
+    if ((self->palette_size <= (palette_index * sizeof(uint32_t))) || (palette_index < 0)) {
+        mp_raise_ValueError(translate("index is outside of palette size"));
+    }
+    self->palette_data[palette_index] = palette_value;
+    self->full_refresh = true;
+}
+
+bool displayio_ondiskbitmap_needs_refresh(displayio_ondiskbitmap_t *self) {
+    return self->full_refresh;
+}
+
+void displayio_ondiskbitmap_finish_refresh(displayio_ondiskbitmap_t *self) {
+    self->full_refresh = false;
 }

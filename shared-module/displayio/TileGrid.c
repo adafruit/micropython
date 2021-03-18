@@ -522,8 +522,9 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
         displayio_shape_finish_refresh(self->bitmap);
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
-        // OnDiskBitmap changes will trigger a complete reload so no need to
-        // track changes.
+        displayio_ondiskbitmap_finish_refresh(self->bitmap);
+        //
+        // OnDiskBitmap palette changes will need a complete reload.
     }
     // TODO(tannewt): We could double buffer changes to position and move them over here.
     // That way they won't change during a refresh and tear.
@@ -576,7 +577,9 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) &&
             displayio_palette_needs_refresh(self->pixel_shader)) ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
-            displayio_colorconverter_needs_refresh(self->pixel_shader));
+            displayio_colorconverter_needs_refresh(self->pixel_shader)) ||
+        (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type) &&
+            displayio_ondiskbitmap_needs_refresh(self->bitmap));
     if (self->full_change || first_draw) {
         self->current_area.next = tail;
         return &self->current_area;

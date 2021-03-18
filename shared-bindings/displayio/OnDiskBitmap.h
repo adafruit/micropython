@@ -40,4 +40,14 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *b
 uint16_t common_hal_displayio_ondiskbitmap_get_height(displayio_ondiskbitmap_t *self);
 
 uint16_t common_hal_displayio_ondiskbitmap_get_width(displayio_ondiskbitmap_t *self);
+
+uint16_t common_hal_displayio_ondiskbitmap_palette_size(displayio_ondiskbitmap_t *self);
+
+uint32_t common_hal_displayio_ondiskbitmap_get_palette(displayio_ondiskbitmap_t *self, uint32_t palette_index);
+
+void common_hal_displayio_ondiskbitmap_set_palette(displayio_ondiskbitmap_t *self, uint32_t palette_index, uint32_t palette_value);
+
+bool displayio_ondiskbitmap_needs_refresh(displayio_ondiskbitmap_t *self);
+
+void displayio_ondiskbitmap_finish_refresh(displayio_ondiskbitmap_t *self);
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKBITMAP_H

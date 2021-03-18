@@ -127,9 +127,56 @@ const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
 
 };
 
+//|     palette_size(self) -> int
+//|     """Returns the OnDiskBitmap's palette size."""
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_palette_size(mp_obj_t self_in) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_palette_size(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_palette_size_obj, displayio_ondiskbitmap_obj_palette_size);
+
+//|     get_palette: (self, palette_index: int) -> int
+//|     """Get the value of the palette value at the specified index.
+//|     Usage: ondiskbitmap.get_palette(palette_index)"""
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_get_palette(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t palette_index;
+    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
+        mp_raise_ValueError(translate("palette_index should be an int"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_palette(self, palette_index));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_ondiskbitmap_get_palette_obj, displayio_ondiskbitmap_obj_get_palette);
+
+//|     set_palette: (self, palette_index: int, palette_value: int) -> None
+//|     """Get the value of the palette value at the specified index.
+//|     Usage: ondiskbitmap.set_palette(palette_index, palette_value)"""
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_set_palette(mp_obj_t self_in, mp_obj_t palette_index_obj, mp_obj_t palette_value_obj) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t palette_index, palette_value;
+    if ((!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) ||
+        (!mp_obj_get_int_maybe(palette_value_obj, &palette_value))) {
+        mp_raise_ValueError(translate("palette_index, palette_value should be an int"));
+    }
+    common_hal_displayio_ondiskbitmap_set_palette(self, palette_index, palette_value);
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_3(displayio_ondiskbitmap_set_palette_obj, displayio_ondiskbitmap_obj_set_palette);
+
+
 STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskbitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskbitmap_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_palette_size), MP_ROM_PTR(&displayio_ondiskbitmap_palette_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_palette), MP_ROM_PTR(&displayio_ondiskbitmap_get_palette_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_palette), MP_ROM_PTR(&displayio_ondiskbitmap_set_palette_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
 
