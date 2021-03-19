@@ -127,8 +127,9 @@ const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
 
 };
 
-//|     palette_size(self) -> int
-//|     """Returns the OnDiskBitmap's palette size."""
+//|     def palette_size(self) -> int:
+//|         """Returns the OnDiskBitmap palette size."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_palette_size(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
@@ -138,9 +139,9 @@ STATIC mp_obj_t displayio_ondiskbitmap_obj_palette_size(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_palette_size_obj, displayio_ondiskbitmap_obj_palette_size);
 
-//|     get_palette: (self, palette_index: int) -> int
-//|     """Get the value of the palette value at the specified index.
-//|     Usage: ondiskbitmap.get_palette(palette_index)"""
+//|     def get_palette(self, palette_index: int) -> int:
+//|         """Get the color value of the palette value at the specified index."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_palette(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
@@ -153,9 +154,9 @@ STATIC mp_obj_t displayio_ondiskbitmap_obj_get_palette(mp_obj_t self_in, mp_obj_
 
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_ondiskbitmap_get_palette_obj, displayio_ondiskbitmap_obj_get_palette);
 
-//|     set_palette: (self, palette_index: int, palette_value: int) -> None
-//|     """Get the value of the palette value at the specified index.
-//|     Usage: ondiskbitmap.set_palette(palette_index, palette_value)"""
+//|     def set_palette(self, palette_index: int, palette_value: int) -> None:
+//|         """Set the color value of the palette at the specified index."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_set_palette(mp_obj_t self_in, mp_obj_t palette_index_obj, mp_obj_t palette_value_obj) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
