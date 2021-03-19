@@ -25,6 +25,8 @@
  */
 
 #include "shared-bindings/i2cperipheral/I2CPeripheral.h"
+#include "common-hal/busio/I2C.h"
+
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
@@ -32,8 +34,6 @@
 #include "supervisor/shared/translate.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-
-#include "common-hal/i2cperipheral/i2cperipheral.h"
 
 
 // Synopsys  DW_apb_i2c  (v2.01)  IP
@@ -44,18 +44,9 @@
 STATIC bool never_reset_i2c[2];
 STATIC i2c_inst_t* i2c[2] = {i2c0, i2c1};
 
-// void reset_i2c(void) {
-//     for (size_t i = 0; i < 2; i++) {
-//         if (never_reset_i2c[i]) {
-//             continue;
-//         }
-
-//         i2c_deinit(i2c[i]);
-//     }
-// }
-
 void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda) {
+        const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
+        uint8_t *addresses, unsigned int num_addresses, bool smbus) {
     self->peripheral = NULL;
     // I2C pins have a regular pattern. SCL is always odd and SDA is even. They match up in pairs
     // so we can divide by two to get the instance. This pattern repeats.
@@ -69,17 +60,20 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
     if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
         mp_raise_ValueError(translate("I2C peripheral in use"));
     }
+//        if (frequency > 1000000) {
+//        mp_raise_ValueError(translate("Unsupported baudrate"));
+//    }
 
     gpio_set_function(sda->number, GPIO_FUNC_I2C);
     gpio_set_function(scl->number, GPIO_FUNC_I2C);
 
-
-    i2c_set_slave_mode (self->peripheral, true, DEFAULT_ADDRESS);
+    i2c_set_slave_mode(self->peripheral, true, DEFAULT_ADDRESS);
 
     self->sda_pin = sda->number;
     self->scl_pin = scl->number;
     claim_pin(sda);
     claim_pin(scl);
+
 }
 
 bool common_hal_i2cperipheral_i2c_peripheral_deinited(i2cperipheral_i2c_peripheral_obj_t *self) {
@@ -100,9 +94,32 @@ void common_hal_i2cperipheral_i2c_peripheral_deinit(i2cperipheral_i2c_peripheral
     self->scl_pin = NO_PIN;
 }
 
-// void common_hal_i2cperipheral_i2c_peripheral_write(i2cperipheral_i2c_peripheral_obj_t *self, 
-//                                    const uint8_t *data, 
-//                                    uint8_t lenght) {
-//     i2c_raw_blocking(self->peripheral, data, lenght);
-// }
+void common_hal_i2cperipheral_i2c_peripheral_write(i2cperipheral_i2c_peripheral_obj_t *self,
+                                   const uint8_t *data,
+                                   size_t len) {
+//    i2c_raw_blocking(self->peripheral, data, len);
+}
 
+int common_hal_i2cperipheral_i2c_peripheral_write_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data) {
+
+    return 0;
+}
+
+void common_hal_i2cperipheral_i2c_peripheral_ack(i2cperipheral_i2c_peripheral_obj_t *self, bool ack) {
+
+}
+
+void common_hal_i2cperipheral_i2c_peripheral_close(i2cperipheral_i2c_peripheral_obj_t *self) {
+
+}
+
+int common_hal_i2cperipheral_i2c_peripheral_read_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *data) {
+
+    return 0;
+}
+
+int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart)
+{
+
+    return 0;
+}
