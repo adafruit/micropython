@@ -377,6 +377,13 @@ extern const struct _mp_obj_module_t canio_module;
 #define CANIO_MODULE
 #endif
 
+#if CIRCUITPY_CAPSULEIO
+extern const struct _mp_obj_module_t capsuleio_module;
+#define CAPSULEIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_capsuleio), (mp_obj_t)&capsuleio_module },
+#else
+#define CAPSULEIO_MODULE
+#endif
+
 #if CIRCUITPY_COUNTIO
 extern const struct _mp_obj_module_t countio_module;
 #define COUNTIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_countio), (mp_obj_t)&countio_module },
@@ -850,6 +857,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
+    CAPSULEIO_MODULE\
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \

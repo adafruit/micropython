@@ -163,6 +163,9 @@ endif
 ifeq ($(CIRCUITPY_CANIO),1)
 SRC_PATTERNS += canio/%
 endif
+ifeq ($(CIRCUITPY_CAPSULEIO),1)
+SRC_PATTERNS += capsuleio/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -485,6 +488,7 @@ SRC_SHARED_MODULE_ALL = \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
+	capsuleio/__init__.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
