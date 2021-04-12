@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Jonah Yolles-Murphy (TG-Techie)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +42,7 @@ STATIC mp_obj_t capsule_load(mp_obj_t payload) {
         );
         // check if loading that worked
         if (didwork != CAPSULEIO_OK) {
-            mp_raise_ValueError(translate("too long to store in capsule"));
+            mp_raise_ValueError(translate("too long to store in time capsule"));
         }
     } else {
         mp_raise_TypeError(translate("can only save a string or None in the time capsule"));
