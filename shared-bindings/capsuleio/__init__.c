@@ -43,10 +43,10 @@ STATIC mp_obj_t capsule_load(mp_obj_t payload) {
         );
         // check if loading that worked
         if (didwork != CAPSULEIO_OK) {
-            mp_raise_ValueError(translate("fudge!"));
+            mp_raise_ValueError(translate("too long to store in capsule"));
         }
     } else {
-        mp_raise_TypeError(translate("sprinkles!"));
+        mp_raise_TypeError(translate("can only save a string or None in the time capsule"));
     }
     return mp_const_none;
 }
