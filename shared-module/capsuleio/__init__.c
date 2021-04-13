@@ -25,22 +25,63 @@
  */
 
 #include "shared-bindings/capsuleio/__init__.h"
+#include "py/objstr.h"
 #include <string.h>
 
+
+// the time capsule memory reservation
 capsuleio_capsule_t capsuleio_capsule;
 
+STATIC bool capsuleio_bury_string(const byte *data, size_t length) {
+    // the only fail mode is the string is too long
+    // make sure the data will fit
+    if (length > CIRCUITPY_CAPSULEIO_AMOUNT_BYTES) {
+        return false;
+    } else {
+        // set the type of the data stored
+        capsuleio_capsule.kind = CAPSULEIO_STRING;
+        // copy the string data in
+        memcpy(&capsuleio_capsule.data, data, length);
+        // write the null byte
+        capsuleio_capsule.data[length] = 0;
+        return true;
+    }
+}
 
-void capsuleio_load_none(){
+STATIC void capsuleio_bury_none(void) {
     capsuleio_capsule.kind = CAPSULEIO_NONE;
+    memset(&capsuleio_capsule.data, 0, CIRCUITPY_CAPSULEIO_AMOUNT_BYTES);
     return;
 }
 
-capsule_result_t capsuleio_load_string(const byte* string, const size_t len){
-     if (len >= CIRCUITPY_CAPSULEIO_AMOUNT_BYTES){
-         return CAPSULEIO_DATA_TO_LARGE;
-     } else {
-         capsuleio_capsule.kind = CAPSULEIO_STRING;
-         memcpy(&capsuleio_capsule.data, string, len);
-         return CAPSULEIO_OK;
-     }
- }
+mp_obj_t capsuleio_unearth_new_obj(void) {
+    switch (capsuleio_capsule.kind) {
+        case CAPSULEIO_NONE:
+            return mp_const_none;
+        case CAPSULEIO_STRING:
+            return mp_obj_new_str_copy(
+                &mp_type_str,
+                (const byte *)&capsuleio_capsule.data,
+                strlen((const char *)&capsuleio_capsule.data));
+        default:
+            // this should never be reached, but just in case
+            return mp_const_none;
+    }
+}
+
+capsule_result_t capsuleio_bury_obj(mp_obj_t obj) {
+    if (obj == mp_const_none) {
+        capsuleio_bury_none();
+        return CAPSULEIO_OK;
+    } else if (MP_OBJ_IS_STR(obj)) {
+        GET_STR_DATA_LEN(obj, data, length); // defines locals data and length
+        bool bury_worked = capsuleio_bury_string(data, length);
+        if (!bury_worked) {
+            return CAPSULEIO_STRING_TO_LONG;
+        } else {
+            return CAPSULEIO_OK;
+        }
+    } else {
+        return CAPSULEIO_TYPE_CANNOT_BE_BURIED;
+    }
+}

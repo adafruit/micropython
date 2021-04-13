@@ -24,58 +24,36 @@
  * THE SOFTWARE.
  */
 
-// TODO: add description of module here
+// TODO: add description of module
 
-#include "shared-bindings/capsuleio/__init__.h"
-#include "py/runtime.h"
 #include "py/objstr.h"
-#include <string.h>
+#include "py/runtime.h"
+#include "shared-bindings/capsuleio/__init__.h"
 
 // for now only string and none can be saved. in the future it may be tuples, floats, ints (maybe)
-STATIC mp_obj_t capsule_load(mp_obj_t payload) {
-    if (payload == mp_const_none) {
-        capsuleio_load_none();
-    } else if (MP_OBJ_IS_STR(payload)){
-        GET_STR_DATA_LEN(payload, payload_data, payload_len); // declares locals payload_data, payload_len
-        capsule_result_t didwork = capsuleio_load_string(
-            payload_data, payload_len
-        );
-        // check if loading that worked
-        if (didwork != CAPSULEIO_OK) {
+STATIC mp_obj_t capsule_bury(mp_obj_t obj) {
+    capsule_result_t result = capsuleio_bury_obj(obj);
+    switch (result) {
+        case CAPSULEIO_STRING_TO_LONG:
             mp_raise_ValueError(translate("too long to store in time capsule"));
-        }
-    } else {
-        mp_raise_TypeError(translate("can only save a string or None in the time capsule"));
+            break; // is this needed? the above is noreturn
+        case CAPSULEIO_TYPE_CANNOT_BE_BURIED:
+            mp_raise_TypeError(translate("can only save a string or None in the time capsule"));
+            break; // is this needed? the above is noreturn
+        case CAPSULEIO_OK:
+        default:
+            return mp_const_none;
     }
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(capsuleio_load_fnobj, capsule_load);
 
-
-
-STATIC mp_obj_t capsule_read(void) {
-    mp_obj_t parsed_object;
-    switch (capsuleio_capsule.kind) {
-        case CAPSULEIO_NONE:
-            parsed_object = mp_const_none;
-            break;
-        case CAPSULEIO_STRING:
-            parsed_object =  mp_obj_new_str_copy(
-                &mp_type_str,
-                (const byte*)&capsuleio_capsule.data,
-                strlen((const char*)&capsuleio_capsule.data)
-            );
-            break;
-    }
-    return parsed_object;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(capsuleio_read_fnobj, capsule_read);
-
+MP_DEFINE_CONST_FUN_OBJ_1(capsuleio_bury_fnobj, capsule_bury);
+// this function requires no runtime wrapper
+MP_DEFINE_CONST_FUN_OBJ_0(capsuleio_unearth_fnobj, capsuleio_unearth_new_obj);
 
 STATIC const mp_rom_map_elem_t mp_module_capsuleio_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_capsuleio) },
-    { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&capsuleio_load_fnobj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&capsuleio_read_fnobj) },
+    { MP_ROM_QSTR(MP_QSTR_bury), MP_ROM_PTR(&capsuleio_bury_fnobj) },
+    { MP_ROM_QSTR(MP_QSTR_unearth), MP_ROM_PTR(&capsuleio_unearth_fnobj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_capsuleio_globals, mp_module_capsuleio_globals_table);

@@ -35,27 +35,31 @@
 // this is the number of bytes allocated globally for storing capsuleio objects
 #define CIRCUITPY_CAPSULEIO_AMOUNT_BYTES 1024
 
+typedef enum {
+    CAPSULEIO_OK,
+    CAPSULEIO_STRING_TO_LONG,
+    CAPSULEIO_TYPE_CANNOT_BE_BURIED,
+} capsule_result_t;
+
 // yes this is a manual tagged union
 //  couldn't figure out a way to make void feilds in unions
 typedef enum  {
-    CAPSULEIO_NONE = 0,
-    // CAPSULEIO_INT,
+    CAPSULEIO_NONE = 0, // the none kind must be zero
     CAPSULEIO_STRING,
-} capsule_kind_stored_t;
+} capsule_type_kind_t;
 
 typedef struct {
-    capsule_kind_stored_t kind;
+    capsule_type_kind_t kind;
+    // a run-time tag to keep track of the stored type
     byte data[CIRCUITPY_CAPSULEIO_AMOUNT_BYTES];
+    // the stored data
+    const byte _null_terminator;
+    // this *shouldn't* ever be overwritten, so be careful
 } capsuleio_capsule_t;
-
-typedef enum {
-    CAPSULEIO_OK,
-    CAPSULEIO_DATA_TO_LARGE,
-} capsule_result_t;
 
 extern capsuleio_capsule_t capsuleio_capsule;
 
-capsule_result_t capsuleio_load_string(const byte* string, const size_t len);
-void capsuleio_load_none(void);// could be void
+mp_obj_t capsuleio_unearth_new_obj(void);
+capsule_result_t capsuleio_bury_obj(mp_obj_t obj);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_CAPSULEIO_H

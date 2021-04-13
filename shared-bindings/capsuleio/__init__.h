@@ -29,7 +29,5 @@
 
 #include "shared-module/capsuleio/__init__.h"
 
-//TODO: Add function thingy here (global object definition)
-
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAPSULEIO_H
