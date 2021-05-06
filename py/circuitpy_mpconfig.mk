@@ -26,6 +26,11 @@
 # Boards default to all modules enabled (with exceptions)
 # Manually disable by overriding in #mpconfigboard.mk
 
+# True if this is a special build that does nothing but erase and
+# reformat CIRCUITPY.
+CIRCUITPY_ERASER ?= 0
+CFLAGS += -DCIRCUITPY_ERASER=$(CIRCUITPY_ERASER)
+
 # Smaller builds can be forced for resource constrained chips (typically SAMD21s
 # without external flash) by setting CIRCUITPY_FULL_BUILD=0. Avoid using this
 # for merely incomplete ports, as it changes settings in other files.

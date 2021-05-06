@@ -554,6 +554,15 @@ int __attribute__((used)) main(void) {
 
     stack_init();
 
+    // If this is a CIRCUITPY eraser build, just erase and reformat the filesystem,
+    // and that's it. Don't print anything, etc. Just erase and wait.
+    #if CIRCUITPY_ERASER
+    new_status_color(RED);
+    filesystem_init(true, true);
+    new_status_color(BLUE);
+    while(1) { }
+    #endif
+
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
