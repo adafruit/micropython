@@ -59,7 +59,9 @@ for board in build_boards:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        clean_build = clean_build_check_result.returncode == 0
+
+        # If settings is non-empty, assume we need a clean build.
+        clean_build = clean_build_check_result.returncode == 0 or settings
 
         build_dir = f"build-{board}"
         if clean_build:
