@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
     - name: Dump GitHub context
       env:
@@ -34,7 +34,7 @@ jobs:
       run: |
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid
     - name: Versions
       run: |
         gcc --version
@@ -64,6 +64,8 @@ jobs:
     - name: mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
+    - name: Stubs
+      run: make stubs -j2
     - name: Docs
       run: sphinx-build -E -W -b html . _build/html
     - name: Translations
@@ -71,7 +73,6 @@ jobs:
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
-
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v1.0.0
@@ -127,7 +128,7 @@ jobs:
         path: mpy-cross/mpy-cross
 
   build-arm:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -135,6 +136,7 @@ jobs:
         board:
         - "8086_commander"
         - "TG-Watch02A"
+        - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -178,10 +180,12 @@ jobs:
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
+        - "fluff_m0"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
+        - "hiibot_bluefi"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
         - "imxrt1060_evk"
@@ -201,24 +205,29 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "nfc_copy_cat"
+        - "nice_nano"
         - "nucleo_f746zg"
         - "nucleo_f767zi"
         - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
+        - "openmv_h7"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
         - "pca10056"
         - "pca10059"
+        - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
+        - "pitaya_go"
         - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
         - "pycubed"
+        - "pycubed_mram"
         - "pygamer"
         - "pygamer_advance"
         - "pyportal"
@@ -229,6 +238,7 @@ jobs:
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
+        - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
@@ -243,9 +253,10 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
-        - "stm32f746g_disco"
+        - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
+        - "teensy41"
         - "teknikio_bluebird"
         - "thunderpack"
         - "trellis_m4_express"
@@ -302,7 +313,7 @@ jobs:
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -326,15 +337,102 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+  build-xtensa:
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+        - "espressif_saola_1_wroom"
+        - "espressif_saola_1_wrover"
+
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
+    - uses: actions/cache@v1
+      name: Fetch IDF tool cache
+      id: idf-cache
+      with:
+        path: ${{ github.workspace }}/.idf_tools
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200523
+    - name: Install IDF tools
+      run: |
+        $IDF_PATH/tools/idf_tools.py --non-interactive install required
+        $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
+        $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
+        rm -rf $IDF_TOOLS_PATH/dist
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: Install CircuitPython deps
+      run: |
+        source $IDF_PATH/export.sh
+        pip install requests sh click setuptools awscli
+        sudo apt-get install -y gettext ninja-build
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: Versions
+      run: |
+        source $IDF_PATH/export.sh
+        gcc --version
+        xtensa-esp32s2-elf-gcc --version
+        python3 --version
+        ninja --version
+        cmake --version
+      shell: bash
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: build
+      run: |
+        source $IDF_PATH/export.sh
+        python3 -u build_release_files.py
+      working-directory: tools
+      shell: bash
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
     - uses: actions/upload-artifact@v1.0.0
       with:

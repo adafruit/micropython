@@ -106,19 +106,7 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 ifeq ($(CIRCUITPY_ULAB),1)
-SRC_MOD += $(addprefix extmod/ulab/code/, \
-compare.c \
-create.c \
-extras.c \
-fft.c \
-filter.c \
-linalg.c \
-ndarray.c \
-numerical.c \
-poly.c \
-ulab.c \
-vectorise.c \
-	)
+SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*.c))
 CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-float-equal -Wno-sign-compare -DCIRCUITPY
 endif
@@ -258,6 +246,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	repl.o \
 	smallint.o \
 	frozenmod.o \
+	ringbuf.o \
 	)
 
 PY_EXTMOD_O_BASENAME = \

@@ -48,7 +48,6 @@ BASE_CFLAGS = \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
-	-fshort-enums \
 	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
@@ -99,6 +98,9 @@ endif
 ###
 # Select which builtin modules to compile and include.
 
+ifeq ($(CIRCUITPY_AESIO),1)
+SRC_PATTERNS += aesio/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -136,11 +138,17 @@ endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
+ifeq ($(CIRCUITPY_COUNTIO),1)
+SRC_PATTERNS += countio/%
+endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/% terminalio/% fontio/%
+endif
+ifeq ($(CIRCUITPY_VECTORIO),1)
+SRC_PATTERNS += vectorio/%
 endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
@@ -232,6 +240,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_WATCHDOG),1)
+SRC_PATTERNS += watchdog/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
@@ -263,6 +274,8 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	countio/Counter.c \
+	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
@@ -291,7 +304,9 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	time/__init__.c
+	watchdog/__init__.c \
+	watchdog/WatchDogMode.c \
+	watchdog/WatchDogTimer.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
@@ -309,11 +324,10 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
-        _eve/__init__.c \
+	_eve/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
-	help.c \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \
@@ -342,6 +356,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/__init__.c \
 	board/__init__.c \
 	busio/OneWire.c \
+	aesio/__init__.c \
+	aesio/aes.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
@@ -354,6 +370,11 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
+    vectorio/Circle.c \
+    vectorio/Rectangle.c \
+    vectorio/Polygon.c \
+    vectorio/VectorShape.c \
+    vectorio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
@@ -370,13 +391,14 @@ SRC_SHARED_MODULE_ALL = \
 	rgbmatrix/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	time/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
 	_pew/PewPew.c \
-        _eve/__init__.c
+	_eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))

@@ -83,14 +83,14 @@ else
   ### CFLAGS += -flto
 endif
 
-CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: check this
 CFLAGS += -D__START=main -DFOMU
 
 LD_FILE := boards/$(BOARD)/$(BOARD)-spi.ld
 
-LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs -Wl,-melf32lriscv
+LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs -Wl,-melf32lriscv
 LIBS := -lgcc -lc
 
 
@@ -116,7 +116,6 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
-	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	lib/libc/string0.c \

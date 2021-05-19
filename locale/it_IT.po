@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-26 14:46-0500\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -70,12 +70,21 @@ msgstr "indice %q fuori intervallo"
 msgid "%q indices must be integers, not %s"
 msgstr "gli indici %q devono essere interi, non %s"
 
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q list must be a list"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
+#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
+#: shared-bindings/vectorio/Rectangle.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "slice del buffer devono essere della stessa lunghezza"
+
+#: shared-module/vectorio/Polygon.c
+msgid "%q must be a tuple of length 2"
+msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
 #, fuzzy
@@ -246,6 +255,7 @@ msgstr "0.0 elevato alla potenza di un numero complesso"
 msgid "3-arg pow() not supported"
 msgstr "pow() con tre argmomenti non supportata"
 
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canale di interrupt hardware è già in uso"
@@ -286,11 +296,12 @@ msgstr "Tutti i timer per questo pin sono in uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/peripherals/nrf/timers.c shared-bindings/pulseio/PWMOut.c
-#: shared-module/_pew/PewPew.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Tutti i timer utilizzati"
 
@@ -363,6 +374,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondità di bit deve essere multipla di 8."
 
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Entrambi i pin devono supportare gli interrupt hardware"
@@ -434,6 +449,10 @@ msgstr "i buffer devono essere della stessa lunghezza"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "I byte devono essere compresi tra 0 e 255"
+
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -671,6 +690,10 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -682,7 +705,7 @@ msgstr "Canale EXTINT già in uso"
 msgid "Error in regex"
 msgstr "Errore nella regex"
 
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -791,11 +814,12 @@ msgstr ""
 msgid "Group full"
 msgstr "Gruppo pieno"
 
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr ""
 
@@ -810,6 +834,11 @@ msgstr ""
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
 msgstr "operazione I2C non supportata"
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -861,7 +890,7 @@ msgstr "File BMP non valido"
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr ""
 
@@ -871,11 +900,11 @@ msgstr ""
 msgid "Invalid PWM frequency"
 msgstr "Frequenza PWM non valida"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr ""
 
@@ -953,7 +982,9 @@ msgstr "Pin non valido per il canale destro"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
@@ -993,6 +1024,10 @@ msgstr "File wave non valido"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
 msgstr ""
 
 #: py/compile.c
@@ -1041,7 +1076,7 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Il ritardo di avvio del microfono deve essere nell'intervallo tra 0.0 e 1.0"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
 
@@ -1049,7 +1084,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
@@ -1060,10 +1095,6 @@ msgstr ""
 
 #: py/parse.c
 msgid "Name too long"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -1080,11 +1111,11 @@ msgstr "Nessun DAC sul chip"
 msgid "No DMA channel found"
 msgstr "Nessun canale DMA trovato"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr ""
 
@@ -1103,6 +1134,10 @@ msgstr "Nessun pin TX"
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
 msgstr "Nessun orologio a disposizione"
+
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
@@ -1124,6 +1159,14 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Nessun supporto hardware sul pin"
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1225,6 +1268,14 @@ msgstr "Permesso negato"
 msgid "Pin does not have ADC capabilities"
 msgstr "Il pin non ha capacità di ADC"
 
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/countio/Counter.c
+msgid "Pin must support hardware interrupts"
+msgstr ""
+
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr ""
@@ -1242,6 +1293,10 @@ msgstr ""
 msgid "Plus any modules on the filesystem\n"
 msgstr "Imposssibile rimontare il filesystem"
 
+#: shared-module/vectorio/Polygon.c
+msgid "Polygon needs at least 3 points"
+msgstr ""
+
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
@@ -1257,6 +1312,10 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
+msgstr ""
+
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "PulseIn not supported on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PulseOut.c
@@ -1310,6 +1369,10 @@ msgstr "Sola lettura"
 msgid "Refresh too soon"
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Canale destro non supportato"
@@ -1326,7 +1389,8 @@ msgstr "Modalità sicura in esecuzione! Auto-reload disattivato.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necessitano un pull-up"
 
@@ -1375,6 +1439,10 @@ msgstr ""
 msgid "Slices not supported"
 msgstr "Slice non supportate"
 
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Suddivisione con sotto-catture"
@@ -1387,7 +1455,7 @@ msgstr "La dimensione dello stack deve essere almeno 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Metodi mancanti readinto() o write() allo stream."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr ""
 
@@ -1446,6 +1514,11 @@ msgstr ""
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+#, c-format
+msgid "Timeout is too long: Maximum timeout length is %d seconds"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr ""
@@ -1457,6 +1530,10 @@ msgstr ""
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Troppi schermi"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -1610,6 +1687,26 @@ msgstr ""
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENZIONE: Il nome del sorgente ha due estensioni\n"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -1986,6 +2083,10 @@ msgstr "argomento di chr() non è in range(0x110000)"
 msgid "chr() arg not in range(256)"
 msgstr "argomento di chr() non è in range(256)"
 
+#: shared-module/vectorio/Circle.c
+msgid "circle can only be registered in one parent"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2046,6 +2147,14 @@ msgstr ""
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
 msgstr ""
 
 #: extmod/ulab/code/numerical.c
@@ -2184,6 +2293,14 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr "il filesystem deve fornire un metodo di mount"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr ""
@@ -2236,6 +2353,10 @@ msgstr "la funzione prevede al massimo %d argmoneti, ma ne ha ricevuti %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la funzione ha ricevuto valori multipli per l'argomento '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr ""
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2324,6 +2445,10 @@ msgstr "gli indici devono essere interi"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler deve essere una funzione"
@@ -2367,6 +2492,10 @@ msgstr "il secondo argomanto di int() deve essere >= 2 e <= 36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "intero richiesto"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -2796,9 +2925,13 @@ msgstr "indirizzo fuori limite"
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader deve essere displayio.Palette o displayio.ColorConverter"
+
+#: shared-module/vectorio/Polygon.c
+msgid "polygon can only be registered in one parent"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -3008,6 +3141,10 @@ msgstr "la soglia deve essere nell'intervallo 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
@@ -3046,8 +3183,7 @@ msgstr "tupla/lista ha la lunghezza sbagliata"
 msgid "tuple/list required on RHS"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
@@ -3122,7 +3258,8 @@ msgstr "'{' spaiato nella stringa di formattazione"
 msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+#: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
 msgstr "tipo di %q non supportato"
 
@@ -3162,6 +3299,10 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
@@ -3174,6 +3315,10 @@ msgstr ""
 msgid "wrong index type"
 msgstr ""
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr ""
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "numero di argomenti errato"
@@ -3184,6 +3329,10 @@ msgstr "numero di valori da scompattare non corretto"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
+msgstr ""
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
 msgstr ""
 
 #: shared-module/displayio/Shape.c

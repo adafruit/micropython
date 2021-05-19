@@ -70,20 +70,6 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_FIRMWARE
 
-    /*
-    .ARM.extab :
-    {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } >FLASH_FIRMWARE
-
-    .ARM :
-    {
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-    } >FLASH_FIRMWARE
-    */
-
     /* used by the startup to initialize data */
     _sidata = .;
 
@@ -103,7 +89,7 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
 
-    /* Uninitialized data section */
+    /* Zero-initialized data section */
     .bss :
     {
         . = ALIGN(4);
@@ -114,6 +100,19 @@ SECTIONS
 
         . = ALIGN(4);
         _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
+    } >RAM
+
+    /* Uninitialized data section
+    Data placed into this section will remain unchanged across reboots. */
+    .uninitialized (NOLOAD) :
+    {
+        . = ALIGN(4);
+        _suninitialized = .; /* define a global symbol at uninitialized start; currently unused */
+        *(.uninitialized)
+        *(.uninitialized*)
+
+        . = ALIGN(4);
+        _euninitialized = .; /* define a global symbol at uninitialized end; currently unused */
     } >RAM
 
     /* this is to define the start of the heap, and make sure we have a minimum size */
@@ -133,6 +132,14 @@ SECTIONS
         . = . + ${CIRCUITPY_DEFAULT_STACK_SIZE};
         . = ALIGN(4);
     } >RAM
+
+    /* Remove exception unwinding information, since Circuit Python
+       does not support this GCC feature. */
+    /DISCARD/ :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+        *(.ARM.exidx*)
+    }
 
     /* Remove information from the standard libraries */
     /*

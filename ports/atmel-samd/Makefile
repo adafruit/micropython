@@ -134,7 +134,7 @@ else
   endif
 endif
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
@@ -157,7 +157,7 @@ endif
 
 
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
@@ -194,7 +194,6 @@ SRC_ASF := \
 	hpl/gclk/hpl_gclk.c \
 	hpl/nvmctrl/hpl_nvmctrl.c \
 	hpl/pm/hpl_pm.c \
-	hpl/rtc/hpl_rtc.c \
 	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
 	hal/utils/src/utils_list.c \
@@ -258,7 +257,6 @@ SRC_C = \
 	peripherals/samd/timers.c \
 	reset.c \
 	supervisor/shared/memory.c \
-	tick.c \
 	timer_handler.c \
 
 
@@ -305,7 +303,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 # because a few modules have files both in common-hal/ and shared-modules/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-
 
 SRC_S = supervisor/$(CHIP_FAMILY)_cpu.s
 
