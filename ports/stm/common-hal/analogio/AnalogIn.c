@@ -31,10 +31,49 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
+#ifdef STM32F405xx 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_gpio.h"
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_bus.h"
+#endif 
+
+#ifdef STM32F407xx
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_ll_gpio.h"
+#include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_bus.h"
+#endif 
+
+#ifdef STM32F401xE 
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_ll_gpio.h"
+#include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_bus.h"
+#endif 
+
+#ifdef STM32F411xE 
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_ll_gpio.h"
+#include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_bus.h"
+#endif 
+
+
+#ifdef STM32F412Zx
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_ll_gpio.h"
+#include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_bus.h"
+#endif 
+
+
+#ifdef STM32F746xx
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_adc.h"
+#include "stm32f7xx_ll_bus.h"
+#endif
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     const mcu_pin_obj_t *pin) {

@@ -37,7 +37,32 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+
+#ifdef STM32F405xx 
 #include "stm32f4xx_hal.h"
+#endif 
+
+#ifdef STM32F407xx
+#include "stm32f4xx_hal.h"
+#endif 
+
+#ifdef STM32F401xE 
+#include "stm32f4xx_hal.h"
+#endif 
+
+#ifdef STM32F411xE 
+#include "stm32f4xx_hal.h"
+#endif 
+
+
+#ifdef STM32F412Zx
+#include "stm32f4xx_hal.h"
+#endif 
+
+
+#ifdef STM32F746xx
+#include "stm32f7xx_hal.h"
+#endif
 
 // DAC is shared between both channels.
 #if HAS_DAC
