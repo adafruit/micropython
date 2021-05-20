@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_SUPERVISOR_RUNTIME_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_SUPERVISOR_RUNTIME_H
+#include "supervisor/board.h"
 
-#include "py/obj.h"
+void board_init(void) {
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    // Stores no state currently.
-} super_runtime_obj_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_SUPERVISOR_RUNTIME_H
+void reset_board(void) {
+}
