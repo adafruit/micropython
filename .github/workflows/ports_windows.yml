@@ -66,7 +66,7 @@ jobs:
     - name: Install dependencies
       run: |
         echo "GCC Arm Cache-hit: ${{steps.cache-gcc-arm-zip.outputs.cache-hit}}"
-        # One of the two cache stages above should have acquired gcc-arm.zip
+        # One of the cache stages above should have acquired gcc-arm.zip
         unzip -q -d /tmp gcc-arm.zip
         tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
         pip install wheel
