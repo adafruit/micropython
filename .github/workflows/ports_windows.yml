@@ -21,6 +21,12 @@ jobs:
         shell: msys2 {0}
     steps:
 
+    - name: "Use GNU tar instead BSD tar"
+      # https://github.com/actions/cache/issues/576
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: echo C:\Program Files\Git\usr\bin>>"%GITHUB_PATH%"
+
     # We want to change the configuration of the git command that actions/checkout will be using (since it is not possible to set autocrlf through the action yet, see actions/checkout#226).
     - run: git config --global core.autocrlf input
       shell: bash
@@ -51,6 +57,7 @@ jobs:
         python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
         which python3; python3 --version
         python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+
     - name: Check Cache for GCC Arm
       id: cache-gcc-arm-zip
       uses: actions/cache@v2
@@ -58,11 +65,13 @@ jobs:
         path: gcc-arm.zip
         # Change this key if we upgrade the version
         key: gcc-arm-10-2020-q4-win32
+
     - name: Fetch GCC Arm
       if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
       # Change the key above if the version below changes
       run: |
         wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+
     - name: Install dependencies
       run: |
         echo "GCC Arm Cache-hit: ${{steps.cache-gcc-arm-zip.outputs.cache-hit}}"
