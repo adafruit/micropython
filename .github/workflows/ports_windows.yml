@@ -13,6 +13,24 @@ on:
       - 'ports/windows/**'
 
 jobs:
+  prepare-gcc-arm-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Cache for GCC Arm
+      id: cache-gcc-arm-zip
+      uses: actions/cache@v2
+      with:
+        path: gcc-arm.zip
+        # Change this key if we upgrade the version
+        # Remember to change it down below.
+        key: gcc-arm-10-2020-q4-win32-dev-a
+
+    - name: Fetch GCC Arm
+      if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
+      # Change the key above if the version below changes
+      run: |
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+
   build:
     runs-on: windows-2019
     defaults:
@@ -52,9 +70,28 @@ jobs:
         which python3; python3 --version
         python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
 
+    - name: Use GNU tar instead of BSD tar
+      # https://github.com/actions/cache/issues/576
+      # if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: echo C:\Program Files\Git\usr\bin>>"%GITHUB_PATH%"
+
+    - name: Check Cache for GCC Arm
+      id: cache-gcc-arm-zip
+      uses: actions/cache@v2
+      with:
+        path: gcc-arm.zip
+        # This key name below must match the key name at the top.
+        key: gcc-arm-10-2020-q4-win32-dev-a
+
+    - name: Cache Miss
+      if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
+      run: |
+        echo "Cache-miss for gcc-arm.zip. Aborting"
+        exit 1
+
     - name: Install dependencies
       run: |
-        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
         unzip -q -d /tmp gcc-arm.zip
         tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
         pip install wheel
