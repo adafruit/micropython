@@ -64,7 +64,7 @@ jobs:
       with:
         path: gcc-arm.zip
         # Change this key if we upgrade the version
-        key: gcc-arm-10-2020-q4-win32
+        key: gcc-arm-10-2020-q4-win32-b
 
     - name: Fetch GCC Arm
       if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
