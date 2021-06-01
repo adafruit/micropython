@@ -65,6 +65,7 @@ jobs:
         wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
     - name: Install dependencies
       run: |
+        echo "GCC Arm Cache-hit: ${{steps.cache-gcc-arm-zip.outputs.cache-hit}}"
         # One of the two cache stages above should have acquired gcc-arm.zip
         unzip -q -d /tmp gcc-arm.zip
         tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
