@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2021 Adafruit
+#
+# SPDX-License-Identifier: Unlicense
+
+name: windows port cache prep
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/unix/**'
+      - 'ports/windows/**'
+
+jobs:
+  prepare-gcc-arm-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Cache for GCC Arm
+      id: cache-gcc-arm-zip
+      uses: actions/cache@v2
+      with:
+        path: gcc-arm.zip
+        # Change this key if we upgrade the version
+        # Remember to change it in ports_windows.yml as well
+        key: gcc-arm-10-2020-q4-win32-dev-a
+
+    - name: Fetch GCC Arm
+      if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
+      # Change the key above if the version below changes
+      run: |
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
