@@ -1,13 +1,36 @@
 name: windows port
 
 on:
-  workflow_run:
-    workflows:
-      - "windows port cache prep"
-    types:
-      - completed
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/unix/**'
+      - 'ports/windows/**'
 
 jobs:
+  prepare-gcc-arm-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Cache for GCC Arm
+      id: cache-gcc-arm-zip
+      uses: actions/cache@v2
+      with:
+        path: gcc-arm.zip
+        # Change this key if we upgrade the version
+        # Remember to change it down below.
+        key: gcc-arm-10-2020-q4-win32-dev-a
+
+    - name: Fetch GCC Arm
+      if: steps.cache-gcc-arm-zip.outputs.cache-hit != 'true'
+      # Change the key above if the version below changes
+      run: |
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+
   build:
     runs-on: windows-2019
     defaults:
@@ -47,7 +70,7 @@ jobs:
         which python3; python3 --version
         python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
 
-    - name: "Use GNU tar instead BSD tar"
+    - name: Use GNU tar instead of BSD tar
       # https://github.com/actions/cache/issues/576
       # if: matrix.os == 'windows-latest'
       shell: cmd
@@ -58,7 +81,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: gcc-arm.zip
-        # This key name below must match the key name in pre_cache_ports_windows.yml
+        # This key name below must match the key name at the top.
         key: gcc-arm-10-2020-q4-win32-dev-a
 
     - name: Cache Miss
@@ -93,17 +116,17 @@ jobs:
     - name: build mpy-cross
       run: make -j2 -C mpy-cross
 
-    # - name: build rp2040
-    #   run: make -j2 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
+    - name: build rp2040
+      run: make -j2 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
 
-    # - name: build samd21
-    #   run: make -j2 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
+    - name: build samd21
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
 
-    # - name: build samd51
-    #   run: make -j2 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
+    - name: build samd51
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
 
-    # - name: build nrf
-    #   run: make -j2 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
+    - name: build nrf
+      run: make -j2 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
 
     - name: build stm
       run: make -j2 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
