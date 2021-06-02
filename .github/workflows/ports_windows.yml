@@ -23,7 +23,7 @@ jobs:
 
     - name: "Use GNU tar instead BSD tar"
       # https://github.com/actions/cache/issues/576
-      # if: matrix.os == 'windows-latest' 
+      # if: matrix.os == 'windows-latest'
       shell: cmd
       run: echo C:\Program Files\Git\usr\bin>>"%GITHUB_PATH%"
 
