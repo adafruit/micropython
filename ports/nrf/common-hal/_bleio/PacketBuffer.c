@@ -40,6 +40,8 @@
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "supervisor/shared/tick.h"
 
+#include "supervisor/shared/bluetooth/serial.h"
+
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
@@ -170,6 +172,23 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
                 } else {
                     self->conn_handle = BLE_CONN_HANDLE_INVALID;
                 }
+            }
+            break;
+        }
+        case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
+            if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+                break;
+            }
+            uint16_t conn_handle = ble_evt->evt.gatts_evt.conn_handle;
+            // Check to see if the bond restored the HVX state.
+            uint16_t cccd;
+            ble_gatts_value_t value;
+            value.len = sizeof(uint16_t);
+            value.offset = 0;
+            value.p_value = (uint8_t *)&cccd;
+            sd_ble_gatts_value_get(conn_handle, self->characteristic->cccd_handle, &value);
+            if (cccd & BLE_GATT_HVX_NOTIFICATION) {
+                self->conn_handle = conn_handle;
             }
             break;
         }
@@ -465,8 +484,8 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
 }
 
 void common_hal_bleio_packet_buffer_flush(bleio_packet_buffer_obj_t *self) {
-    while (self->pending_size != 0 &&
-           self->packet_queued &&
+    while ((self->pending_size != 0 ||
+            self->packet_queued) &&
            self->conn_handle != BLE_CONN_HANDLE_INVALID &&
            !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;

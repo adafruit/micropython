@@ -233,6 +233,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
         return MP_OBJ_FROM_PTR(o);
     }
 
+    if (n_args > 1) {
+        goto wrong_args;
+    }
+
     if (mp_obj_is_small_int(args[0])) {
         mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         if (len < 0) {
@@ -242,10 +246,6 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
         return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    }
-
-    if (n_args > 1) {
-        goto wrong_args;
     }
 
     // check if __bytes__ exists, and if so delegate to it
@@ -2035,14 +2035,17 @@ const mp_obj_type_t mp_type_str = {
 // Reuses most of methods from str
 const mp_obj_type_t mp_type_bytes = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,
-    .binary_op = mp_obj_str_binary_op,
-    .subscr = bytes_subscr,
-    .getiter = mp_obj_new_bytes_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .binary_op = mp_obj_str_binary_op,
+        .subscr = bytes_subscr,
+        .getiter = mp_obj_new_bytes_iterator,
+        .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+        ),
 };
 
 // The zero-length bytes object, with data that includes a null-terminating byte

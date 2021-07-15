@@ -38,7 +38,9 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-#include "supervisor/shared/bluetooth.h"
+#if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+#include "supervisor/shared/bluetooth/serial.h"
+#endif
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
@@ -134,6 +136,9 @@ void SD_EVT_IRQHandler(void) {
         }
     }
 
+    #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+    ble_serial_disable();
+    #endif
     while (1) {
         uint16_t evt_len = sizeof(m_ble_evt_buf);
         const uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
@@ -175,4 +180,7 @@ void SD_EVT_IRQHandler(void) {
         }
         #endif
     }
+    #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+    ble_serial_enable();
+    #endif
 }

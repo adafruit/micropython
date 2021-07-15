@@ -614,6 +614,13 @@ extern const struct _mp_obj_module_t pwmio_module;
 #define PWMIO_MODULE
 #endif
 
+#if CIRCUITPY_RAINBOWIO
+extern const struct _mp_obj_module_t rainbowio_module;
+#define RAINBOWIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rainbowio), (mp_obj_t)&rainbowio_module },
+#else
+#define RAINBOWIO_MODULE
+#endif
+
 #if CIRCUITPY_RANDOM
 extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
@@ -886,6 +893,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     PS2IO_MODULE \
     PULSEIO_MODULE \
     PWMIO_MODULE \
+    RAINBOWIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     RGBMATRIX_MODULE \
