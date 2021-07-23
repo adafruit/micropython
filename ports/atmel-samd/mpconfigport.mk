@@ -97,6 +97,7 @@ CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
+CIRCUITPY_ALARM ?= 1
 CIRCUITPY_NETWORK ?= 0
 CIRCUITPY_PS2IO ?= 1
 CIRCUITPY_SAMD ?= 1
