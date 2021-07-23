@@ -184,12 +184,6 @@ endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
-ifeq ($(CIRCUITPY_GAMEPAD),1)
-SRC_PATTERNS += gamepad/%
-endif
-ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
-SRC_PATTERNS += gamepadshift/%
-endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
 endif
